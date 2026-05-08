@@ -5,7 +5,8 @@
 ```bash
 git clone https://github.com/jamiedavenport/openpolicy
 cd openpolicy
-bun install
+corepack enable      # picks up the pnpm version pinned in package.json
+pnpm install
 vp config
 ```
 
@@ -16,7 +17,7 @@ vp config
 
 ## Project Structure
 
-This is a Bun monorepo under `packages/`:
+This is a pnpm monorepo (workspaces declared in `pnpm-workspace.yaml`):
 
 | Package            | Description                                     |
 | ------------------ | ----------------------------------------------- |
@@ -31,13 +32,13 @@ This is a Bun monorepo under `packages/`:
 
 ```bash
 # Run all tests
-bun test
+vp test
 
 # Type-check all packages
-bun run check-types
+vp run -r check-types
 
 # Build all packages (produces dist/*.js + dist/*.d.ts)
-bun run build
+vp run -r build
 ```
 
 ### Working on `@openpolicy/core`
@@ -45,13 +46,13 @@ bun run build
 `core`'s `package.json` exports point to `./dist/` (not `./src/`). After changing source files in `packages/core`, rebuild it before other packages will pick up the changes:
 
 ```bash
-cd packages/core && bun run build
+pnpm --filter @openpolicy/core run build
 ```
 
 ### Running the CLI locally
 
 ```bash
-cd packages/cli && bun run src/cli.ts --help
+pnpm --filter @openpolicy/cli exec tsx src/cli.ts --help
 ```
 
 ## Architecture
@@ -77,13 +78,19 @@ PolicyInput → compilePolicy() → section builders → PolicySection[] → ren
 
 ```bash
 # All packages
-bun test
+vp test
 
 # Single package
-cd packages/core && bun test
+pnpm --filter @openpolicy/core run test
 ```
 
-Tests use `bun:test` (Jest-compatible API). Keep tests co-located or in the same package as the code they cover.
+Tests use Vitest via Vite+. Import test utilities from `vite-plus/test` (not `vitest`):
+
+```ts
+import { expect, test } from "vite-plus/test";
+```
+
+Keep tests co-located or in the same package as the code they cover.
 
 ## Code Style
 
@@ -102,7 +109,7 @@ This repo uses [Changesets](https://github.com/changesets/changesets) for versio
 1. After making your changes, run:
 
    ```bash
-   bun run changeset
+   pnpm changeset
    ```
 
    Follow the prompts to describe what changed and which packages are affected.
@@ -111,13 +118,13 @@ This repo uses [Changesets](https://github.com/changesets/changesets) for versio
 
 3. Open a pull request against `main`. CI will validate your changes.
 
-4. Once merged, the GitHub Actions workflow automatically opens a "Version Packages" PR. Merging that PR publishes the updated packages to NPM.
+4. Once merged, the GitHub Actions workflow automatically opens a "Version Packages" PR. Merging that PR publishes the updated packages to NPM. `pnpm publish` rewrites `workspace:*` references to the real published version on the way out.
 
-Publishable packages: `@openpolicy/sdk`, `@openpolicy/core`, `@openpolicy/vite`, `@openpolicy/cli`.
+Publishable packages: `@openpolicy/sdk`, `@openpolicy/core`, `@openpolicy/vite`, `@openpolicy/cli`, `@openpolicy/react`, `@openpolicy/vue`, `@openpolicy/svelte`.
 
 ## Pull Requests
 
 - Keep changes focused — one concern per PR.
 - Include a changeset for any user-facing change to a published package.
-- Ensure `bun test` and `bun run check-types` pass before opening a PR.
+- Ensure `vp test` and `vp run -r check-types` pass before opening a PR.
 - For significant changes to the compilation pipeline or public API, open an issue first to discuss the approach.

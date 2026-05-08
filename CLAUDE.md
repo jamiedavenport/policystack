@@ -4,7 +4,7 @@
 
 This project uses [Vite+](https://viteplus.dev), a unified toolchain built on top of Vite, Rolldown, Vitest, tsdown, Oxlint, and Oxfmt. Vite+ wraps dev-server, build, test, lint, format, type-check, and package-manager operations behind a single global CLI called `vp`.
 
-The package manager is Bun; `vp` detects it via `packageManager` in `package.json` and delegates accordingly. Do not invoke `bun`/`npm`/`pnpm`/`yarn` directly when a `vp` equivalent exists.
+The package manager is pnpm (managed via Corepack); `vp` detects it via `packageManager` in `package.json` and delegates accordingly. Do not invoke `pnpm`/`npm`/`yarn` directly when a `vp` equivalent exists.
 
 ### Common commands
 
@@ -37,7 +37,7 @@ Run `vp help` for the full list and `vp <command> --help` for specifics.
 
 ## Project Structure
 
-This is a Bun monorepo with `apps/*`, `packages/*`, `tooling/*`, and `examples/*` workspaces.
+This is a pnpm monorepo with `apps/*`, `packages/*`, `tooling/*`, and `examples/*` workspaces (declared in `pnpm-workspace.yaml`). `shamefully-hoist=true` is set in `.npmrc` so example apps can resolve transitive deps the way they did under Bun's flat `node_modules`.
 
 - `packages/sdk` — `@openpolicy/sdk`: public API — `defineConfig()` and related types
 - `packages/core` — `@openpolicy/core`: compilation engine; published to npm as a dependency of sdk and vite
@@ -108,7 +108,7 @@ Releases are fully automated via `.github/workflows/release.yml` using `changese
 1. **Add a changeset** as part of your feature/fix PR:
 
    ```sh
-   bun run changeset
+   pnpm changeset
    ```
 
    Commit the generated `.changeset/*.md` file alongside your changes.
@@ -125,10 +125,10 @@ Releases are fully automated via `.github/workflows/release.yml` using `changese
 
 ```sh
 # Bump versions and generate CHANGELOGs
-bun run version-packages
+pnpm run version-packages
 
-# Build all packages and publish to NPM
-bun run publish-packages
+# Build all packages and publish to NPM (pnpm publish rewrites workspace:* → real versions)
+pnpm run publish-packages
 ```
 
 ### Build output
@@ -162,7 +162,7 @@ test("policy compiles to markdown", () => {
 ## TypeScript
 
 - Strict mode is enabled (`tsconfig.json`)
-- `moduleResolution: "bundler"` — use Bun/Vite-style imports
+- `moduleResolution: "bundler"` — use Vite-style imports
 - JSX is configured as `react-jsx`
 - `verbatimModuleSyntax` is on — use `import type` for type-only imports
 - Prefer `type` over `interface` for all type declarations
@@ -171,4 +171,4 @@ test("policy compiles to markdown", () => {
 
 - [ ] Run `vp install` after pulling remote changes before starting work.
 - [ ] Run `vp check` and `vp test` to validate changes before committing.
-- [ ] Add a changeset with `bun run changeset` for any user-facing change to a published package.
+- [ ] Add a changeset with `pnpm changeset` for any user-facing change to a published package.

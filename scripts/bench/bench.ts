@@ -1,4 +1,3 @@
-#!/usr/bin/env bun
 import { execFile as execFileCb } from "node:child_process";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -29,7 +28,7 @@ function parseArgs(): { only: Phase; iterations: number } {
 
 async function runBuild(): Promise<void> {
 	console.log(`  → building (vite build)…`);
-	await execFile("bun", ["run", "build"], {
+	await execFile("pnpm", ["run", "build"], {
 		cwd: EXAMPLE_DIR,
 		env: { ...process.env, NODE_ENV: "production" },
 		maxBuffer: 64 * 1024 * 1024,
@@ -176,7 +175,7 @@ function renderMarkdown(
 	lines.push(`## Method`);
 	lines.push("");
 	lines.push(
-		`Run with \`bun run bench\`. Reproduction and metric definitions: see [scripts/bench/README.md](../README.md).`,
+		`Run with \`pnpm run bench\`. Reproduction and metric definitions: see [scripts/bench/README.md](../README.md).`,
 	);
 	lines.push("");
 	return lines.join("\n");

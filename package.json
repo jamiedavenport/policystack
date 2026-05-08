@@ -2,43 +2,39 @@
 	"name": "openpolicy",
 	"private": true,
 	"license": "Apache-2.0",
-	"workspaces": [
-		"apps/*",
-		"packages/*",
-		"tooling/*",
-		"examples/*"
-	],
 	"type": "module",
 	"scripts": {
 		"changeset": "changeset",
-		"version-packages": "changeset version",
-		"publish-packages": "bun scripts/sync-legal.ts && vp run -r build && changeset publish",
+		"version-packages": "changeset version && pnpm install --lockfile-only",
+		"publish-packages": "tsx scripts/sync-legal.ts && vp run -r build && changeset publish",
 		"knip": "knip",
-		"bench": "bun scripts/bench/bench.ts",
-		"bench:bundle": "bun scripts/bench/bench.ts --only=bundle",
-		"bench:runtime": "bun scripts/bench/bench.ts --only=runtime"
+		"bench": "tsx scripts/bench/bench.ts",
+		"bench:bundle": "tsx scripts/bench/bench.ts --only=bundle",
+		"bench:runtime": "tsx scripts/bench/bench.ts --only=runtime"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.30.0",
 		"@openpolicy/react": "workspace:*",
 		"@openpolicy/sdk": "workspace:*",
 		"@tanstack/intent": "^0.0.29",
-		"@types/bun": "latest",
 		"@types/node": "^25.5.0",
 		"knip": "^5.86.0",
+		"tsx": "^4.19.2",
 		"vite-plus": "catalog:"
 	},
 	"peerDependencies": {
 		"typescript": "^5.9.3"
 	},
-	"overrides": {
-		"vite": "catalog:",
-		"vitest": "catalog:"
-	},
-	"packageManager": "bun@1.2.21",
-	"catalog": {
-		"vite": "npm:@voidzero-dev/vite-plus-core@latest",
-		"vitest": "npm:@voidzero-dev/vite-plus-test@latest",
-		"vite-plus": "latest"
+	"packageManager": "pnpm@10.18.0",
+	"pnpm": {
+		"overrides": {
+			"vite": "catalog:",
+			"vitest": "catalog:"
+		},
+		"onlyBuiltDependencies": [
+			"esbuild",
+			"msw",
+			"sharp"
+		]
 	}
 }

@@ -49,4 +49,5 @@ paste error here
 - OS:
 - Package(s) affected: <!-- @openpolicy/sdk / @openpolicy/core / @openpolicy/vite / @openpolicy/cli -->
 - Version:
-- Bun version (`bun --version`):
+- Node version (`node --version`):
+- Package manager (`pnpm --version` / `bun --version` / `npm --version`):

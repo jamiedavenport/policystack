@@ -5,10 +5,10 @@ Bundle, network, and runtime benchmark for OpenPolicy. Measures the delta that O
 ## Running
 
 ```sh
-bun run bench                  # full: bundle + 5-iteration runtime
-bun run bench:bundle           # bundle size only (no browser)
-bun run bench:runtime          # runtime only
-bun run bench -- --iterations=10
+pnpm run bench                  # full: bundle + 5-iteration runtime
+pnpm run bench:bundle           # bundle size only (no browser)
+pnpm run bench:runtime          # runtime only
+pnpm run bench -- --iterations=10
 ```
 
 Results are written to `scripts/bench/results/latest.{json,md}`.
