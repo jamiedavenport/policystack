@@ -1,6 +1,6 @@
 {
 	"name": "@openpolicy/react",
-	"version": "0.0.31",
+	"version": "0.0.32",
 	"description": "React components and hooks for OpenPolicy",
 	"keywords": [
 		"tanstack-intent"

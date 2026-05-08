@@ -1,6 +1,6 @@
 {
 	"name": "@openpolicy/cli",
-	"version": "0.0.31",
+	"version": "0.0.32",
 	"description": "CLI to install OpenPolicy and print a setup prompt for coding agents",
 	"license": "Apache-2.0",
 	"repository": {

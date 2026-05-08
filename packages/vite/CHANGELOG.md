@@ -1,5 +1,11 @@
 # @openpolicy/vite
 
+## 0.0.32
+
+### Patch Changes
+
+- @openpolicy/core@0.0.32
+
 ## 0.0.31
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@openpolicy/svelte",
-	"version": "0.0.31",
+	"version": "0.0.32",
 	"description": "Svelte components for OpenPolicy",
 	"license": "Apache-2.0",
 	"repository": {
