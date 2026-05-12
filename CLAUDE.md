@@ -44,7 +44,7 @@ This is a pnpm monorepo with `apps/*`, `packages/*`, `tooling/*`, and `examples/
 - `packages/vite` — `@openpolicy/vite`: Vite plugin (`openPolicy()`) that compiles policies at build time
 - `packages/cli` — `@openpolicy/cli`: CLI tool that installs OpenPolicy into a project and prints a setup prompt for coding agents
 - `packages/react`, `packages/vue` — framework integrations
-- `packages/renderers` — Markdown / HTML / PDF renderers (internal, not published)
+- `packages/renderers` — `@openpolicy/renderers`: Markdown / HTML / PDF renderers; published to npm
 - `tooling/tsconfig` — `@openpolicy/tooling`: shared `tsconfig` base
 
 ## Domain Concepts
@@ -95,7 +95,7 @@ Two hooks are active:
 
 ## Versioning & Release
 
-This repo uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing. Publishable packages are `@openpolicy/sdk`, `@openpolicy/cli`, `@openpolicy/vite`, `@openpolicy/core`, `@openpolicy/react`, and `@openpolicy/vue`.
+This repo uses [Changesets](https://github.com/changesets/changesets) for versioning and publishing. Publishable packages are `@openpolicy/sdk`, `@openpolicy/cli`, `@openpolicy/vite`, `@openpolicy/core`, `@openpolicy/renderers`, `@openpolicy/react`, and `@openpolicy/vue`.
 
 ### Pre-1.0 bump policy
 

@@ -298,6 +298,18 @@ test("introduction section has ParagraphNode children", () => {
 	expect(firstPara.children[0]?.type).toBe("text");
 });
 
+test("privacy introduction renders version when set", () => {
+	const doc = compile({ type: "privacy", ...minimalPrivacyConfig, version: "abc12345" });
+	const intro = doc.sections.find((s) => s.id === "introduction")!;
+	expect(JSON.stringify(intro)).toContain("Version: abc12345");
+});
+
+test("privacy introduction omits version line when version is unset", () => {
+	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const intro = doc.sections.find((s) => s.id === "introduction")!;
+	expect(JSON.stringify(intro)).not.toContain("Version:");
+});
+
 test("data-collected table includes lawful-basis labels with Article 6 sub-clause under EU jurisdiction", () => {
 	const doc = compile({
 		type: "privacy",

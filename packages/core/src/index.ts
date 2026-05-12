@@ -71,11 +71,14 @@ export type {
 } from "./types";
 export { isOpenPolicyConfig } from "./types";
 export { Contractual, ContractPrerequisite, Statutory, Voluntary } from "./provision";
+export { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 export { deriveUserRights } from "./user-rights";
 export { validatePrivacyPolicy } from "./validate";
 export { validateOpenPolicyConfig } from "./validate-config";
 export { validateCookiePolicy } from "./validate-cookie";
 
+import { compile } from "./documents";
+import type { Document } from "./documents";
 import type {
 	CookiePolicyCookies,
 	DataConfig,
@@ -106,33 +109,56 @@ const EMPTY_DATA: DataConfig = {
 };
 const EMPTY_COOKIES: CookiePolicyCookies = { used: { essential: true }, context: {} };
 
+type PrivacyInput = Extract<PolicyInput, { type: "privacy" }>;
+type CookieInput = Extract<PolicyInput, { type: "cookie" }>;
+
+function buildPrivacyInput(config: OpenPolicyConfig): PrivacyInput | null {
+	if (!shouldEmit("privacy", config)) return null;
+	return {
+		type: "privacy",
+		company: config.company,
+		effectiveDate: config.effectiveDate,
+		jurisdictions: config.jurisdictions,
+		data: config.data ?? EMPTY_DATA,
+		cookies: config.cookies ?? EMPTY_COOKIES,
+		thirdParties: config.thirdParties ?? [],
+		userRights: deriveUserRights(config.jurisdictions),
+		children: config.children,
+		automatedDecisionMaking: config.automatedDecisionMaking,
+		version: config.privacyVersion,
+	};
+}
+
+function buildCookieInput(config: OpenPolicyConfig): CookieInput | null {
+	if (!shouldEmit("cookie", config)) return null;
+	return {
+		type: "cookie",
+		company: config.company,
+		effectiveDate: config.effectiveDate,
+		jurisdictions: config.jurisdictions,
+		cookies: config.cookies ?? EMPTY_COOKIES,
+		thirdParties: config.thirdParties ?? [],
+		trackingTechnologies: config.trackingTechnologies,
+		consentMechanism: config.consentMechanism,
+		version: config.cookieVersion,
+	};
+}
+
 export function expandOpenPolicyConfig(config: OpenPolicyConfig): PolicyInput[] {
 	const inputs: PolicyInput[] = [];
-	if (shouldEmit("privacy", config)) {
-		inputs.push({
-			type: "privacy",
-			company: config.company,
-			effectiveDate: config.effectiveDate,
-			jurisdictions: config.jurisdictions,
-			data: config.data ?? EMPTY_DATA,
-			cookies: config.cookies ?? EMPTY_COOKIES,
-			thirdParties: config.thirdParties ?? [],
-			userRights: deriveUserRights(config.jurisdictions),
-			children: config.children,
-			automatedDecisionMaking: config.automatedDecisionMaking,
-		});
-	}
-	if (shouldEmit("cookie", config)) {
-		inputs.push({
-			type: "cookie",
-			company: config.company,
-			effectiveDate: config.effectiveDate,
-			jurisdictions: config.jurisdictions,
-			cookies: config.cookies ?? EMPTY_COOKIES,
-			thirdParties: config.thirdParties ?? [],
-			trackingTechnologies: config.trackingTechnologies,
-			consentMechanism: config.consentMechanism,
-		});
-	}
+	const privacy = buildPrivacyInput(config);
+	if (privacy) inputs.push(privacy);
+	const cookie = buildCookieInput(config);
+	if (cookie) inputs.push(cookie);
 	return inputs;
+}
+
+export function compilePrivacyPolicy(config: OpenPolicyConfig): Document | null {
+	const input = buildPrivacyInput(config);
+	return input ? compile(input) : null;
+}
+
+export function compileCookiePolicy(config: OpenPolicyConfig): Document | null {
+	const input = buildCookieInput(config);
+	return input ? compile(input) : null;
 }

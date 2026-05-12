@@ -1,7 +1,7 @@
 import {
-	type CookiePolicyConfig,
 	compile,
-	expandOpenPolicyConfig,
+	compileCookiePolicy,
+	type CookiePolicyConfig,
 	isOpenPolicyConfig,
 	type OpenPolicyConfig,
 } from "@openpolicy/core";
@@ -21,11 +21,10 @@ export function CookiePolicy({ config: configProp, components, style }: CookiePo
 	const { config: contextConfig } = useContext(OpenPolicyContext);
 	const config = configProp ?? contextConfig ?? undefined;
 	if (!config) return null;
-	const input = isOpenPolicyConfig(config)
-		? expandOpenPolicyConfig(config).find((i) => i.type === "cookie")
-		: { type: "cookie" as const, ...config };
-	if (!input) return null;
-	const doc = compile(input);
+	const doc = isOpenPolicyConfig(config)
+		? compileCookiePolicy(config)
+		: compile({ type: "cookie", ...config });
+	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
 	return <Root style={style}>{renderDocument(doc, components)}</Root>;
 }

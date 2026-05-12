@@ -3,10 +3,11 @@ import { bold, cell, heading, li, link, p, row, section, table, ul } from "./hel
 import type { DocumentSection, TableRowNode } from "./types";
 
 function buildIntroduction(config: CookiePolicyConfig): DocumentSection {
+	const versionSuffix = config.version ? ` Version: ${config.version}.` : "";
 	return section("cookie-introduction", [
 		heading("Cookie Policy"),
 		p([
-			`This Cookie Policy explains how ${config.company.name} ("we", "us", or "our") uses cookies and similar tracking technologies on our services. Effective Date: ${config.effectiveDate}.`,
+			`This Cookie Policy explains how ${config.company.name} ("we", "us", or "our") uses cookies and similar tracking technologies on our services. Effective Date: ${config.effectiveDate}.${versionSuffix}`,
 		]),
 	]);
 }

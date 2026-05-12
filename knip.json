@@ -4,11 +4,6 @@
 	"ignoreBinaries": ["tsc"],
 	"workspaces": {
 		".": {},
-		"apps/www": {
-			"entry": ["openpolicy.ts", "src/snippets/**", "registry/**"],
-			"ignoreDependencies": ["@iconify-json/simple-icons", "vite"],
-			"ignoreUnresolved": ["@/components/ui/openpolicy/.+"]
-		},
 		"apps/docs": {
 			"entry": ["source.config.ts"]
 		},

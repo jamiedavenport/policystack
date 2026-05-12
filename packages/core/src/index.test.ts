@@ -1,5 +1,12 @@
 import { expect, test } from "vite-plus/test";
-import { expandOpenPolicyConfig, isOpenPolicyConfig, shouldEmit } from "./index";
+import { compile } from "./documents";
+import {
+	compileCookiePolicy,
+	compilePrivacyPolicy,
+	expandOpenPolicyConfig,
+	isOpenPolicyConfig,
+	shouldEmit,
+} from "./index";
 import type { OpenPolicyConfig, PolicyInput } from "./types";
 
 const input: PolicyInput = {
@@ -178,4 +185,71 @@ test("shouldEmit honours explicit policies override", () => {
 	const inputs = expandOpenPolicyConfig(config);
 	expect(inputs).toHaveLength(1);
 	expect(inputs[0]?.type).toBe("privacy");
+});
+
+test("compilePrivacyPolicy returns a privacy Document when privacy should emit", () => {
+	const doc = compilePrivacyPolicy(fullConfig);
+	expect(doc?.type).toBe("document");
+	expect(doc?.policyType).toBe("privacy");
+	expect(doc?.sections.length).toBeGreaterThan(0);
+});
+
+test("compilePrivacyPolicy returns null when policies excludes privacy", () => {
+	expect(compilePrivacyPolicy({ ...fullConfig, policies: ["cookie"] })).toBeNull();
+});
+
+test("compileCookiePolicy returns a cookie Document when cookies are present", () => {
+	const doc = compileCookiePolicy(fullConfig);
+	expect(doc?.type).toBe("document");
+	expect(doc?.policyType).toBe("cookie");
+	expect(doc?.sections.length).toBeGreaterThan(0);
+});
+
+test("compileCookiePolicy returns null when only privacy fields are present", () => {
+	const { cookies: _, ...privacyOnly } = fullConfig;
+	expect(compileCookiePolicy(privacyOnly)).toBeNull();
+});
+
+test("compilePrivacyPolicy matches compile(expand(...).find(privacy))", () => {
+	const expanded = expandOpenPolicyConfig(fullConfig).find((i) => i.type === "privacy");
+	if (!expanded) throw new Error("expected privacy input");
+	expect(compilePrivacyPolicy(fullConfig)).toEqual(compile(expanded));
+});
+
+test("compileCookiePolicy matches compile(expand(...).find(cookie))", () => {
+	const expanded = expandOpenPolicyConfig(fullConfig).find((i) => i.type === "cookie");
+	if (!expanded) throw new Error("expected cookie input");
+	expect(compileCookiePolicy(fullConfig)).toEqual(compile(expanded));
+});
+
+test("compileCookiePolicy intro renders version when cookieVersion is set", () => {
+	const doc = compileCookiePolicy({ ...fullConfig, cookieVersion: "cook12345" });
+	const intro = doc?.sections.find((s) => s.id === "cookie-introduction")!;
+	expect(JSON.stringify(intro)).toContain("Version: cook12345");
+});
+
+test("compileCookiePolicy intro omits version when cookieVersion is unset", () => {
+	const doc = compileCookiePolicy(fullConfig);
+	const intro = doc?.sections.find((s) => s.id === "cookie-introduction")!;
+	expect(JSON.stringify(intro)).not.toContain("Version:");
+});
+
+test("compilePrivacyPolicy intro renders version when privacyVersion is set", () => {
+	const doc = compilePrivacyPolicy({ ...fullConfig, privacyVersion: "priv1234" });
+	const intro = doc?.sections.find((s) => s.id === "introduction")!;
+	expect(JSON.stringify(intro)).toContain("Version: priv1234");
+});
+
+test("expandOpenPolicyConfig threads privacyVersion onto privacy input", () => {
+	const inputs = expandOpenPolicyConfig({ ...fullConfig, privacyVersion: "priv1234" });
+	const privacy = inputs.find((i) => i.type === "privacy");
+	if (privacy?.type !== "privacy") throw new Error("expected privacy input");
+	expect(privacy.version).toBe("priv1234");
+});
+
+test("expandOpenPolicyConfig threads cookieVersion onto cookie input", () => {
+	const inputs = expandOpenPolicyConfig({ ...fullConfig, cookieVersion: "cook1234" });
+	const cookie = inputs.find((i) => i.type === "cookie");
+	if (cookie?.type !== "cookie") throw new Error("expected cookie input");
+	expect(cookie.version).toBe("cook1234");
 });

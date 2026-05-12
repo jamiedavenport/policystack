@@ -150,6 +150,7 @@ export type PrivacyPolicyConfig = {
 	jurisdictions: Jurisdiction[];
 	children?: ChildrenConfig;
 	automatedDecisionMaking?: AutomatedDecisionMaking;
+	version?: string;
 };
 
 // Internal type consumed by section builders via PolicyInput.
@@ -162,6 +163,7 @@ export type CookiePolicyConfig = {
 	trackingTechnologies?: TrackingTechnology[];
 	consentMechanism?: ConsentMechanism;
 	jurisdictions: Jurisdiction[];
+	version?: string;
 };
 
 export type PolicyInput =
@@ -187,6 +189,11 @@ export type OpenPolicyConfig = {
 
 	// Explicit opt-out. Omit to auto-detect based on which fields are present.
 	policies?: PolicyCategory[];
+
+	// Stable per-document version. Omit to have defineConfig() hash the relevant
+	// config slice automatically; provide a string to override (e.g. "v3").
+	privacyVersion?: string;
+	cookieVersion?: string;
 };
 
 export function isOpenPolicyConfig(value: unknown): value is OpenPolicyConfig {

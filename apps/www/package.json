@@ -1,37 +1,4 @@
 {
 	"name": "www",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"dev": "astro dev",
-		"build": "astro build",
-		"preview": "astro preview",
-		"astro": "astro",
-		"registry:build": "shadcn build"
-	},
-	"dependencies": {
-		"@astrojs/sitemap": "^3.7.0",
-		"@astrojs/vercel": "^9.0.4",
-		"@iconify-json/simple-icons": "^1.2.72",
-		"@offstage/browser": "^0.0.1",
-		"@resvg/resvg-js": "^2.6.2",
-		"@tailwindcss/vite": "^4.2.1",
-		"astro": "^5.17.1",
-		"astro-icon": "^1.1.5",
-		"motion": "^12.38.0",
-		"nitro": "^3.0.260311-beta",
-		"resend": "^6.9.4",
-		"satori": "^0.26.0",
-		"sharp": "^0.34.0",
-		"tailwindcss": "^4.2.1"
-	},
-	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/react": "workspace:*",
-		"@openpolicy/renderers": "workspace:*",
-		"@openpolicy/sdk": "workspace:*",
-		"@tailwindcss/typography": "^0.5.19",
-		"@types/react": "^19.0.0",
-		"shadcn": "latest"
-	}
+	"private": true
 }

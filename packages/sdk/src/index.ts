@@ -1,4 +1,5 @@
 import type { CookieContextEntry, DataContextEntry, OpenPolicyConfig } from "@openpolicy/core";
+import { computeCookieVersion, computePrivacyVersion } from "@openpolicy/core";
 import type { ScannedCollectionKeys, ScannedCookieKeys } from "./auto-collected";
 
 export type {
@@ -29,7 +30,14 @@ export type {
 	TrackingTechnology,
 } from "@openpolicy/core";
 
-export { Contractual, ContractPrerequisite, Statutory, Voluntary } from "@openpolicy/core";
+export {
+	computeCookieVersion,
+	computePrivacyVersion,
+	Contractual,
+	ContractPrerequisite,
+	Statutory,
+	Voluntary,
+} from "@openpolicy/core";
 
 export {
 	cookies,
@@ -72,5 +80,10 @@ export function defineConfig<
 		[k: string]: boolean;
 	},
 >(config: OpenPolicyConfigWithGenerics<Collected, CookieUsed>): OpenPolicyConfig {
-	return config as OpenPolicyConfig;
+	const resolved = config as OpenPolicyConfig;
+	return {
+		...resolved,
+		privacyVersion: resolved.privacyVersion ?? computePrivacyVersion(resolved),
+		cookieVersion: resolved.cookieVersion ?? computeCookieVersion(resolved),
+	};
 }

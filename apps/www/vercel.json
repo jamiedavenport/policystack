@@ -1,0 +1,164 @@
+{
+	"framework": null,
+	"buildCommand": null,
+	"installCommand": null,
+	"outputDirectory": null,
+	"redirects": [
+		{
+			"source": "/blog/tanstack",
+			"destination": "https://policystack.dev/blog/tanstack-privacy-policy",
+			"permanent": true
+		},
+		{ "source": "/blog", "destination": "https://policystack.dev/blog", "permanent": true },
+		{ "source": "/privacy", "destination": "https://policystack.dev/privacy", "permanent": true },
+
+		{
+			"source": "/blog/astro",
+			"destination": "https://policystack.dev/blog/astro-cookie-banner",
+			"permanent": false
+		},
+		{
+			"source": "/blog/no-build-astro",
+			"destination": "https://policystack.dev/blog/astro-cookie-banner",
+			"permanent": false
+		},
+		{
+			"source": "/blog/nextjs",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/blog/react",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/blog/sveltekit",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/blog/opencookies",
+			"destination": "https://policystack.dev/opencookies",
+			"permanent": false
+		},
+		{
+			"source": "/blog/headless-privacy-stack",
+			"destination": "https://policystack.dev/",
+			"permanent": false
+		},
+		{ "source": "/blog/code-first", "destination": "https://policystack.dev/", "permanent": false },
+		{
+			"source": "/blog/three-levels",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/blog/beyond-the-privacy-policy",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/blog/auto-collect",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/blog/better-auth",
+			"destination": "https://policystack.dev/opencookies",
+			"permanent": false
+		},
+		{
+			"source": "/blog/shadcn-registry",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+
+		{
+			"source": "/legal-notice",
+			"destination": "https://policystack.dev/privacy",
+			"permanent": false
+		},
+		{
+			"source": "/examples",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+
+		{
+			"source": "/framework/react",
+			"destination": "https://policystack.dev/docs/openpolicy/react",
+			"permanent": false
+		},
+		{
+			"source": "/framework/svelte",
+			"destination": "https://policystack.dev/docs/openpolicy/svelte",
+			"permanent": false
+		},
+		{
+			"source": "/framework/vue",
+			"destination": "https://policystack.dev/docs/openpolicy/vue",
+			"permanent": false
+		},
+		{
+			"source": "/framework/astro",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/framework/nextjs",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/framework/nuxt",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/framework/remix",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/framework/tanstack",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+
+		{
+			"source": "/compare/lawyers",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/compare/templates",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/compare/termly",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+		{
+			"source": "/compare/iubenda",
+			"destination": "https://policystack.dev/openpolicy",
+			"permanent": false
+		},
+
+		{
+			"source": "/blog/tags/:tag*",
+			"destination": "https://policystack.dev/blog",
+			"permanent": false
+		},
+
+		{ "source": "/", "destination": "https://policystack.dev/", "permanent": true }
+	],
+	"headers": [
+		{
+			"source": "/(.*)",
+			"headers": [{ "key": "Cache-Control", "value": "public, max-age=300" }]
+		}
+	]
+}

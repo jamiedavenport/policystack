@@ -36,8 +36,65 @@ const fixture: OpenPolicyConfig = {
 	thirdParties: [],
 };
 
-test("defineConfig returns config unchanged", () => {
-	expect(defineConfig(fixture)).toBe(fixture);
+test("defineConfig preserves all input fields", () => {
+	const result = defineConfig(fixture);
+	expect(result.company).toBe(fixture.company);
+	expect(result.effectiveDate).toBe(fixture.effectiveDate);
+	expect(result.jurisdictions).toEqual(fixture.jurisdictions);
+	expect(result.data).toBe(fixture.data);
+	expect(result.cookies).toBe(fixture.cookies);
+});
+
+test("defineConfig populates privacyVersion and cookieVersion", () => {
+	const result = defineConfig(fixture);
+	expect(result.privacyVersion).toMatch(/^[0-9a-f]{8}$/);
+	expect(result.cookieVersion).toMatch(/^[0-9a-f]{8}$/);
+});
+
+test("defineConfig omits privacyVersion when no privacy fields present", () => {
+	const result = defineConfig({
+		company: fixture.company,
+		effectiveDate: "2026-01-01",
+		jurisdictions: ["ca"],
+		cookies: fixture.cookies,
+	});
+	expect(result.privacyVersion).toBeUndefined();
+	expect(result.cookieVersion).toMatch(/^[0-9a-f]{8}$/);
+});
+
+test("defineConfig omits cookieVersion when cookies field absent", () => {
+	const result = defineConfig({
+		company: fixture.company,
+		effectiveDate: "2026-01-01",
+		jurisdictions: ["ca"],
+		data: fixture.data,
+	});
+	expect(result.cookieVersion).toBeUndefined();
+	expect(result.privacyVersion).toMatch(/^[0-9a-f]{8}$/);
+});
+
+test("defineConfig respects manual privacyVersion override", () => {
+	const result = defineConfig({ ...fixture, privacyVersion: "v3" });
+	expect(result.privacyVersion).toBe("v3");
+});
+
+test("defineConfig respects manual cookieVersion override", () => {
+	const result = defineConfig({ ...fixture, cookieVersion: "cookie-v3" });
+	expect(result.cookieVersion).toBe("cookie-v3");
+});
+
+test("defineConfig versions are stable across key reordering", () => {
+	const a = defineConfig(fixture);
+	const b = defineConfig({
+		jurisdictions: fixture.jurisdictions,
+		cookies: fixture.cookies,
+		thirdParties: fixture.thirdParties,
+		data: fixture.data,
+		effectiveDate: fixture.effectiveDate,
+		company: fixture.company,
+	});
+	expect(b.privacyVersion).toBe(a.privacyVersion);
+	expect(b.cookieVersion).toBe(a.cookieVersion);
 });
 
 test("defineConfig rejects data context missing entries for every collected category", () => {

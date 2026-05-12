@@ -1,6 +1,6 @@
 import {
 	compile,
-	expandOpenPolicyConfig,
+	compilePrivacyPolicy,
 	isOpenPolicyConfig,
 	type OpenPolicyConfig,
 	type PrivacyPolicyConfig,
@@ -21,11 +21,10 @@ export function PrivacyPolicy({ config: configProp, components, style }: Privacy
 	const { config: contextConfig } = useContext(OpenPolicyContext);
 	const config = configProp ?? contextConfig ?? undefined;
 	if (!config) return null;
-	const input = isOpenPolicyConfig(config)
-		? expandOpenPolicyConfig(config).find((i) => i.type === "privacy")
-		: { type: "privacy" as const, ...config };
-	if (!input) return null;
-	const doc = compile(input);
+	const doc = isOpenPolicyConfig(config)
+		? compilePrivacyPolicy(config)
+		: compile({ type: "privacy", ...config });
+	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
 	return <Root style={style}>{renderDocument(doc, components)}</Root>;
 }

@@ -30,10 +30,11 @@ const RIGHTS_LABELS: Record<string, string> = {
 };
 
 function buildIntroduction(config: PrivacyPolicyConfig): DocumentSection {
+	const versionSuffix = config.version ? ` Version: ${config.version}.` : "";
 	return section("introduction", [
 		heading("Introduction"),
 		p([
-			`This Privacy Policy describes how ${config.company.name} ("we", "us", or "our") collects, uses, and shares information about you when you use our services. Effective Date: ${config.effectiveDate}.`,
+			`This Privacy Policy describes how ${config.company.name} ("we", "us", or "our") collects, uses, and shares information about you when you use our services. Effective Date: ${config.effectiveDate}.${versionSuffix}`,
 		]),
 		p([
 			`If you have questions about this policy, please contact us at ${config.company.contact.email}.`,

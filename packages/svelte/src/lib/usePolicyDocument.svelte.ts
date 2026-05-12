@@ -1,8 +1,9 @@
 import {
 	compile,
+	compileCookiePolicy,
+	compilePrivacyPolicy,
 	type CookiePolicyConfig,
 	type Document,
-	expandOpenPolicyConfig,
 	isOpenPolicyConfig,
 	type OpenPolicyConfig,
 	type PolicyType,
@@ -16,8 +17,7 @@ export function compileDocument(type: PolicyType, config: ConfigInput): Document
 	if (!config) return null;
 
 	if (isOpenPolicyConfig(config)) {
-		const input = expandOpenPolicyConfig(config).find((i) => i.type === type);
-		return input ? compile(input) : null;
+		return type === "privacy" ? compilePrivacyPolicy(config) : compileCookiePolicy(config);
 	}
 
 	return compile({ type, ...config } as Parameters<typeof compile>[0]);

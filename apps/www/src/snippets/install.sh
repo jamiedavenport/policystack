@@ -1,1 +1,0 @@
-bunx @openpolicy/cli@latest init
