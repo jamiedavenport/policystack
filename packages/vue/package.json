@@ -1,6 +1,6 @@
 {
 	"name": "@openpolicy/vue",
-	"version": "0.0.32",
+	"version": "0.0.33",
 	"description": "Vue components for OpenPolicy",
 	"license": "Apache-2.0",
 	"repository": {
