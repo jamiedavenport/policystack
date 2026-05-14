@@ -1,5 +1,14 @@
 # @openpolicy/vite
 
+## 0.0.34
+
+### Patch Changes
+
+- Updated dependencies [6fd9262]
+- Updated dependencies [6fd9262]
+- Updated dependencies [6fd9262]
+  - @openpolicy/core@0.0.34
+
 ## 0.0.33
 
 ### Patch Changes

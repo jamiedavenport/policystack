@@ -1,6 +1,6 @@
 {
 	"name": "@openpolicy/vite",
-	"version": "0.0.33",
+	"version": "0.0.34",
 	"description": "Vite plugin that scans source files for @openpolicy/sdk collecting()/thirdParty() calls and populates the auto-collected registry at build time",
 	"keywords": [
 		"openpolicy",
