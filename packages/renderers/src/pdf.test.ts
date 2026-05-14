@@ -5,6 +5,7 @@ import { renderPDF } from "./pdf";
 const input: PolicyInput = {
 	type: "privacy",
 	effectiveDate: "2026-01-01",
+	locale: "en",
 	company: {
 		name: "Acme Inc.",
 		legalName: "Acme Corporation",

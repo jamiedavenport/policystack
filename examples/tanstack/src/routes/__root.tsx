@@ -84,6 +84,30 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 							>
 								shadcn
 							</Link>
+							<Link
+								to="/fr"
+								className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium"
+							>
+								FR
+							</Link>
+							<Link
+								to="/de"
+								className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium"
+							>
+								DE
+							</Link>
+							<Link
+								to="/nl"
+								className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium"
+							>
+								NL
+							</Link>
+							<Link
+								to="/es"
+								className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium"
+							>
+								ES
+							</Link>
 						</nav>
 
 						<div className="flex items-center gap-3">

@@ -46,6 +46,14 @@ const demos = [
 		code: "const { dataCollected, thirdParties, cookies } = openpolicy",
 		badge: "New",
 	},
+	{
+		to: "/fr" as const,
+		label: "Localized policies",
+		description:
+			"Render the same config in French, German, Dutch, or Spanish via a locale prop on PrivacyPolicy/CookiePolicy. OpenPolicy translates the strings it emits; user-supplied content stays in whichever language you wrote it. Switch via the nav: FR / DE / NL / ES.",
+		code: '<PrivacyPolicy locale="fr" />',
+		badge: "i18n",
+	},
 ];
 
 function RouteComponent() {

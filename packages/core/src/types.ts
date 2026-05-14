@@ -4,6 +4,12 @@ export type CompileOptions = { formats: OutputFormat[] };
 
 export type PolicyCategory = "privacy" | "cookie";
 
+// Languages OpenPolicy knows how to emit. User-supplied strings (company name,
+// purposes, retention text, etc.) pass through untouched in whatever language
+// the caller wrote them — this union only governs the strings OpenPolicy itself
+// emits (headings, boilerplate, lookup-table labels).
+export type Locale = "en" | "fr" | "de" | "nl" | "es";
+
 export type Jurisdiction =
 	| "eu" //    European Union — GDPR
 	| "uk" //    United Kingdom — UK-GDPR + Data Protection Act 2018
@@ -142,6 +148,7 @@ export type ConsentMechanism = {
 // Produced by expandOpenPolicyConfig() — not part of the public API.
 export type PrivacyPolicyConfig = {
 	effectiveDate: EffectiveDate;
+	locale: Locale;
 	company: CompanyConfig;
 	data: DataConfig;
 	cookies: CookiePolicyCookies;
@@ -157,6 +164,7 @@ export type PrivacyPolicyConfig = {
 // Produced by expandOpenPolicyConfig() — not part of the public API.
 export type CookiePolicyConfig = {
 	effectiveDate: EffectiveDate;
+	locale: Locale;
 	company: CompanyConfig;
 	cookies: CookiePolicyCookies;
 	thirdParties: ThirdParty[];
@@ -175,6 +183,9 @@ export type OpenPolicyConfig = {
 	company: CompanyConfig;
 	effectiveDate: EffectiveDate;
 	jurisdictions: Jurisdiction[];
+
+	// Language for OpenPolicy-emitted strings. Defaults to "en" when omitted.
+	locale?: Locale;
 
 	// Data handling — feeds the privacy policy.
 	data?: DataConfig;

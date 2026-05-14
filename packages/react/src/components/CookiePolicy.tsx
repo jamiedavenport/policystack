@@ -3,6 +3,7 @@ import {
 	compileCookiePolicy,
 	type CookiePolicyConfig,
 	isOpenPolicyConfig,
+	type Locale,
 	type OpenPolicyConfig,
 } from "@openpolicy/core";
 import { useContext } from "react";
@@ -13,14 +14,16 @@ import { DefaultRoot } from "./defaults";
 
 type CookiePolicyProps = {
 	config?: OpenPolicyConfig | CookiePolicyConfig;
+	locale?: Locale;
 	components?: PolicyComponents;
 	style?: unknown;
 };
 
-export function CookiePolicy({ config: configProp, components, style }: CookiePolicyProps) {
+export function CookiePolicy({ config: configProp, locale, components, style }: CookiePolicyProps) {
 	const { config: contextConfig } = useContext(OpenPolicyContext);
-	const config = configProp ?? contextConfig ?? undefined;
-	if (!config) return null;
+	const baseConfig = configProp ?? contextConfig ?? undefined;
+	if (!baseConfig) return null;
+	const config = locale ? { ...baseConfig, locale } : baseConfig;
 	const doc = isOpenPolicyConfig(config)
 		? compileCookiePolicy(config)
 		: compile({ type: "cookie", ...config });

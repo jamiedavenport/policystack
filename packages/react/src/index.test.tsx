@@ -15,6 +15,7 @@ const company = {
 
 const privacyConfig: PrivacyPolicyConfig = {
 	effectiveDate: "2026-01-01",
+	locale: "en",
 	company,
 	data: {
 		collected: { account: ["email", "name"] },
@@ -60,6 +61,12 @@ test("PrivacyPolicy renders default DOM tags when no components are passed", () 
 	expect(html).toContain("data-op-policy");
 	expect(html).toMatch(/<section\b/);
 	expect(html).toMatch(/<h\d\b/);
+});
+
+test("PrivacyPolicy renders French when locale prop overrides config.locale", () => {
+	const html = renderToStaticMarkup(<PrivacyPolicy config={privacyConfig} locale="fr" />);
+	expect(html).toContain("La présente politique de confidentialité");
+	expect(html).not.toContain("This Privacy Policy describes how");
 });
 
 const Slot =

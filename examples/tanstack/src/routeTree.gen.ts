@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TailwindRouteImport } from './routes/tailwind'
 import { Route as ShadcnRouteImport } from './routes/shadcn'
 import { Route as OnboardingWizardRouteImport } from './routes/onboarding-wizard'
+import { Route as NlRouteImport } from './routes/nl'
+import { Route as FrRouteImport } from './routes/fr'
+import { Route as EsRouteImport } from './routes/es'
+import { Route as DeRouteImport } from './routes/de'
 import { Route as CssVarsRouteImport } from './routes/css-vars'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +34,26 @@ const OnboardingWizardRoute = OnboardingWizardRouteImport.update({
   path: '/onboarding-wizard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NlRoute = NlRouteImport.update({
+  id: '/nl',
+  path: '/nl',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrRoute = FrRouteImport.update({
+  id: '/fr',
+  path: '/fr',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EsRoute = EsRouteImport.update({
+  id: '/es',
+  path: '/es',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeRoute = DeRouteImport.update({
+  id: '/de',
+  path: '/de',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CssVarsRoute = CssVarsRouteImport.update({
   id: '/css-vars',
   path: '/css-vars',
@@ -44,6 +68,10 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/css-vars': typeof CssVarsRoute
+  '/de': typeof DeRoute
+  '/es': typeof EsRoute
+  '/fr': typeof FrRoute
+  '/nl': typeof NlRoute
   '/onboarding-wizard': typeof OnboardingWizardRoute
   '/shadcn': typeof ShadcnRoute
   '/tailwind': typeof TailwindRoute
@@ -51,6 +79,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/css-vars': typeof CssVarsRoute
+  '/de': typeof DeRoute
+  '/es': typeof EsRoute
+  '/fr': typeof FrRoute
+  '/nl': typeof NlRoute
   '/onboarding-wizard': typeof OnboardingWizardRoute
   '/shadcn': typeof ShadcnRoute
   '/tailwind': typeof TailwindRoute
@@ -59,19 +91,45 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/css-vars': typeof CssVarsRoute
+  '/de': typeof DeRoute
+  '/es': typeof EsRoute
+  '/fr': typeof FrRoute
+  '/nl': typeof NlRoute
   '/onboarding-wizard': typeof OnboardingWizardRoute
   '/shadcn': typeof ShadcnRoute
   '/tailwind': typeof TailwindRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/css-vars' | '/onboarding-wizard' | '/shadcn' | '/tailwind'
+  fullPaths:
+    | '/'
+    | '/css-vars'
+    | '/de'
+    | '/es'
+    | '/fr'
+    | '/nl'
+    | '/onboarding-wizard'
+    | '/shadcn'
+    | '/tailwind'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/css-vars' | '/onboarding-wizard' | '/shadcn' | '/tailwind'
+  to:
+    | '/'
+    | '/css-vars'
+    | '/de'
+    | '/es'
+    | '/fr'
+    | '/nl'
+    | '/onboarding-wizard'
+    | '/shadcn'
+    | '/tailwind'
   id:
     | '__root__'
     | '/'
     | '/css-vars'
+    | '/de'
+    | '/es'
+    | '/fr'
+    | '/nl'
     | '/onboarding-wizard'
     | '/shadcn'
     | '/tailwind'
@@ -80,6 +138,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CssVarsRoute: typeof CssVarsRoute
+  DeRoute: typeof DeRoute
+  EsRoute: typeof EsRoute
+  FrRoute: typeof FrRoute
+  NlRoute: typeof NlRoute
   OnboardingWizardRoute: typeof OnboardingWizardRoute
   ShadcnRoute: typeof ShadcnRoute
   TailwindRoute: typeof TailwindRoute
@@ -108,6 +170,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingWizardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nl': {
+      id: '/nl'
+      path: '/nl'
+      fullPath: '/nl'
+      preLoaderRoute: typeof NlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fr': {
+      id: '/fr'
+      path: '/fr'
+      fullPath: '/fr'
+      preLoaderRoute: typeof FrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/es': {
+      id: '/es'
+      path: '/es'
+      fullPath: '/es'
+      preLoaderRoute: typeof EsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/de': {
+      id: '/de'
+      path: '/de'
+      fullPath: '/de'
+      preLoaderRoute: typeof DeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/css-vars': {
       id: '/css-vars'
       path: '/css-vars'
@@ -128,6 +218,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CssVarsRoute: CssVarsRoute,
+  DeRoute: DeRoute,
+  EsRoute: EsRoute,
+  FrRoute: FrRoute,
+  NlRoute: NlRoute,
   OnboardingWizardRoute: OnboardingWizardRoute,
   ShadcnRoute: ShadcnRoute,
   TailwindRoute: TailwindRoute,

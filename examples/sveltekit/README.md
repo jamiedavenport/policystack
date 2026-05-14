@@ -14,14 +14,15 @@ A minimal SvelteKit app showing how to render OpenPolicy privacy and cookie poli
 ```
 openpolicy.ts         ← defineConfig() — unified policy definition (privacy, cookie)
 src/
-  lib/policies/       ← pre-rendered HTML (privacy-policy.html, cookie-policy.html)
   routes/
     +page.svelte      ← home page with links to policy pages
     privacy/
-      +page.svelte    ← renders privacy-policy.html
+      +page.svelte    ← <OpenPolicy {config}><PrivacyPolicy /></OpenPolicy>
     cookie/
-      +page.svelte    ← renders cookie-policy.html
+      +page.svelte    ← <OpenPolicy {config}><CookiePolicy /></OpenPolicy>
 ```
+
+The policy is compiled at runtime by `@openpolicy/svelte` and rendered into the Svelte component tree — there are no pre-rendered HTML files on disk.
 
 ## Running locally
 

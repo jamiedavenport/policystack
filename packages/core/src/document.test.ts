@@ -5,6 +5,7 @@ import type { PrivacyPolicyConfig } from "./types";
 
 const minimalPrivacyConfig: PrivacyPolicyConfig = {
 	effectiveDate: "2026-01-01",
+	locale: "en",
 	company: {
 		name: "Acme Inc.",
 		legalName: "Acme Corporation",
