@@ -46,6 +46,14 @@ const demos = [
 		code: "const { dataCollected, thirdParties, cookies } = openpolicy",
 		badge: "New",
 	},
+	{
+		to: "/fr" as const,
+		label: "Français",
+		description:
+			'Same defineConfig() call, but with locale: "fr". OpenPolicy translates the strings it emits (headings, boilerplate, GDPR/CCPA disclosures); user-supplied content stays in whichever language you wrote it.',
+		code: 'defineConfig({ locale: "fr", ... })',
+		badge: "i18n",
+	},
 ];
 
 function RouteComponent() {

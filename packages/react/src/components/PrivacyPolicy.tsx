@@ -2,6 +2,7 @@ import {
 	compile,
 	compilePrivacyPolicy,
 	isOpenPolicyConfig,
+	type Locale,
 	type OpenPolicyConfig,
 	type PrivacyPolicyConfig,
 } from "@openpolicy/core";
@@ -13,14 +14,21 @@ import { DefaultRoot } from "./defaults";
 
 type PrivacyPolicyProps = {
 	config?: OpenPolicyConfig | PrivacyPolicyConfig;
+	locale?: Locale;
 	components?: PolicyComponents;
 	style?: unknown;
 };
 
-export function PrivacyPolicy({ config: configProp, components, style }: PrivacyPolicyProps) {
+export function PrivacyPolicy({
+	config: configProp,
+	locale,
+	components,
+	style,
+}: PrivacyPolicyProps) {
 	const { config: contextConfig } = useContext(OpenPolicyContext);
-	const config = configProp ?? contextConfig ?? undefined;
-	if (!config) return null;
+	const baseConfig = configProp ?? contextConfig ?? undefined;
+	if (!baseConfig) return null;
+	const config = locale ? { ...baseConfig, locale } : baseConfig;
 	const doc = isOpenPolicyConfig(config)
 		? compilePrivacyPolicy(config)
 		: compile({ type: "privacy", ...config });

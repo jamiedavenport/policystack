@@ -63,6 +63,12 @@ test("PrivacyPolicy renders default DOM tags when no components are passed", () 
 	expect(html).toMatch(/<h\d\b/);
 });
 
+test("PrivacyPolicy renders French when locale prop overrides config.locale", () => {
+	const html = renderToStaticMarkup(<PrivacyPolicy config={privacyConfig} locale="fr" />);
+	expect(html).toContain("La présente politique de confidentialité");
+	expect(html).not.toContain("This Privacy Policy describes how");
+});
+
 const Slot =
 	(name: string) =>
 	({ children }: { children?: ReactNode }) => <data data-stub={name}>{children}</data>;

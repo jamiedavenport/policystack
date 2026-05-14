@@ -84,6 +84,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 							>
 								shadcn
 							</Link>
+							<Link
+								to="/fr"
+								className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors [&.active]:text-foreground [&.active]:font-medium"
+							>
+								Français
+							</Link>
 						</nav>
 
 						<div className="flex items-center gap-3">

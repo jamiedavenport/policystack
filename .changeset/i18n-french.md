@@ -6,8 +6,8 @@ Add French (`"fr"`) locale support. Pass `locale: "fr"` to `defineConfig()` to e
 
 ```ts
 defineConfig({
-  // ...
-  locale: "fr",
+	// ...
+	locale: "fr",
 });
 ```
 

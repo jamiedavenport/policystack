@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TailwindRouteImport } from './routes/tailwind'
 import { Route as ShadcnRouteImport } from './routes/shadcn'
 import { Route as OnboardingWizardRouteImport } from './routes/onboarding-wizard'
+import { Route as FrRouteImport } from './routes/fr'
 import { Route as CssVarsRouteImport } from './routes/css-vars'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const OnboardingWizardRoute = OnboardingWizardRouteImport.update({
   path: '/onboarding-wizard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FrRoute = FrRouteImport.update({
+  id: '/fr',
+  path: '/fr',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CssVarsRoute = CssVarsRouteImport.update({
   id: '/css-vars',
   path: '/css-vars',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/css-vars': typeof CssVarsRoute
+  '/fr': typeof FrRoute
   '/onboarding-wizard': typeof OnboardingWizardRoute
   '/shadcn': typeof ShadcnRoute
   '/tailwind': typeof TailwindRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/css-vars': typeof CssVarsRoute
+  '/fr': typeof FrRoute
   '/onboarding-wizard': typeof OnboardingWizardRoute
   '/shadcn': typeof ShadcnRoute
   '/tailwind': typeof TailwindRoute
@@ -59,19 +67,27 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/css-vars': typeof CssVarsRoute
+  '/fr': typeof FrRoute
   '/onboarding-wizard': typeof OnboardingWizardRoute
   '/shadcn': typeof ShadcnRoute
   '/tailwind': typeof TailwindRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/css-vars' | '/onboarding-wizard' | '/shadcn' | '/tailwind'
+  fullPaths:
+    | '/'
+    | '/css-vars'
+    | '/fr'
+    | '/onboarding-wizard'
+    | '/shadcn'
+    | '/tailwind'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/css-vars' | '/onboarding-wizard' | '/shadcn' | '/tailwind'
+  to: '/' | '/css-vars' | '/fr' | '/onboarding-wizard' | '/shadcn' | '/tailwind'
   id:
     | '__root__'
     | '/'
     | '/css-vars'
+    | '/fr'
     | '/onboarding-wizard'
     | '/shadcn'
     | '/tailwind'
@@ -80,6 +96,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CssVarsRoute: typeof CssVarsRoute
+  FrRoute: typeof FrRoute
   OnboardingWizardRoute: typeof OnboardingWizardRoute
   ShadcnRoute: typeof ShadcnRoute
   TailwindRoute: typeof TailwindRoute
@@ -108,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingWizardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fr': {
+      id: '/fr'
+      path: '/fr'
+      fullPath: '/fr'
+      preLoaderRoute: typeof FrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/css-vars': {
       id: '/css-vars'
       path: '/css-vars'
@@ -128,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CssVarsRoute: CssVarsRoute,
+  FrRoute: FrRoute,
   OnboardingWizardRoute: OnboardingWizardRoute,
   ShadcnRoute: ShadcnRoute,
   TailwindRoute: TailwindRoute,
