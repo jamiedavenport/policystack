@@ -22,6 +22,7 @@ export type {
 	EuRepresentative,
 	Jurisdiction,
 	LegalBasis,
+	Locale,
 	OpenPolicyConfig,
 	PolicyCategory,
 	ProvisionBasis,

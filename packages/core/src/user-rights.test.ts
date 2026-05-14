@@ -58,6 +58,7 @@ test("buildUserRights: privacy policy omits 'Your Rights' section when derivatio
 	const input: PolicyInput = {
 		type: "privacy",
 		effectiveDate: "2026-01-01",
+		locale: "en",
 		company: {
 			name: "Acme Inc.",
 			legalName: "Acme Corporation",

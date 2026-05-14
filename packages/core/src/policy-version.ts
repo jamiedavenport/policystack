@@ -21,10 +21,12 @@ function fnv1a32(str: string): string {
 // Excluded from the hash:
 // - The version fields themselves (chicken-and-egg).
 // - `policies`: explicit opt-in/out for which documents render — orthogonal to per-document content.
+// `locale` is included so same-config-different-locale produces distinct versions.
 const PRIVACY_HASH_FIELDS = [
 	"company",
 	"effectiveDate",
 	"jurisdictions",
+	"locale",
 	"data",
 	"children",
 	"thirdParties",
@@ -36,6 +38,7 @@ const COOKIE_HASH_FIELDS = [
 	"company",
 	"effectiveDate",
 	"jurisdictions",
+	"locale",
 	"cookies",
 	"thirdParties",
 	"trackingTechnologies",

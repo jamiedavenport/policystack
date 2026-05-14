@@ -1,3 +1,4 @@
+import { isLocale, LOCALES } from "./i18n";
 import { shouldEmit } from "./index";
 import { isJurisdiction, JURISDICTIONS } from "./jurisdictions";
 import type { OpenPolicyConfig, PolicyCategory, ValidationIssue } from "./types";
@@ -51,6 +52,14 @@ export function validateOpenPolicyConfig(config: OpenPolicyConfig): ValidationIs
 				});
 			}
 		}
+	}
+
+	if (config.locale !== undefined && !isLocale(config.locale)) {
+		issues.push({
+			code: "locale-unknown",
+			level: "error",
+			message: `Unknown locale "${config.locale}" — valid codes: ${LOCALES.join(", ")}`,
+		});
 	}
 
 	const wantPrivacy = shouldEmit("privacy", config);

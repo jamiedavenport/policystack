@@ -51,10 +51,9 @@ This is a pnpm monorepo with `apps/*`, `packages/*`, `tooling/*`, and `examples/
 
 - **Policy types**: `"privacy"` (PrivacyPolicyConfig) and `"cookie"` (CookiePolicyConfig) — `PolicyInput` is a discriminated union
 - **Policy definition**: TypeScript object passed to `defineConfig()` describing the policy content
-- **Compilation**: Policy definitions compile to HTML, Markdown, or PDF via `@openpolicy/core` + `@openpolicy/renderers` (e.g. from React/Vue components at runtime, or inline in Astro frontmatter). The Vite plugin scans source at build time to auto-populate `dataCollected` / `thirdParties`. The CLI (`@openpolicy/cli`) handles first-run setup — it installs packages and prints a setup prompt for coding agents; it no longer generates policy files.
+- **Compilation**: Policy definitions compile to an in-memory document tree via `@openpolicy/core`, then render to Markdown, HTML, or PDF **strings** via `@openpolicy/renderers`. Output is never written to disk — framework integrations (`@openpolicy/react`, `@openpolicy/vue`, `@openpolicy/svelte`) consume the document tree directly and render into the host app's component tree at runtime. The Vite plugin scans source at build time to auto-populate `dataCollected` / `thirdParties`. The CLI (`@openpolicy/cli`) handles first-run setup — it installs packages and prints a setup prompt for coding agents.
 - **Section builders**: Each section is `(config) => PolicySection | null`; `null` omits the section
-- **Output filenames**: `privacy-policy.{ext}` for privacy, `cookie-policy.{ext}` for cookie
-- **Formats**: `markdown` | `html` | `pdf` (implemented); `jsx` throws "not yet implemented"
+- **Formats**: `markdown` | `html` | `pdf` (implemented); `jsx` throws "not yet implemented". Renderers return strings (or a `Buffer` for `pdf`); callers decide what to do with them.
 - **Compliance targets**: GDPR, CCPA, and multi-jurisdiction templates
 - **`llms.txt`**: AI-readable reference for auto-generating policy configs from existing codebases
 

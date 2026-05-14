@@ -15,6 +15,7 @@ const company = {
 
 const privacyConfig: PrivacyPolicyConfig = {
 	effectiveDate: "2026-01-01",
+	locale: "en",
 	company,
 	data: {
 		collected: { account: ["email", "name"] },

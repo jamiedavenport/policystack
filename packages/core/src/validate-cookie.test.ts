@@ -4,6 +4,7 @@ import { validateCookiePolicy } from "./validate-cookie";
 
 const validConfig: CookiePolicyConfig = {
 	effectiveDate: "2026-01-01",
+	locale: "en",
 	company: {
 		name: "Acme",
 		legalName: "Acme Inc.",
