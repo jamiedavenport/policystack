@@ -7,13 +7,6 @@ import {
 	type ValidationIssue,
 } from "@openpolicy/core";
 import { bundleRequire } from "bundle-require";
-import type { Plugin as EsbuildPlugin } from "esbuild";
-import {
-	AUTO_COLLECTED_SPECIFIER,
-	renderAutoCollectedSource,
-	type Scanned,
-	SDK_PATH_PATTERN,
-} from "./scanned";
 
 export type ValidatedConfig = {
 	config: OpenPolicyConfig | null;
@@ -22,36 +15,14 @@ export type ValidatedConfig = {
 };
 
 /**
- * Esbuild plugin that intercepts `@openpolicy/sdk`'s internal `./auto-collected`
- * import and serves the live scanned values. Mirrors the Vite plugin's
- * `resolveId`/`load` pair so validation sees the same merged config the
- * consumer's bundle does.
- */
-function autoCollectedShimPlugin(scanned: Scanned): EsbuildPlugin {
-	return {
-		name: "openpolicy-auto-collected-shim",
-		setup(build) {
-			build.onResolve({ filter: AUTO_COLLECTED_SPECIFIER }, (args) => {
-				if (!args.importer || !SDK_PATH_PATTERN.test(args.importer)) return null;
-				return {
-					path: args.path,
-					namespace: "openpolicy-virtual",
-				};
-			});
-			build.onLoad({ filter: /.*/, namespace: "openpolicy-virtual" }, () => ({
-				contents: renderAutoCollectedSource(scanned),
-				loader: "js",
-			}));
-		},
-	};
-}
-
-/**
- * Loads the user's `openpolicy.ts` via bundle-require with the scanned values
- * shimmed into `@openpolicy/sdk`'s sentinels, then runs every validator
- * exported from `@openpolicy/core` against the resolved config. Issues are
- * deduped by `code + message` because the SDK-shape validator overlaps with
- * the post-expansion privacy/cookie validators on required-field checks.
+ * Loads the user's `openpolicy.ts` via bundle-require, then runs every
+ * validator exported from `@openpolicy/core` against the resolved config.
+ * The config imports its scanned values from the on-disk `./openpolicy.gen`
+ * module, so bundle-require resolves them as ordinary relative source — no
+ * interception shim is needed. The caller must have written `openpolicy.gen.ts`
+ * (via `writeGenModule`) before calling this. Issues are deduped by
+ * `code + message` because the SDK-shape validator overlaps with the
+ * post-expansion privacy/cookie validators on required-field checks.
  *
  * Bundle-require errors (TS syntax errors, missing imports, runtime throws in
  * the user's config module) are surfaced as `loadError` rather than thrown so
@@ -60,18 +31,18 @@ function autoCollectedShimPlugin(scanned: Scanned): EsbuildPlugin {
  */
 export async function loadAndValidateConfig(args: {
 	configFile: string;
-	scanned: Scanned;
 }): Promise<ValidatedConfig> {
 	let mod: { default?: OpenPolicyConfig };
 	try {
 		const result = await bundleRequire({
 			filepath: args.configFile,
-			// Walk into `@openpolicy/sdk` (and its bundled `@openpolicy/core`)
-			// so esbuild sees the SDK's internal `./auto-collected.js` import
-			// and the shim plugin can intercept it. Without this override
-			// bundle-require externalises every non-relative specifier and
-			// our shim never fires — Node would resolve `./auto-collected.js`
-			// to the SDK's empty fallback at runtime.
+			// Inline `@openpolicy/*` into the bundled config instead of
+			// externalising it. The config evaluates `defineConfig()` and the
+			// SDK's basis/provision helpers, so the SDK must be resolvable;
+			// bundle-require writes its output next to the config, and the
+			// SDK is a workspace package that isn't present in every ambient
+			// `node_modules` (pnpm doesn't hoist it to the workspace root), so
+			// an externalised import would fail to resolve at runtime.
 			notExternal: [/^@openpolicy\//],
 			esbuildOptions: {
 				platform: "node",
@@ -80,7 +51,6 @@ export async function loadAndValidateConfig(args: {
 				// report. Otherwise every config syntax error produces noisy
 				// output even when the caller wants to suppress it.
 				logLevel: "silent",
-				plugins: [autoCollectedShimPlugin(args.scanned)],
 			},
 		});
 		mod = result.mod as { default?: OpenPolicyConfig };

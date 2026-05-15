@@ -40,13 +40,7 @@ export {
 	Voluntary,
 } from "@openpolicy/core";
 
-export {
-	cookies,
-	dataCollected,
-	type ScannedCollectionKeys,
-	type ScannedCookieKeys,
-	thirdParties,
-} from "./auto-collected";
+export type { ScannedCollectionKeys, ScannedCookieKeys } from "./auto-collected";
 export { collecting, Ignore } from "./collecting";
 export { Compliance } from "./compliance";
 export { DataCategories, LegalBases, Retention } from "./data";
