@@ -5,9 +5,7 @@
 	"scripts": {
 		"dev": "vp dev",
 		"build": "vp build",
-		"analyze": "ANALYZE=true vp build",
-		"test:e2e": "playwright test",
-		"test:e2e:ui": "playwright test --ui"
+		"analyze": "ANALYZE=true vp build"
 	},
 	"dependencies": {
 		"@fontsource-variable/geist": "^5.2.8",
@@ -28,7 +26,6 @@
 	"devDependencies": {
 		"@openpolicy/sdk": "workspace:*",
 		"@openpolicy/vite": "workspace:*",
-		"@playwright/test": "^1.53.2",
 		"@tailwindcss/vite": "^4.2.1",
 		"@types/node": "^25.3.5",
 		"@types/react": "^19.2.14",

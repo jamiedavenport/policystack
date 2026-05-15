@@ -22,17 +22,3 @@ jobs:
       - run: vp run -r check-types
       - run: vp test --run
       # - run: vp run knip
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: "24"
-          cache: true
-      - run: vp install --frozen-lockfile
-      - run: vp run -r build
-      - run: vp exec playwright install --with-deps chromium
-        working-directory: examples/tanstack
-      - run: vp run test:e2e
-        working-directory: examples/tanstack

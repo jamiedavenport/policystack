@@ -6,7 +6,7 @@ export default defineConfig({
 		ignorePatterns: ["**/*.gen.ts", "**/CHANGELOG.md"],
 	},
 	test: {
-		exclude: ["**/node_modules/**", "**/dist/**", "examples/tanstack/e2e/**"],
+		exclude: ["**/node_modules/**", "**/dist/**"],
 	},
 	staged: {
 		"*.{js,cjs,mjs,jsx,ts,cts,mts,tsx,json,jsonc}": "vp check --fix",
