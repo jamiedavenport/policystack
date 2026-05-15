@@ -1,12 +1,18 @@
-# OpenPolicy
+# PolicyStack
 
-## Toolchain — Vite+ (`vp`)
+Open-source primitives for building privacy-first applications.
+
+## Code Style
+
+- Typescript strict mode. Avoid `any` and `unknown`.
+- Use `type` over `interface` for type definitions.
+- Prefer named exports over default exports.
+
+## Commands
 
 This project uses [Vite+](https://viteplus.dev), a unified toolchain built on top of Vite, Rolldown, Vitest, tsdown, Oxlint, and Oxfmt. Vite+ wraps dev-server, build, test, lint, format, type-check, and package-manager operations behind a single global CLI called `vp`.
 
 The package manager is pnpm (managed via Corepack); `vp` detects it via `packageManager` in `package.json` and delegates accordingly. Do not invoke `pnpm`/`npm`/`yarn` directly when a `vp` equivalent exists.
-
-### Common commands
 
 - `vp install` (`vp i`) — install dependencies
 - `vp dev` — run the dev server
@@ -23,11 +29,32 @@ The package manager is pnpm (managed via Corepack); `vp` detects it via `package
 
 Run `vp help` for the full list and `vp <command> --help` for specifics.
 
-## Branch Strategy
+## Project Structure
 
-All PolicyStack 1.0 work happens on the long-lived **`v1`** branch, cut from `main` (Locked: decision 11). `main` stays the current released `0.0.x` line and is **not touched again until Phase 6** — the single rename/freeze merge that brings `v1` back, so consumers see exactly one breaking event. Phases 0–5 all land on `v1`.
+- `apps/www` - A stub where the old OpenPolicy site was hosted. Now just redirects to the new site.
+- `packages/cli` - A CLI tool for installing and configuring PolicyStack.
+- `packages/core` - The core compilation engine for PolicyStack.
+- `packages/sdk` - The public API for defining privacy policies with PolicyStack.
+- `packages/vite` - A Vite plugin for integrating PolicyStack into your project.
+- `packages/react` - React components and hooks for PolicyStack.
+- `packages/svelte` - Svelte components and hooks for PolicyStack.
+- `packages/vue` - Vue components and hooks for PolicyStack.
+- `packages/astro` - Astro components and hooks for PolicyStack.
 
-- **Default working branch is `v1`.** Cut feature branches from `v1` and merge them back into `v1`, not `main`.
-- **Red tests are acceptable on `v1`** during Phases 0–5. The gate is green at the Phase-6 merge, not continuously — the one canonical example is the only thing that must stay buildable/green as the Phase-1 scanner regression net (see Phase 0 · Cleanup).
-- **No branch protection** on `main`: critical `0.0.x` bug fixes may still need to ship from `main`. When that happens, fix on `main` (or a branch off it), release, then forward-port the fix into `v1` so it isn't lost in the Phase-6 merge.
-- **Phase 6 is the only merge from `v1` → `main`**: rename to `@policystack/*`, tag `v1.0.0`, single combined policy + consent API freeze.
+### Other Directories
+
+There are a few other directories that might be useful to know about when working on the project:
+
+- `opencookies` - The seperate project for consent management. As part of the 1.0.0 release, this will be merged into the main project.
+- `policystack` - The seperate project for the privacy policy website. As part of the 1.0.0 release, this will be merged into the main project.
+
+## Important Notes
+
+### `v1.0.0`
+
+We're actively working on the 1.0.0 release.
+
+- The primary branch for this is `v1`.
+- Breaking changes are allowed on the `v1` branch.
+- Failing tests are acceptable on the `v1` branch.
+- Projects and tickets are in the `PolicyStack 1.0` team in Linear.
