@@ -37,6 +37,7 @@
 		"oxc-parser": "^0.124.0"
 	},
 	"devDependencies": {
+		"@openpolicy/sdk": "workspace:*",
 		"@openpolicy/tooling": "workspace:*",
 		"esbuild": "^0.25.12",
 		"vite": "catalog:",

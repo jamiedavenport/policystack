@@ -5,12 +5,6 @@ import { dirname, join } from "node:path";
 import type { ThirdPartyEntry } from "./analyse";
 import { openPolicy } from "./index";
 
-/**
- * Must match the private constant inside `./index.ts`. Duplicated here so the
- * test doesn't reach into the plugin's internals.
- */
-const RESOLVED_VIRTUAL_ID = "\0virtual:openpolicy/auto-collected";
-
 type PluginInstance = ReturnType<typeof openPolicy>;
 
 let tmp: string;
@@ -85,37 +79,26 @@ type ScannedResult = {
 };
 
 /**
- * Calls the plugin's `load` hook with the virtual ID and parses all three
- * exports out of the emitted JS source.
+ * Reads the on-disk `openpolicy.gen.ts` the plugin emits and parses the three
+ * scanned exports back out. The values are emitted as compact JSON (valid
+ * TypeScript), so each `export const … = <json>;` line round-trips through
+ * `JSON.parse`. `root` is where the gen file lands — the project root when
+ * there's no `openpolicy.ts`, otherwise the config's directory.
  */
-function loadScanned(plugin: PluginInstance): ScannedResult {
-	const load = plugin.load as ((id: string) => string | null | undefined) | undefined;
-	if (!load) throw new Error("plugin has no load hook");
-	const source = load.call({}, RESOLVED_VIRTUAL_ID);
-	if (!source) throw new Error("load returned falsy");
+async function readScanned(root: string): Promise<ScannedResult> {
+	const source = await readFile(join(root, "openpolicy.gen.ts"), "utf8");
 
-	const dcStart = source.indexOf("dataCollected = ") + "dataCollected = ".length;
-	const dcEnd = source.indexOf(";\n", dcStart);
-	if (dcStart < "dataCollected = ".length || dcEnd === -1)
-		throw new Error(`could not parse dataCollected from: ${source}`);
-	const dataCollected = JSON.parse(source.slice(dcStart, dcEnd)) as Record<string, string[]>;
+	function parse<T>(name: string): T {
+		const match = source.match(new RegExp(`export const ${name}:[^=]*= (.*);\\n`));
+		if (!match) throw new Error(`could not parse ${name} from:\n${source}`);
+		return JSON.parse(match[1] as string) as T;
+	}
 
-	const tpStart = source.indexOf("thirdParties = ") + "thirdParties = ".length;
-	const tpEnd = source.indexOf(";\n", tpStart);
-	if (tpStart < "thirdParties = ".length || tpEnd === -1)
-		throw new Error(`could not parse thirdParties from: ${source}`);
-	const thirdParties = JSON.parse(source.slice(tpStart, tpEnd)) as ThirdPartyEntry[];
-
-	const ckStart = source.indexOf("cookies = ") + "cookies = ".length;
-	const ckEnd = source.indexOf(";\n", ckStart);
-	if (ckStart < "cookies = ".length || ckEnd === -1)
-		throw new Error(`could not parse cookies from: ${source}`);
-	const cookies = JSON.parse(source.slice(ckStart, ckEnd)) as {
-		essential: boolean;
-		[key: string]: boolean;
+	return {
+		dataCollected: parse<Record<string, string[]>>("dataCollected"),
+		thirdParties: parse<ThirdPartyEntry[]>("thirdParties"),
+		cookies: parse<{ essential: boolean; [key: string]: boolean }>("cookies"),
 	};
-
-	return { dataCollected, thirdParties, cookies };
 }
 
 type WatcherEvent = "change" | "add" | "unlink";
@@ -123,8 +106,6 @@ type WatcherHandler = (file: string) => void | Promise<void>;
 
 type StubServer = {
 	watcherAdded: string[];
-	invalidatedIds: string[];
-	sentMessages: Array<{ type: string }>;
 	loggedErrors: string[];
 	loggedWarnings: string[];
 	runHandler: (event: WatcherEvent, file: string) => Promise<void>;
@@ -133,11 +114,11 @@ type StubServer = {
 };
 
 /**
- * Builds a minimal stand-in for `ViteDevServer` that captures everything the
- * plugin touches: watcher registrations, module-graph invalidations, WS
- * messages, and logger errors. `runHandler` invokes a registered watcher
- * listener and awaits its async body so tests can assert post-state without
- * a sleep or a microtask dance.
+ * Builds a minimal stand-in for `ViteDevServer`. The plugin no longer pokes
+ * the module graph or sends WS messages — HMR is normal file invalidation —
+ * so the stub only captures watcher registrations and logger output.
+ * `runHandler` invokes a registered watcher listener and awaits its async
+ * body so tests can assert post-state without a sleep or a microtask dance.
  */
 function createStubServer(): StubServer {
 	const handlers: Record<WatcherEvent, WatcherHandler[]> = {
@@ -146,8 +127,6 @@ function createStubServer(): StubServer {
 		unlink: [],
 	};
 	const watcherAdded: string[] = [];
-	const invalidatedIds: string[] = [];
-	const sentMessages: Array<{ type: string }> = [];
 	const loggedErrors: string[] = [];
 	const loggedWarnings: string[] = [];
 
@@ -159,19 +138,6 @@ function createStubServer(): StubServer {
 			},
 			on(event: WatcherEvent, cb: WatcherHandler): void {
 				handlers[event].push(cb);
-			},
-		},
-		moduleGraph: {
-			getModuleById(id: string): { id: string } {
-				return { id };
-			},
-			invalidateModule(mod: { id: string }): void {
-				invalidatedIds.push(mod.id);
-			},
-		},
-		ws: {
-			send(msg: { type: string }): void {
-				sentMessages.push(msg);
 			},
 		},
 		config: {
@@ -194,8 +160,6 @@ function createStubServer(): StubServer {
 
 	return {
 		watcherAdded,
-		invalidatedIds,
-		sentMessages,
 		loggedErrors,
 		loggedWarnings,
 		runHandler,
@@ -203,7 +167,7 @@ function createStubServer(): StubServer {
 	};
 }
 
-test("load hook returns scanned categories after buildStart", async () => {
+test("buildStart writes scanned categories to the gen module", async () => {
 	await touch(
 		"src/lib/db.ts",
 		`
@@ -220,7 +184,7 @@ test("load hook returns scanned categories after buildStart", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({
+	expect((await readScanned(tmp)).dataCollected).toEqual({
 		"Account Information": ["Name", "Email address"],
 	});
 });
@@ -247,7 +211,7 @@ test("merges calls across multiple files", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({
+	expect((await readScanned(tmp)).dataCollected).toEqual({
 		"Account Information": ["Name", "Email", "Phone"],
 		"Usage Data": ["Pages visited"],
 	});
@@ -272,7 +236,7 @@ test("ignores files outside the configured srcDir", async () => {
 	const plugin = openPolicy({ srcDir: "src" });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({ In: ["X"] });
+	expect((await readScanned(tmp)).dataCollected).toEqual({ In: ["X"] });
 });
 
 test("respects a custom srcDir", async () => {
@@ -287,7 +251,7 @@ test("respects a custom srcDir", async () => {
 	const plugin = openPolicy({ srcDir: "app" });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({ Cat: ["X"] });
+	expect((await readScanned(tmp)).dataCollected).toEqual({ Cat: ["X"] });
 });
 
 test("emits an empty object when srcDir contains no collecting() calls", async () => {
@@ -296,14 +260,14 @@ test("emits an empty object when srcDir contains no collecting() calls", async (
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({});
+	expect((await readScanned(tmp)).dataCollected).toEqual({});
 });
 
 test("emits an empty object when srcDir is missing entirely", async () => {
 	const plugin = openPolicy({ srcDir: "missing" });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({});
+	expect((await readScanned(tmp)).dataCollected).toEqual({});
 });
 
 test("scans .tsx files by default", async () => {
@@ -321,72 +285,14 @@ test("scans .tsx files by default", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).dataCollected).toEqual({ Widget: ["X"] });
+	expect((await readScanned(tmp)).dataCollected).toEqual({ Widget: ["X"] });
 });
 
-test("resolveId redirects ./auto-collected when importer is inside @openpolicy/sdk", async () => {
+test("the plugin exposes no interception hooks (resolveId/load/config)", () => {
 	const plugin = openPolicy();
-	await runPluginBuildStart(plugin, tmp);
-
-	// Published install layout uses the dist `./auto-collected.js` specifier.
-	const nodeModulesResult = await callResolveId(
-		plugin,
-		"./auto-collected.js",
-		"/app/node_modules/@openpolicy/sdk/dist/index.js",
-		{ id: "/app/node_modules/@openpolicy/sdk/dist/auto-collected.js" },
-	);
-	expect(nodeModulesResult).toBe(RESOLVED_VIRTUAL_ID);
-
-	// Workspace source layout uses the bare `./auto-collected` specifier.
-	const workspaceResult = await callResolveId(
-		plugin,
-		"./auto-collected",
-		"/repo/packages/sdk/src/index.ts",
-		{ id: "/repo/packages/sdk/src/auto-collected.ts" },
-	);
-	expect(workspaceResult).toBe(RESOLVED_VIRTUAL_ID);
-});
-
-test("resolveId leaves unrelated ./auto-collected imports alone", async () => {
-	const plugin = openPolicy();
-	await runPluginBuildStart(plugin, tmp);
-
-	const result = await callResolveId(plugin, "./auto-collected", "/some/other/package/index.js", {
-		id: "/some/other/package/auto-collected.js",
-	});
-	expect(result).toBeNull();
-});
-
-test("resolveId ignores specifiers other than ./auto-collected", async () => {
-	const plugin = openPolicy();
-	await runPluginBuildStart(plugin, tmp);
-
-	const result = await callResolveId(
-		plugin,
-		"./something-else",
-		"/repo/packages/sdk/src/index.ts",
-		{ id: "/repo/packages/sdk/src/something-else.ts" },
-	);
-	expect(result).toBeNull();
-});
-
-test("config hook excludes @openpolicy/sdk from dep pre-bundling and pins it to ssr.noExternal", () => {
-	const plugin = openPolicy();
-	const configHook = plugin.config as unknown as
-		| (() => {
-				optimizeDeps?: { exclude?: string[] };
-				ssr?: {
-					optimizeDeps?: { exclude?: string[] };
-					noExternal?: string[] | true;
-				};
-		  } | void)
-		| undefined;
-	if (!configHook) throw new Error("plugin has no config hook");
-
-	const result = configHook();
-	expect(result?.optimizeDeps?.exclude).toContain("@openpolicy/sdk");
-	expect(result?.ssr?.optimizeDeps?.exclude).toContain("@openpolicy/sdk");
-	expect(result?.ssr?.noExternal).toContain("@openpolicy/sdk");
+	expect(plugin.resolveId).toBeUndefined();
+	expect(plugin.load).toBeUndefined();
+	expect(plugin.config).toBeUndefined();
 });
 
 test("configureServer adds resolvedSrcDir to the chokidar watch set", async () => {
@@ -399,7 +305,7 @@ test("configureServer adds resolvedSrcDir to the chokidar watch set", async () =
 	expect(stub.watcherAdded).toContain(join(tmp, "src"));
 });
 
-test("dev watcher re-scans and triggers a full reload when a tracked file changes", async () => {
+test("dev watcher re-scans and rewrites the gen module when a tracked file changes", async () => {
 	await touch(
 		"src/lib/db.ts",
 		`
@@ -410,7 +316,7 @@ test("dev watcher re-scans and triggers a full reload when a tracked file change
 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
-	expect(loadScanned(plugin).dataCollected).toEqual({ Initial: ["X"] });
+	expect((await readScanned(tmp)).dataCollected).toEqual({ Initial: ["X"] });
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -427,18 +333,16 @@ test("dev watcher re-scans and triggers a full reload when a tracked file change
 	);
 	await stub.runHandler("change", join(tmp, "src/lib/db.ts"));
 
-	expect(loadScanned(plugin).dataCollected).toEqual({
+	expect((await readScanned(tmp)).dataCollected).toEqual({
 		Initial: ["X"],
 		Added: ["Y"],
 	});
-	expect(stub.invalidatedIds).toContain(RESOLVED_VIRTUAL_ID);
-	expect(stub.sentMessages).toContainEqual({ type: "full-reload" });
 });
 
 test("dev watcher picks up newly-created source files", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
-	expect(loadScanned(plugin).dataCollected).toEqual({});
+	expect((await readScanned(tmp)).dataCollected).toEqual({});
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -452,8 +356,7 @@ test("dev watcher picks up newly-created source files", async () => {
 	);
 	await stub.runHandler("add", join(tmp, "src/new.ts"));
 
-	expect(loadScanned(plugin).dataCollected).toEqual({ "Brand New": ["Z"] });
-	expect(stub.sentMessages).toContainEqual({ type: "full-reload" });
+	expect((await readScanned(tmp)).dataCollected).toEqual({ "Brand New": ["Z"] });
 });
 
 test("dev watcher drops categories when a file is deleted", async () => {
@@ -467,7 +370,7 @@ test("dev watcher drops categories when a file is deleted", async () => {
 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
-	expect(loadScanned(plugin).dataCollected).toEqual({ Temporary: ["X"] });
+	expect((await readScanned(tmp)).dataCollected).toEqual({ Temporary: ["X"] });
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -475,13 +378,13 @@ test("dev watcher drops categories when a file is deleted", async () => {
 	await rm(join(tmp, "src/gone.ts"));
 	await stub.runHandler("unlink", join(tmp, "src/gone.ts"));
 
-	expect(loadScanned(plugin).dataCollected).toEqual({});
-	expect(stub.sentMessages).toContainEqual({ type: "full-reload" });
+	expect((await readScanned(tmp)).dataCollected).toEqual({});
 });
 
 test("dev watcher ignores events for files outside srcDir", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
+	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -489,13 +392,14 @@ test("dev watcher ignores events for files outside srcDir", async () => {
 	await touch("other/x.ts", `export const x = 1;\n`);
 	await stub.runHandler("change", join(tmp, "other/x.ts"));
 
-	expect(stub.invalidatedIds).toHaveLength(0);
-	expect(stub.sentMessages).toHaveLength(0);
+	// Event filtered out — the gen module is left untouched.
+	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
 });
 
 test("dev watcher ignores events for files with untracked extensions", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
+	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -503,11 +407,12 @@ test("dev watcher ignores events for files with untracked extensions", async () 
 	await touch("src/README.md", `# hello\n`);
 	await stub.runHandler("change", join(tmp, "src/README.md"));
 
-	expect(stub.invalidatedIds).toHaveLength(0);
-	expect(stub.sentMessages).toHaveLength(0);
+	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
 });
 
-test("dev watcher skips invalidation when the scan output is unchanged", async () => {
+test("dev watcher does not rewrite the gen module when the gen file itself changes", async () => {
+	// The gen file lives inside srcDir; the plugin's own write to it must not
+	// be treated as a tracked-source change, or the watcher would loop.
 	await touch(
 		"src/a.ts",
 		`
@@ -518,6 +423,28 @@ test("dev watcher skips invalidation when the scan output is unchanged", async (
 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
+	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+
+	const stub = createStubServer();
+	await runConfigureServer(plugin, stub.server);
+
+	await stub.runHandler("change", join(tmp, "openpolicy.gen.ts"));
+
+	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
+});
+
+test("dev watcher leaves the gen module unchanged when the scan output is unchanged", async () => {
+	await touch(
+		"src/a.ts",
+		`
+		import { collecting } from "@openpolicy/sdk";
+		collecting("A", v, { x: "X" });
+		`,
+	);
+
+	const plugin = openPolicy();
+	await runPluginBuildStart(plugin, tmp);
+	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -533,15 +460,14 @@ test("dev watcher skips invalidation when the scan output is unchanged", async (
 	);
 	await stub.runHandler("change", join(tmp, "src/a.ts"));
 
-	expect(stub.invalidatedIds).toHaveLength(0);
-	expect(stub.sentMessages).toHaveLength(0);
+	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
 });
 
 // ---------------------------------------------------------------------------
 // thirdParty() integration tests
 // ---------------------------------------------------------------------------
 
-test("thirdParty() calls are scanned and appear in virtual module thirdParties export", async () => {
+test("thirdParty() calls are scanned and appear in the gen module thirdParties export", async () => {
 	await touch(
 		"src/payments.ts",
 		`
@@ -553,7 +479,7 @@ test("thirdParty() calls are scanned and appear in virtual module thirdParties e
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).thirdParties).toEqual([
+	expect((await readScanned(tmp)).thirdParties).toEqual([
 		{
 			name: "Stripe",
 			purpose: "Payments",
@@ -583,7 +509,7 @@ test("thirdParty() deduplication across files — same name in two files yields 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).thirdParties).toEqual([
+	expect((await readScanned(tmp)).thirdParties).toEqual([
 		{
 			name: "Stripe",
 			purpose: "Payments",
@@ -597,7 +523,7 @@ test("dev watcher triggers reload when thirdParty() call is added", async () => 
 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
-	expect(loadScanned(plugin).thirdParties).toEqual([]);
+	expect((await readScanned(tmp)).thirdParties).toEqual([]);
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -611,15 +537,13 @@ test("dev watcher triggers reload when thirdParty() call is added", async () => 
 	);
 	await stub.runHandler("change", join(tmp, "src/payments.ts"));
 
-	expect(loadScanned(plugin).thirdParties).toEqual([
+	expect((await readScanned(tmp)).thirdParties).toEqual([
 		{
 			name: "Stripe",
 			purpose: "Payments",
 			policyUrl: "https://stripe.com/privacy",
 		},
 	]);
-	expect(stub.invalidatedIds).toContain(RESOLVED_VIRTUAL_ID);
-	expect(stub.sentMessages).toContainEqual({ type: "full-reload" });
 });
 
 // ---------------------------------------------------------------------------
@@ -632,7 +556,7 @@ test("usePackageJson is disabled by default — package.json with stripe does no
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).thirdParties).toEqual([]);
+	expect((await readScanned(tmp)).thirdParties).toEqual([]);
 });
 
 test("usePackageJson: known package is detected and added as ThirdPartyEntry", async () => {
@@ -641,7 +565,7 @@ test("usePackageJson: known package is detected and added as ThirdPartyEntry", a
 	const plugin = openPolicy({ thirdParties: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	const { thirdParties } = loadScanned(plugin);
+	const { thirdParties } = await readScanned(tmp);
 	expect(thirdParties).toHaveLength(1);
 	expect(thirdParties[0]?.name).toBe("Stripe");
 	expect(thirdParties[0]?.purpose).toBe("Payment processing");
@@ -653,7 +577,7 @@ test("usePackageJson: unknown package is silently ignored", async () => {
 	const plugin = openPolicy({ thirdParties: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).thirdParties).toEqual([]);
+	expect((await readScanned(tmp)).thirdParties).toEqual([]);
 });
 
 test("usePackageJson: multiple packages mapping to same service yield one entry", async () => {
@@ -667,7 +591,7 @@ test("usePackageJson: multiple packages mapping to same service yield one entry"
 	const plugin = openPolicy({ thirdParties: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	const { thirdParties } = loadScanned(plugin);
+	const { thirdParties } = await readScanned(tmp);
 	expect(thirdParties.filter((e) => e.name === "Stripe")).toHaveLength(1);
 });
 
@@ -684,7 +608,7 @@ test("usePackageJson: manual thirdParty() call wins over auto-detected entry", a
 	const plugin = openPolicy({ thirdParties: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	const { thirdParties } = loadScanned(plugin);
+	const { thirdParties } = await readScanned(tmp);
 	const stripeEntries = thirdParties.filter((e) => e.name === "Stripe");
 	expect(stripeEntries).toHaveLength(1);
 	expect(stripeEntries[0]?.purpose).toBe("Custom billing purpose");
@@ -703,7 +627,7 @@ test("usePackageJson: graceful when package.json is missing", async () => {
 	const plugin = openPolicy({ thirdParties: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).thirdParties).toEqual([
+	expect((await readScanned(tmp)).thirdParties).toEqual([
 		{
 			name: "Stripe",
 			purpose: "Payments",
@@ -722,7 +646,7 @@ test("cookies: empty scan emits essential-only map", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).cookies).toEqual({ essential: true });
+	expect((await readScanned(tmp)).cookies).toEqual({ essential: true });
 });
 
 test("cookies: defineCookie() adds the category", async () => {
@@ -738,7 +662,7 @@ test("cookies: defineCookie() adds the category", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).cookies).toEqual({
+	expect((await readScanned(tmp)).cookies).toEqual({
 		essential: true,
 		analytics: true,
 		marketing: true,
@@ -751,7 +675,7 @@ test("cookies: usePackageJson disabled by default — posthog-js alone does not 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).cookies).toEqual({ essential: true });
+	expect((await readScanned(tmp)).cookies).toEqual({ essential: true });
 });
 
 test("cookies: usePackageJson — posthog-js detected as analytics", async () => {
@@ -760,7 +684,7 @@ test("cookies: usePackageJson — posthog-js detected as analytics", async () =>
 	const plugin = openPolicy({ cookies: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).cookies).toEqual({
+	expect((await readScanned(tmp)).cookies).toEqual({
 		essential: true,
 		analytics: true,
 	});
@@ -779,7 +703,7 @@ test("cookies: usePackageJson + defineCookie unions categories", async () => {
 	const plugin = openPolicy({ cookies: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).cookies).toEqual({
+	expect((await readScanned(tmp)).cookies).toEqual({
 		essential: true,
 		analytics: true,
 		marketing: true,
@@ -790,7 +714,7 @@ test("cookies: usePackageJson graceful when package.json missing", async () => {
 	const plugin = openPolicy({ cookies: { usePackageJson: true } });
 	await runPluginBuildStart(plugin, tmp);
 
-	expect(loadScanned(plugin).cookies).toEqual({ essential: true });
+	expect((await readScanned(tmp)).cookies).toEqual({ essential: true });
 });
 
 test("cookies: dev watcher reloads when a cookie-relevant call is added", async () => {
@@ -798,7 +722,7 @@ test("cookies: dev watcher reloads when a cookie-relevant call is added", async 
 
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
-	expect(loadScanned(plugin).cookies).toEqual({ essential: true });
+	expect((await readScanned(tmp)).cookies).toEqual({ essential: true });
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -812,37 +736,11 @@ test("cookies: dev watcher reloads when a cookie-relevant call is added", async 
 	);
 	await stub.runHandler("change", join(tmp, "src/x.ts"));
 
-	expect(loadScanned(plugin).cookies).toEqual({
+	expect((await readScanned(tmp)).cookies).toEqual({
 		essential: true,
 		analytics: true,
 	});
-	expect(stub.invalidatedIds).toContain(RESOLVED_VIRTUAL_ID);
-	expect(stub.sentMessages).toContainEqual({ type: "full-reload" });
 });
-
-/**
- * Calls the plugin's `resolveId` hook with a stubbed Vite context whose
- * `this.resolve` returns a fixed fake resolution.
- */
-async function callResolveId(
-	plugin: PluginInstance,
-	source: string,
-	importer: string | undefined,
-	fakeResolved: { id: string } | null,
-): Promise<string | null> {
-	const hook = plugin.resolveId as unknown as (
-		this: { resolve: () => Promise<{ id: string } | null> },
-		source: string,
-		importer: string | undefined,
-		options: Record<string, unknown>,
-	) => Promise<string | null>;
-	const context = {
-		async resolve(): Promise<{ id: string } | null> {
-			return fakeResolved;
-		},
-	};
-	return hook.call(context, source, importer, {});
-}
 
 /**
  * Invokes the plugin's `configureServer` hook with the given stub. Handles
@@ -873,11 +771,24 @@ test("buildStart writes openpolicy.gen.ts with scanned keys", async () => {
 	const plugin = openPolicy();
 	await runPluginBuildStart(plugin, tmp);
 	const dts = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	// Type augmentation.
 	expect(dts).toContain('declare module "@openpolicy/sdk"');
 	expect(dts).toContain("interface ScannedCollectionKeys");
 	expect(dts).toContain('"Account Information": true');
 	expect(dts).toContain('"Session Data": true');
 	expect(dts).toContain("interface ScannedCookieKeys");
+	// First-class module: explicit type import, real value exports, no
+	// `export {}` stub, and no virtual-module body.
+	expect(dts).toContain('import type { ScannedCollectionKeys } from "@openpolicy/sdk"');
+	expect(dts).toContain("export const dataCollected:");
+	expect(dts).toContain("export const thirdParties:");
+	expect(dts).toContain("export const cookies:");
+	expect(dts).not.toContain("export {};");
+	// The emitted values round-trip back through the reader.
+	expect((await readScanned(tmp)).dataCollected).toEqual({
+		"Account Information": ["Email"],
+		"Session Data": ["IP"],
+	});
 });
 
 test("buildStart includes scanned cookie keys in ScannedCookieKeys", async () => {
@@ -950,7 +861,7 @@ test("vite dev (command: 'serve') does not abort via this.error even if config h
 	expect(ctx.errors).toEqual([]);
 });
 
-test("validate:false leaves load hook working so scanned data still flows through", async () => {
+test("validate:false still writes the gen module so scanned data still flows through", async () => {
 	await touch(
 		"src/lib/db.ts",
 		`import { collecting } from "@openpolicy/sdk";
@@ -958,7 +869,7 @@ test("validate:false leaves load hook working so scanned data still flows throug
 	);
 	const plugin = openPolicy({ validate: false });
 	await runPluginBuildStart(plugin, tmp);
-	expect(loadScanned(plugin).dataCollected).toEqual({
+	expect((await readScanned(tmp)).dataCollected).toEqual({
 		"Account Information": ["Name"],
 	});
 });

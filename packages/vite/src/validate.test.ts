@@ -2,21 +2,23 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, expect, test } from "vite-plus/test";
-import type { Scanned } from "./scanned";
+import { renderGenModule, type Scanned } from "./scanned";
 import { loadAndValidateConfig } from "./validate";
 
 /**
- * Tmp dirs sit inside the workspace root so node_modules resolution can
- * find `@openpolicy/sdk` (a workspace symlink at the repo's `node_modules/`).
- * `tmpdir()` would put us outside the workspace and the SDK would fail to
- * resolve from inside `bundle-require`'s esbuild pass.
+ * Tmp dirs sit inside this package's own directory so that `bundle-require`'s
+ * esbuild pass can resolve `@openpolicy/sdk` (a `workspace:*` devDependency,
+ * symlinked at `packages/vite/node_modules/@openpolicy/sdk`) from the bundled
+ * config. The workspace root doesn't have the SDK on its `node_modules` path
+ * (pnpm doesn't hoist it), and `tmpdir()` would escape the workspace
+ * entirely — either would make the SDK fail to resolve.
  */
-const WORKSPACE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 let tmp: string;
 
 beforeEach(async () => {
-	tmp = await mkdtemp(join(WORKSPACE_ROOT, ".tmp-validate-"));
+	tmp = await mkdtemp(join(PACKAGE_ROOT, ".tmp-validate-"));
 });
 
 afterEach(async () => {
@@ -30,11 +32,14 @@ async function writeConfig(source: string): Promise<string> {
 	return file;
 }
 
-const EMPTY_SCANNED: Scanned = {
-	dataCollected: {},
-	thirdParties: [],
-	cookies: { essential: true },
-};
+/**
+ * Writes the on-disk `openpolicy.gen.ts` module next to the tmp config, exactly
+ * as the Vite plugin would, so configs that import `./openpolicy.gen` resolve
+ * the scanned values through ordinary relative source.
+ */
+async function writeGen(scanned: Scanned): Promise<void> {
+	await writeFile(join(tmp, "openpolicy.gen.ts"), renderGenModule(scanned), "utf8");
+}
 
 const VALID_CONFIG = `
 import { ContractPrerequisite, defineConfig, LegalBases } from "@openpolicy/sdk";
@@ -66,7 +71,7 @@ export default defineConfig({
 
 test("returns no issues for a complete valid config", async () => {
 	const file = await writeConfig(VALID_CONFIG);
-	const result = await loadAndValidateConfig({ configFile: file, scanned: EMPTY_SCANNED });
+	const result = await loadAndValidateConfig({ configFile: file });
 	expect(result.loadError).toBeNull();
 	expect(result.config).not.toBeNull();
 	expect(result.issues).toEqual([]);
@@ -74,7 +79,7 @@ test("returns no issues for a complete valid config", async () => {
 
 test("surfaces effective-date-required as an error", async () => {
 	const file = await writeConfig(VALID_CONFIG.replace('effectiveDate: "2026-01-01",', ""));
-	const result = await loadAndValidateConfig({ configFile: file, scanned: EMPTY_SCANNED });
+	const result = await loadAndValidateConfig({ configFile: file });
 	expect(result.loadError).toBeNull();
 	const hit = result.issues.find((i) => i.code === "effective-date-required");
 	expect(hit).toBeDefined();
@@ -85,21 +90,21 @@ test("surfaces company-contact-phone-recommended warning under us-ca", async () 
 	const file = await writeConfig(
 		VALID_CONFIG.replace('jurisdictions: ["eu"],', 'jurisdictions: ["us-ca"],'),
 	);
-	const result = await loadAndValidateConfig({ configFile: file, scanned: EMPTY_SCANNED });
+	const result = await loadAndValidateConfig({ configFile: file });
 	expect(result.loadError).toBeNull();
 	const hit = result.issues.find((i) => i.code === "company-contact-phone-recommended");
 	expect(hit).toBeDefined();
 	expect(hit?.level).toBe("warning");
 });
 
-test("shims scanned data into the SDK so spread `...dataCollected` is visible to validators", async () => {
-	// User config spreads `...dataCollected` but doesn't add a matching
-	// context entry for the scanned-only category. Without the shim, the
-	// SDK's empty fallback would mean the validators see no scanned key
-	// and miss the issue. With the shim, the scanned key flows through
-	// `data.collected` and the missing-context check fires.
+test("scanned data from the on-disk gen module flows into validators via spread", async () => {
+	// User config imports `dataCollected` from the generated `./openpolicy.gen`
+	// module and spreads it, but doesn't add a matching context entry for the
+	// scanned-only category. The scanned key flows through `data.collected` as
+	// ordinary relative source, so the missing-context check fires.
 	const source = `
-import { ContractPrerequisite, dataCollected, defineConfig, LegalBases } from "@openpolicy/sdk";
+import { ContractPrerequisite, defineConfig, LegalBases } from "@openpolicy/sdk";
+import { dataCollected } from "./openpolicy.gen";
 
 export default defineConfig({
 	company: {
@@ -119,12 +124,12 @@ export default defineConfig({
 });
 `;
 	const file = await writeConfig(source);
-	const scanned: Scanned = {
+	await writeGen({
 		dataCollected: { "Browser Telemetry": ["User-Agent"] },
 		thirdParties: [],
 		cookies: { essential: true },
-	};
-	const result = await loadAndValidateConfig({ configFile: file, scanned });
+	});
+	const result = await loadAndValidateConfig({ configFile: file });
 	expect(result.loadError).toBeNull();
 	const hit = result.issues.find((i) => i.message.includes("Browser Telemetry"));
 	expect(hit).toBeDefined();
@@ -134,14 +139,14 @@ test("dedupes issues with the same code+message across validators", async () => 
 	// effective-date-required is checked by every validator. With the field
 	// missing, all three would report it — the dedupe pass should leave one.
 	const file = await writeConfig(VALID_CONFIG.replace('effectiveDate: "2026-01-01",', ""));
-	const result = await loadAndValidateConfig({ configFile: file, scanned: EMPTY_SCANNED });
+	const result = await loadAndValidateConfig({ configFile: file });
 	const matches = result.issues.filter((i) => i.code === "effective-date-required");
 	expect(matches.length).toBe(1);
 });
 
 test("captures load errors instead of throwing", async () => {
 	const file = await writeConfig("export default this is not valid typescript;");
-	const result = await loadAndValidateConfig({ configFile: file, scanned: EMPTY_SCANNED });
+	const result = await loadAndValidateConfig({ configFile: file });
 	expect(result.loadError).toBeInstanceOf(Error);
 	expect(result.config).toBeNull();
 	expect(result.issues).toEqual([]);
@@ -149,7 +154,7 @@ test("captures load errors instead of throwing", async () => {
 
 test("captures missing default export as a load error", async () => {
 	const file = await writeConfig(`export const notDefault = 1;`);
-	const result = await loadAndValidateConfig({ configFile: file, scanned: EMPTY_SCANNED });
+	const result = await loadAndValidateConfig({ configFile: file });
 	expect(result.loadError).toBeInstanceOf(Error);
 	expect(result.loadError?.message).toContain("no default export");
 });

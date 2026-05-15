@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import openpolicy from "../openpolicy";
+import { cookies, dataCollected, thirdParties } from "../openpolicy.gen";
 
 export const Route = createFileRoute("/onboarding-wizard")({
 	component: RouteComponent,
 });
-
-const { dataCollected = {}, thirdParties = [], cookies = { essential: true } } = openpolicy;
 
 type StepId = "welcome" | "data" | "third-parties" | "cookies" | "done";
 

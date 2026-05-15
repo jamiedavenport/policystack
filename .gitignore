@@ -8,6 +8,9 @@ dist
 
 # code coverage
 coverage
+
+# validator test scratch dirs (cleaned in afterEach; guard against interrupted runs)
+.tmp-validate-*
 *.lcov
 
 # logs

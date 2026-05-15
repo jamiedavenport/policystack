@@ -1,11 +1,5 @@
-import {
-	ContractPrerequisite,
-	cookies,
-	dataCollected,
-	defineConfig,
-	LegalBases,
-	thirdParties,
-} from "@openpolicy/sdk";
+import { ContractPrerequisite, defineConfig, LegalBases } from "@openpolicy/sdk";
+import { cookies, dataCollected, thirdParties } from "./openpolicy.gen";
 
 export default defineConfig({
 	company: {
