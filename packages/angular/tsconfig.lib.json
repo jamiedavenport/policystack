@@ -1,0 +1,18 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"outDir": "./dist"
+	},
+	"angularCompilerOptions": {
+		"compilationMode": "partial",
+		"strictTemplates": true,
+		"strictInjectionParameters": true,
+		"enableI18nLegacyMessageIdFormat": false
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts"]
+}

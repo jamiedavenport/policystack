@@ -9,7 +9,7 @@
 		"directory": "packages/angular"
 	},
 	"files": [
-		"src",
+		"dist",
 		"README.md",
 		"NOTICE.md"
 	],
@@ -17,14 +17,21 @@
 	"sideEffects": false,
 	"exports": {
 		"./consent": {
-			"types": "./src/public-api.ts",
-			"default": "./src/public-api.ts"
-		},
-		"./package.json": "./package.json"
+			"types": "./dist/types/openpolicy-angular.d.ts",
+			"default": "./dist/fesm2022/openpolicy-angular.mjs"
+		}
+	},
+	"publishConfig": {
+		"exports": {
+			"./consent": {
+				"types": "./dist/types/openpolicy-angular.d.ts",
+				"default": "./dist/fesm2022/openpolicy-angular.mjs"
+			}
+		}
 	},
 	"scripts": {
-		"dev": "vp run check-types",
-		"build": "vp run check-types",
+		"dev": "ng-packagr -p ng-package.json -c tsconfig.lib.json --watch",
+		"build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
 		"check-types": "tsc --noEmit",
 		"test": "vp test"
 	},
@@ -32,16 +39,19 @@
 		"tslib": "^2.6.0"
 	},
 	"devDependencies": {
-		"@angular/common": "^19.0.0",
-		"@angular/compiler": "^19.0.0",
-		"@angular/core": "^19.0.0",
+		"@angular/common": "^21.0.0",
+		"@angular/compiler": "^21.0.0",
+		"@angular/compiler-cli": "^21.0.0",
+		"@angular/core": "^21.0.0",
 		"@openpolicy/core": "workspace:*",
 		"happy-dom": "^15.0.0",
+		"ng-packagr": "^21.0.0",
+		"rxjs": "^7.8.0",
 		"vite-plus": "catalog:",
-		"zone.js": "^0.15.0"
+		"zone.js": "~0.15.0"
 	},
 	"peerDependencies": {
-		"@angular/common": ">=18.0.0",
-		"@angular/core": ">=18.0.0"
+		"@angular/common": ">=20.0.0",
+		"@angular/core": ">=20.0.0"
 	}
 }
