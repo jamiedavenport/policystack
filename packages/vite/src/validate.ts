@@ -1,29 +1,21 @@
-import {
-	expandOpenPolicyConfig,
-	type OpenPolicyConfig,
-	validateCookiePolicy,
-	validateOpenPolicyConfig,
-	validatePrivacyPolicy,
-	type ValidationIssue,
-} from "@openpolicy/core";
+import { type Issue, type OpenPolicyConfig, validate } from "@openpolicy/core";
 import { bundleRequire } from "bundle-require";
 import type { ScannerDiagnostic } from "./analyse";
 
 export type ValidatedConfig = {
 	config: OpenPolicyConfig | null;
-	issues: ValidationIssue[];
+	issues: Issue[];
 	loadError: Error | null;
 };
 
 /**
- * Loads the user's `openpolicy.ts` via bundle-require, then runs every
- * validator exported from `@openpolicy/core` against the resolved config.
+ * Loads the user's `openpolicy.ts` via bundle-require, then runs the single
+ * `validate()` exported from `@openpolicy/core` against the resolved config.
  * The config imports its scanned values from the on-disk `./openpolicy.gen`
  * module, so bundle-require resolves them as ordinary relative source — no
  * interception shim is needed. The caller must have written `openpolicy.gen.ts`
- * (via `writeGenModule`) before calling this. Issues are deduped by
- * `code + message` because the SDK-shape validator overlaps with the
- * post-expansion privacy/cookie validators on required-field checks.
+ * (via `writeGenModule`) before calling this. `validate()` operates on the
+ * flat config and emits each code at most once, so no dedupe pass is needed.
  *
  * Bundle-require errors (TS syntax errors, missing imports, runtime throws in
  * the user's config module) are surfaced as `loadError` rather than thrown so
@@ -72,25 +64,9 @@ export async function loadAndValidateConfig(args: {
 		};
 	}
 
-	const issues: ValidationIssue[] = [];
-	issues.push(...validateOpenPolicyConfig(config));
-	for (const input of expandOpenPolicyConfig(config)) {
-		if (input.type === "privacy") issues.push(...validatePrivacyPolicy(input));
-		else issues.push(...validateCookiePolicy(input));
-	}
-
-	const seen = new Set<string>();
-	const deduped: ValidationIssue[] = [];
-	for (const issue of issues) {
-		const key = `${issue.code}::${issue.message}`;
-		if (seen.has(key)) continue;
-		seen.add(key);
-		deduped.push(issue);
-	}
-
 	return {
 		config,
-		issues: deduped,
+		issues: validate(config),
 		loadError: null,
 	};
 }
@@ -99,7 +75,7 @@ export async function loadAndValidateConfig(args: {
  * Formats a validation issue for terminal output. Prefixes with `[openpolicy]`
  * so users can grep the build log for our messages.
  */
-export function formatIssue(issue: ValidationIssue): string {
+export function formatIssue(issue: Issue): string {
 	return `[openpolicy] ${issue.code}: ${issue.message}`;
 }
 

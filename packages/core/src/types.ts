@@ -187,8 +187,10 @@ export type OpenPolicyConfig = {
 	// Language for OpenPolicy-emitted strings. Defaults to "en" when omitted.
 	locale?: Locale;
 
-	// Data handling — feeds the privacy policy.
-	data?: DataConfig;
+	// Data handling — feeds the privacy policy. Required: every config must
+	// declare its data posture. An empty `data.collected` is valid (e.g. a
+	// plain landing page) but surfaces a `data-collected-empty` warning.
+	data: DataConfig;
 	children?: ChildrenConfig;
 	thirdParties?: ThirdParty[];
 	automatedDecisionMaking?: AutomatedDecisionMaking;
@@ -213,8 +215,40 @@ export function isOpenPolicyConfig(value: unknown): value is OpenPolicyConfig {
 	return "company" in obj && "effectiveDate" in obj && !("type" in obj);
 }
 
-export type ValidationIssue = {
-	code: string;
+// Stable public diagnostic codes emitted by validate(). Frozen at 1.0 (§6);
+// each is one-per-condition. Severity in the trailing comment is the default
+// (PS-13 may later allow promotion/suppression).
+export type IssueCode =
+	| "effective-date-required" //          error   — effectiveDate missing
+	| "company-name-required" //            error   — company.name missing
+	| "company-legal-name-required" //      error   — company.legalName missing
+	| "company-address-required" //         error   — company.address missing
+	| "company-contact-required" //         error   — company.contact.email missing
+	| "jurisdictions-required" //           error   — jurisdictions empty
+	| "jurisdiction-unknown" //             error   — code not in JURISDICTIONS
+	| "locale-unknown" //                   error   — locale not in LOCALES
+	| "policy-empty" //                     error   — config produces no policy
+	| "policy-cookie-empty" //              error   — policies has "cookie" but cookies unset
+	| "data-missing" //                     error   — required data key omitted
+	| "data-collected-empty" //             warning — data.collected has no entries
+	| "data-context-missing" //             error   — collected category has no context entry
+	| "data-context-orphan" //              error   — context entry with no collected match
+	| "data-purpose-missing" //             error   — context entry lacks purpose
+	| "data-purpose-empty" //               error   — context purpose is blank
+	| "lawful-basis-incomplete" //          error   — GDPR Art. 13(1)(c) basis missing
+	| "statutory-contractual-obligation" // error   — GDPR Art. 13(2)(e) provision missing/blank
+	| "retention-incomplete" //             error   — retention period missing
+	| "automated-decision-making" //        warning — GDPR Art. 13(2)(f) not declared
+	| "children-under-age-invalid" //       error   — children.underAge not positive
+	| "company-dpo-undeclared" //           warning — GDPR Art. 13(1)(b) DPO undeclared
+	| "company-contact-phone-recommended" //warning — CCPA §1798.130(a)(1) phone absent
+	| "cookies-empty" //                    error   — no cookie category enabled
+	| "cookie-lawful-basis-missing" //      error   — enabled cookie lacks lawful basis
+	| "consent-mechanism-undeclared" //     warning — consentMechanism absent
+	| "consent-withdrawal-required"; //     warning — withdrawal not enabled under GDPR/UK
+
+export type Issue = {
+	code: IssueCode;
 	level: "error" | "warning";
 	message: string;
 };

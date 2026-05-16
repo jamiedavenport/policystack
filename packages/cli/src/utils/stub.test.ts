@@ -40,6 +40,8 @@ test("getStubContents contains required defineConfig fields", () => {
 	expect(out).toContain('effectiveDate: "2026-04-22"');
 	expect(out).toContain("jurisdictions: []");
 	expect(out).toContain("company:");
+	expect(out).toContain("data:");
+	expect(out).toContain("collected: {}");
 });
 
 test("writeStub writes a new file", async () => {

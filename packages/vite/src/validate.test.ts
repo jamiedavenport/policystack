@@ -136,9 +136,9 @@ export default defineConfig({
 	expect(hit).toBeDefined();
 });
 
-test("dedupes issues with the same code+message across validators", async () => {
-	// effective-date-required is checked by every validator. With the field
-	// missing, all three would report it — the dedupe pass should leave one.
+test("single validator emits each code at most once (no dedupe pass needed)", async () => {
+	// The single validator runs each required-field check once, so a missing
+	// effectiveDate surfaces exactly one effective-date-required issue.
 	const file = await writeConfig(VALID_CONFIG.replace('effectiveDate: "2026-01-01",', ""));
 	const result = await loadAndValidateConfig({ configFile: file });
 	const matches = result.issues.filter((i) => i.code === "effective-date-required");

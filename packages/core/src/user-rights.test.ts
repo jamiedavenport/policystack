@@ -2,7 +2,7 @@ import { expect, test } from "vite-plus/test";
 import { compile } from "./documents";
 import type { OpenPolicyConfig, PolicyInput, UserRight } from "./types";
 import { deriveUserRights } from "./user-rights";
-import { validateOpenPolicyConfig } from "./validate-config";
+import { validate } from "./validate";
 
 const GDPR_RIGHTS: UserRight[] = [
 	"access",
@@ -96,7 +96,7 @@ test("buildUserRights: privacy policy omits 'Your Rights' section when derivatio
 	expect(hasRightsSection).toBe(false);
 });
 
-test("validateOpenPolicyConfig: emits no userRights-related issues", () => {
+test("validate: emits no userRights-related issues", () => {
 	const config: OpenPolicyConfig = {
 		company: {
 			name: "Acme Inc.",
@@ -121,6 +121,6 @@ test("validateOpenPolicyConfig: emits no userRights-related issues", () => {
 			},
 		},
 	};
-	const issues = validateOpenPolicyConfig(config);
+	const issues = validate(config);
 	expect(issues.some((i) => i.message.toLowerCase().includes("userrights"))).toBe(false);
 });

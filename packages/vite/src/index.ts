@@ -46,8 +46,8 @@ export type OpenPolicyOptions = {
 	};
 
 	/**
-	 * Run `validateOpenPolicyConfig` (and the per-policy validators) against
-	 * the resolved `openpolicy.ts` after each scan. Errors fail `vite build`
+	 * Run `validate()` against the resolved `openpolicy.ts` after each scan.
+	 * Errors fail `vite build`
 	 * (`PluginContext.error`); warnings are reported (`PluginContext.warn`)
 	 * but never block. In dev, both error and warning issues are logged
 	 * through the dev-server logger and never crash HMR. Defaults to `true`.

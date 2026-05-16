@@ -12,6 +12,7 @@ const policy: OpenPolicyConfig = {
 	},
 	effectiveDate: "2026-01-01",
 	jurisdictions: ["eu"],
+	data: { collected: {}, context: {} },
 	cookies: {
 		used: { essential: true, analytics: true, marketing: false },
 		context: {

@@ -58,7 +58,7 @@ type OpenPolicyConfigWithGenerics<
 	Collected extends Record<string, string[]>,
 	CookieUsed extends { essential: true; [k: string]: boolean },
 > = Omit<OpenPolicyConfig, "data" | "cookies"> & {
-	data?: {
+	data: {
 		collected: Collected;
 		context: { [P in DataKey<Collected>]: DataContextEntry };
 	};

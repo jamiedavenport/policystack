@@ -124,25 +124,29 @@ test("expandOpenPolicyConfig auto-detects privacy-only when cookies omitted", ()
 	expect(inputs[0]?.type).toBe("privacy");
 });
 
-test("expandOpenPolicyConfig auto-detects cookie-only when no privacy fields", () => {
+test("expandOpenPolicyConfig emits cookie-only when policies excludes privacy", () => {
 	const inputs = expandOpenPolicyConfig({
 		company,
 		effectiveDate: "2026-01-01",
 		jurisdictions: ["ca"],
+		data: { collected: {}, context: {} },
 		cookies: {
 			used: { essential: true },
 			context: { essential: { lawfulBasis: "legal_obligation" } },
 		},
+		policies: ["cookie"],
 	});
 	expect(inputs).toHaveLength(1);
 	expect(inputs[0]?.type).toBe("cookie");
 });
 
-test("expandOpenPolicyConfig returns empty array when nothing to emit", () => {
+test("expandOpenPolicyConfig returns empty array when policies is empty", () => {
 	const inputs = expandOpenPolicyConfig({
 		company,
 		effectiveDate: "2026-01-01",
 		jurisdictions: ["ca"],
+		data: { collected: {}, context: {} },
+		policies: [],
 	});
 	expect(inputs).toHaveLength(0);
 });

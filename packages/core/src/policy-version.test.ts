@@ -47,9 +47,8 @@ test("computeCookieVersion returns an 8-char hex string", () => {
 	expect(hash).toMatch(/^[0-9a-f]{8}$/);
 });
 
-test("computePrivacyVersion returns undefined when no privacy fields are present", () => {
-	const { data: _, ...cookieOnly } = base;
-	expect(computePrivacyVersion(cookieOnly)).toBeUndefined();
+test("computePrivacyVersion returns undefined when privacy is excluded via policies", () => {
+	expect(computePrivacyVersion({ ...base, policies: ["cookie"] })).toBeUndefined();
 });
 
 test("computeCookieVersion returns undefined when cookies are absent", () => {

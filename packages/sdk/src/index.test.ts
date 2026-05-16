@@ -51,12 +51,14 @@ test("defineConfig populates privacyVersion and cookieVersion", () => {
 	expect(result.cookieVersion).toMatch(/^[0-9a-f]{8}$/);
 });
 
-test("defineConfig omits privacyVersion when no privacy fields present", () => {
+test("defineConfig omits privacyVersion when privacy is excluded via policies", () => {
 	const result = defineConfig({
 		company: fixture.company,
 		effectiveDate: "2026-01-01",
 		jurisdictions: ["ca"],
+		data: fixture.data,
 		cookies: fixture.cookies,
+		policies: ["cookie"],
 	});
 	expect(result.privacyVersion).toBeUndefined();
 	expect(result.cookieVersion).toMatch(/^[0-9a-f]{8}$/);
@@ -116,6 +118,7 @@ test("defineConfig rejects cookies.context without entry for every used cookie",
 		company: fixture.company,
 		effectiveDate: "2026-01-01",
 		jurisdictions: ["eu"],
+		data: fixture.data,
 		cookies: {
 			used: { essential: true, analytics: true },
 			// @ts-expect-error — missing "analytics" in context

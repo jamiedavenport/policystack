@@ -25,6 +25,10 @@ export default defineConfig({
 	},
 	effectiveDate: "${today}",
 	jurisdictions: [],
+	data: {
+		collected: {},
+		context: {},
+	},
 });
 `;
 }
