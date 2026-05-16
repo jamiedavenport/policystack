@@ -62,10 +62,14 @@ freeze to consent: the frozen guarantee is scoped to the `.` entry; `./consent`
 may still take breaking changes (PS-21 Category bridge metadata, PS-22
 `sharing()`) before 1.0.
 
-### 6. Angular ships src-only (stopgap)
+### 6. Angular ships src-only (stopgap) — _superseded by [ADR 0003](0003-angular-library-build.md)_
 
-`@openpolicy/angular` ships TypeScript source (no `ng-packagr`, no TS 5.6
-outlier). Real packaging is owned by **PS-18**.
+Originally: `@openpolicy/angular` ships TypeScript source (no `ng-packagr`, no
+TS 5.6 outlier); real packaging owned by **PS-18**. **Resolved (PS-18):** the
+package now builds via `ng-packagr` on Angular 21 into Angular Package Format.
+The TypeScript-version outlier the stopgap was avoiding does **not**
+materialise — Angular 21's `@angular/compiler-cli` targets TS `>=5.9`, matching
+the monorepo's `typescript ^5.9.3`. See [ADR 0003](0003-angular-library-build.md).
 
 ## Consequences
 
