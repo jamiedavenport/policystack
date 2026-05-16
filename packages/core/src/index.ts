@@ -6,7 +6,6 @@ export type {
 	DocumentSection,
 	HeadingNode,
 	InlineNode,
-	IssueCode,
 	ItalicNode,
 	LinkNode,
 	ListItemNode,
@@ -23,6 +22,9 @@ export type {
 	TextNode,
 	UnknownNode,
 	Visitor,
+	// `IssueCode` is re-exported once from "./types" (PS-11 froze it there
+	// alongside `Issue`); the duplicate "./documents" re-export was a latent
+	// TS2300 inherited from the v1 base and is dropped here.
 } from "./documents";
 export {
 	AST_VERSION,
@@ -46,6 +48,8 @@ export {
 } from "./documents";
 export type { JurisdictionId } from "./jurisdiction-id";
 export { isJurisdiction, JURISDICTIONS } from "./jurisdictions";
+export { CONTAINER_SLOTS, SLOT_NAMES } from "./slots";
+export type { ContainerSlotName, SlotName, SlotNodes } from "./slots";
 export type {
 	AutomatedDecision,
 	AutomatedDecisionMaking,

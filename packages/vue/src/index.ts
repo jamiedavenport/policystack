@@ -7,15 +7,17 @@ export {
 	DefaultItalic,
 	DefaultLink,
 	DefaultList,
+	DefaultListItem,
 	DefaultParagraph,
+	DefaultRoot,
 	DefaultSection,
 	DefaultTable,
-	DefaultTableBody,
 	DefaultTableCell,
-	DefaultTableHead,
-	DefaultTableHeader,
+	DefaultTableHeaderCell,
+	DefaultTableHeaderRow,
 	DefaultTableRow,
 	DefaultText,
+	DefaultUnknown,
 } from "./defaults";
 export { renderDocument } from "./render";
 export type { PolicyComponents } from "./types";

@@ -1,37 +1,19 @@
-import type {
-	BoldNode,
-	DocumentSection,
-	HeadingNode,
-	ItalicNode,
-	LinkNode,
-	ListItemNode,
-	ListNode,
-	ParagraphNode,
-	TableCellNode,
-	TableHeaderCellNode,
-	TableHeaderRowNode,
-	TableNode,
-	TableRowNode,
-	TextNode,
-} from "@openpolicy/core";
+import type { ContainerSlotName, SlotNodes } from "@openpolicy/core";
 import type { ComponentType, ReactNode } from "react";
 
+// Per-slot React props, derived from the canonical core contract: every slot
+// receives its `node`; container slots also receive rendered `children`; the
+// `Root` wrapper additionally accepts a host `style`.
+type SlotProps<K extends keyof SlotNodes> = { node: SlotNodes[K] } & (K extends ContainerSlotName
+	? { children: ReactNode }
+	: unknown) &
+	(K extends "Root" ? { style?: unknown } : unknown);
+
+/**
+ * The React component-override map. One optional component per canonical slot
+ * (PS-15 §2.4) — keys and node payloads are the single source of truth in
+ * `@openpolicy/core`; this type only adapts them to React's `ComponentType`.
+ */
 export type PolicyComponents = {
-	Root?: ComponentType<{ children: ReactNode; style?: unknown }>;
-	Section?: ComponentType<{ section: DocumentSection; children: ReactNode }>;
-	Heading?: ComponentType<{ node: HeadingNode }>;
-	Paragraph?: ComponentType<{ node: ParagraphNode; children: ReactNode }>;
-	List?: ComponentType<{ node: ListNode; children: ReactNode }>;
-	ListItem?: ComponentType<{ node: ListItemNode; children: ReactNode }>;
-	Table?: ComponentType<{ node: TableNode; children: ReactNode }>;
-	TableHeader?: ComponentType<{ children: ReactNode }>;
-	TableBody?: ComponentType<{ children: ReactNode }>;
-	TableRow?: ComponentType<{ node: TableRowNode; children: ReactNode }>;
-	TableHeaderRow?: ComponentType<{ node: TableHeaderRowNode; children: ReactNode }>;
-	TableHead?: ComponentType<{ node: TableHeaderCellNode; children: ReactNode }>;
-	TableCell?: ComponentType<{ node: TableCellNode; children: ReactNode }>;
-	Text?: ComponentType<{ node: TextNode }>;
-	Bold?: ComponentType<{ node: BoldNode }>;
-	Italic?: ComponentType<{ node: ItalicNode }>;
-	Link?: ComponentType<{ node: LinkNode }>;
+	[K in keyof SlotNodes]?: ComponentType<SlotProps<K>>;
 };

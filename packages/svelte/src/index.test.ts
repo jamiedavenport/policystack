@@ -1,8 +1,9 @@
-import type { OpenPolicyConfig, PrivacyPolicyConfig } from "@openpolicy/core";
+import type { OpenPolicyConfig, PrivacyPolicyConfig, SlotName } from "@openpolicy/core";
 import { render } from "svelte/server";
 import { expect, test } from "vite-plus/test";
 import CookiePolicy from "./lib/CookiePolicy.svelte";
 import PrivacyPolicy from "./lib/PrivacyPolicy.svelte";
+import type { PolicyComponents } from "./lib/types";
 import { compileDocument } from "./lib/usePolicyDocument.svelte";
 
 const company = {
@@ -88,3 +89,14 @@ test("CookiePolicy SSR-renders the cookie policy from an OpenPolicyConfig", () =
 	const { body } = render(CookiePolicy, { props: { config: openConfig } });
 	expect(body).toContain('data-op-policy=""');
 });
+
+// PS-15 (§2.4) drift guard: the Svelte override map must expose exactly the
+// canonical slot set from `@openpolicy/core`. If this framework's keys ever
+// diverge, `_keysAreCanonical` collapses to `never` and `vp check` fails.
+type KeysAreCanonical = [keyof PolicyComponents] extends [SlotName]
+	? [SlotName] extends [keyof PolicyComponents]
+		? true
+		: never
+	: never;
+const _keysAreCanonical: KeysAreCanonical = true;
+void _keysAreCanonical;

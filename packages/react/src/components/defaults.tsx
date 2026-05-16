@@ -1,5 +1,6 @@
 import type {
 	BoldNode,
+	Document,
 	DocumentSection,
 	HeadingNode,
 	ItalicNode,
@@ -14,13 +15,22 @@ import type {
 	TableNode,
 	TableRowNode,
 	TextNode,
+	UnknownNode,
 	Visitor,
 } from "@openpolicy/core";
 import { visit } from "@openpolicy/core";
-import { Fragment, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, Fragment, type ReactNode } from "react";
 import type { PolicyComponents } from "../types";
 
-export function DefaultRoot({ children, style }: { children: ReactNode; style?: unknown }) {
+export function DefaultRoot({
+	node: _node,
+	children,
+	style,
+}: {
+	node: Document;
+	children: ReactNode;
+	style?: unknown;
+}) {
 	return (
 		<div data-op-policy style={style as CSSProperties | undefined}>
 			{children}
@@ -50,19 +60,19 @@ export function DefaultLink({ node }: { node: LinkNode }) {
 	return <a href={node.href}>{node.value}</a>;
 }
 
-export function DefaultSection({
-	section,
-	children,
-}: {
-	section: DocumentSection;
-	children: ReactNode;
-}) {
+// Forward-compat no-op: an unrecognized future block-level node is degraded to
+// `UnknownNode` by an older reader and renders as nothing (ADR 0001).
+export function DefaultUnknown({ node: _node }: { node: UnknownNode }) {
+	return null;
+}
+
+export function DefaultSection({ node, children }: { node: DocumentSection; children: ReactNode }) {
 	return (
 		<section
 			data-op-section
-			id={section.id}
-			{...(section.context?.reason?.code && {
-				"data-op-reason": section.context.reason.code,
+			id={node.id}
+			{...(node.context?.reason?.code && {
+				"data-op-reason": node.context.reason.code,
 			})}
 		>
 			{children}
@@ -99,24 +109,8 @@ export function DefaultTable({ node: _node, children }: { node: TableNode; child
 	return <table data-op-table>{children}</table>;
 }
 
-export function DefaultTableHeader({ children }: { children: ReactNode }) {
-	return <thead data-op-table-header>{children}</thead>;
-}
-
-export function DefaultTableBody({ children }: { children: ReactNode }) {
-	return <tbody data-op-table-body>{children}</tbody>;
-}
-
-export function DefaultTableRow({
-	node: _node,
-	children,
-}: {
-	node: TableRowNode;
-	children: ReactNode;
-}) {
-	return <tr data-op-table-row>{children}</tr>;
-}
-
+// `<thead>` is a rendering detail owned by the default header-row component,
+// not a node/slot of its own — there is exactly one header row per table.
 export function DefaultTableHeaderRow({
 	node: _node,
 	children,
@@ -124,10 +118,14 @@ export function DefaultTableHeaderRow({
 	node: TableHeaderRowNode;
 	children: ReactNode;
 }) {
-	return <tr data-op-table-row>{children}</tr>;
+	return (
+		<thead data-op-table-header>
+			<tr data-op-table-row>{children}</tr>
+		</thead>
+	);
 }
 
-export function DefaultTableHead({
+export function DefaultTableHeaderCell({
 	node: _node,
 	children,
 }: {
@@ -141,6 +139,16 @@ export function DefaultTableHead({
 	);
 }
 
+export function DefaultTableRow({
+	node: _node,
+	children,
+}: {
+	node: TableRowNode;
+	children: ReactNode;
+}) {
+	return <tr data-op-table-row>{children}</tr>;
+}
+
 export function DefaultTableCell({
 	node: _node,
 	children,
@@ -151,12 +159,12 @@ export function DefaultTableCell({
 	return <td data-op-table-cell>{children}</td>;
 }
 
-// A `Visitor<ReactNode>` built per render, closing over `components` (which the
-// frozen `visit()` does not thread). Container arms own their children: they map
-// with an index and wrap each child in a keyed `Fragment` — this replaces the
-// `key` parameter the old hand-rolled walk threaded. The `table` arm builds its
-// whole subtree, so the row/cell arms are exhaustiveness-only no-ops, exactly as
-// the pre-PS-12 walk already treated them (ADR 0001 unifying principle).
+// A `Visitor<ReactNode>` built per render, closing over the canonical slot map
+// `components` (which the frozen `visit()` does not thread). Container arms own
+// their children: they map with an index and wrap each child in a keyed
+// `Fragment` — this replaces the `key` parameter the old hand-rolled walk
+// threaded. The `table` arm builds its whole subtree, so the row/cell arms are
+// exhaustiveness-only no-ops (ADR 0001 unifying principle).
 function buildVisitor(components: PolicyComponents): Visitor<ReactNode> {
 	const kids = (nodes: readonly Node[], v: (child: Node) => ReactNode): ReactNode[] =>
 		nodes.map((n, i) => <Fragment key={i}>{v(n)}</Fragment>);
@@ -171,7 +179,7 @@ function buildVisitor(components: PolicyComponents): Visitor<ReactNode> {
 		),
 		section: (node, v) => {
 			const SectionComp = components.Section ?? DefaultSection;
-			return <SectionComp section={node}>{kids(node.content, v)}</SectionComp>;
+			return <SectionComp node={node}>{kids(node.content, v)}</SectionComp>;
 		},
 		heading: (node) => {
 			const HeadingComp = components.Heading ?? DefaultHeading;
@@ -191,34 +199,28 @@ function buildVisitor(components: PolicyComponents): Visitor<ReactNode> {
 		},
 		table: (node, v) => {
 			const TableComp = components.Table ?? DefaultTable;
-			const TableHeaderComp = components.TableHeader ?? DefaultTableHeader;
-			const TableBodyComp = components.TableBody ?? DefaultTableBody;
 			const TableHeaderRowComp = components.TableHeaderRow ?? DefaultTableHeaderRow;
+			const TableHeaderCellComp = components.TableHeaderCell ?? DefaultTableHeaderCell;
 			const TableRowComp = components.TableRow ?? DefaultTableRow;
-			const TableHeadComp = components.TableHead ?? DefaultTableHead;
 			const TableCellComp = components.TableCell ?? DefaultTableCell;
-			const headerRow = (
-				<TableHeaderRowComp node={node.header}>
-					{node.header.cells.map((cell, ci) => (
-						<TableHeadComp key={ci} node={cell}>
-							{kids(cell.children, v)}
-						</TableHeadComp>
-					))}
-				</TableHeaderRowComp>
-			);
-			const bodyRows = node.rows.map((row, ri) => (
-				<TableRowComp key={ri} node={row}>
-					{row.cells.map((cell, ci) => (
-						<TableCellComp key={ci} node={cell}>
-							{kids(cell.children, v)}
-						</TableCellComp>
-					))}
-				</TableRowComp>
-			));
 			return (
 				<TableComp node={node}>
-					<TableHeaderComp>{headerRow}</TableHeaderComp>
-					<TableBodyComp>{bodyRows}</TableBodyComp>
+					<TableHeaderRowComp node={node.header}>
+						{node.header.cells.map((cell, ci) => (
+							<TableHeaderCellComp key={ci} node={cell}>
+								{kids(cell.children, v)}
+							</TableHeaderCellComp>
+						))}
+					</TableHeaderRowComp>
+					{node.rows.map((row, ri) => (
+						<TableRowComp key={ri} node={row}>
+							{row.cells.map((cell, ci) => (
+								<TableCellComp key={ci} node={cell}>
+									{kids(cell.children, v)}
+								</TableCellComp>
+							))}
+						</TableRowComp>
+					))}
 				</TableComp>
 			);
 		},
@@ -227,9 +229,10 @@ function buildVisitor(components: PolicyComponents): Visitor<ReactNode> {
 		tableCell: () => null,
 		tableHeaderRow: () => null,
 		tableHeaderCell: () => null,
-		// Forward-compat no-op: unrecognized future block-level nodes are
-		// represented as UnknownNode and rendered as nothing (see ADR 0001).
-		unknown: () => null,
+		unknown: (node) => {
+			const Comp = components.Unknown ?? DefaultUnknown;
+			return <Comp node={node} />;
+		},
 		text: (node) => {
 			const Comp = components.Text ?? DefaultText;
 			return <Comp node={node} />;

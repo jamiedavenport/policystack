@@ -11,12 +11,12 @@ export {
 	DefaultRoot,
 	DefaultSection,
 	DefaultTable,
-	DefaultTableBody,
 	DefaultTableCell,
-	DefaultTableHead,
-	DefaultTableHeader,
+	DefaultTableHeaderCell,
+	DefaultTableHeaderRow,
 	DefaultTableRow,
 	DefaultText,
+	DefaultUnknown,
 	renderNode,
 } from "./components/defaults";
 export { PrivacyPolicy } from "./components/PrivacyPolicy";

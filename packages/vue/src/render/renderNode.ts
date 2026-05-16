@@ -7,16 +7,16 @@ import {
 	DefaultItalic,
 	DefaultLink,
 	DefaultList,
+	DefaultListItem,
 	DefaultParagraph,
 	DefaultSection,
 	DefaultTable,
-	DefaultTableBody,
 	DefaultTableCell,
-	DefaultTableHead,
-	DefaultTableHeader,
+	DefaultTableHeaderCell,
 	DefaultTableHeaderRow,
 	DefaultTableRow,
 	DefaultText,
+	DefaultUnknown,
 } from "../defaults";
 import type { PolicyComponents } from "../types";
 
@@ -26,8 +26,8 @@ export type RenderNode = (node: Node, components: PolicyComponents) => VNodeChil
 // each child are reapplied here by the parent arm: it maps with an index and
 // clones the produced VNode with that key. The `table` arm owns its whole grid
 // (its row/cell keys are set directly), so the row/cell arms are
-// exhaustiveness-only no-ops, exactly as the pre-PS-12 walk treated them
-// (ADR 0001 unifying principle).
+// exhaustiveness-only no-ops (ADR 0001 unifying principle). Slots come from the
+// one canonical contract in `@openpolicy/core` (PS-15).
 const keyed = (child: VNodeChild, key: number): VNodeChild =>
 	isVNode(child) ? cloneVNode(child, { key }) : child;
 
@@ -41,7 +41,7 @@ function buildVisitor(components: PolicyComponents): Visitor<VNodeChild> {
 			const SectionComp = components.Section ?? DefaultSection;
 			return h(
 				SectionComp,
-				{ section: node },
+				{ node },
 				{ default: () => node.content.map((n, i) => keyed(v(n), i)) },
 			);
 		},
@@ -61,29 +61,25 @@ function buildVisitor(components: PolicyComponents): Visitor<VNodeChild> {
 			const ListComp = components.List ?? DefaultList;
 			return h(ListComp, { node }, { default: () => node.items.map((it, i) => keyed(v(it), i)) });
 		},
-		listItem: (node, v) =>
-			h(
-				"li",
-				{ "data-op-list-item": "" },
-				node.children.map((n, i) => keyed(v(n), i)),
-			),
+		listItem: (node, v) => {
+			const ListItemComp = components.ListItem ?? DefaultListItem;
+			return h(
+				ListItemComp,
+				{ node },
+				{ default: () => node.children.map((n, i) => keyed(v(n), i)) },
+			);
+		},
 		table: (node, v) => {
 			const TableComp = components.Table ?? DefaultTable;
-			const TableHeaderComp = components.TableHeader ?? DefaultTableHeader;
-			const TableBodyComp = components.TableBody ?? DefaultTableBody;
 			const TableRowComp = components.TableRow ?? DefaultTableRow;
 			const TableHeaderRowComp = components.TableHeaderRow ?? DefaultTableHeaderRow;
-			const TableHeadComp = components.TableHead ?? DefaultTableHead;
+			const TableHeaderCellComp = components.TableHeaderCell ?? DefaultTableHeaderCell;
 			const TableCellComp = components.TableCell ?? DefaultTableCell;
 
 			const headerCells = node.header.cells.map((c, ci) =>
-				h(TableHeadComp, { key: ci, node: c }, { default: () => cellKids(c, v) }),
+				h(TableHeaderCellComp, { key: ci, node: c }, { default: () => cellKids(c, v) }),
 			);
-			const headerRow = h(
-				TableHeaderRowComp,
-				{ node: node.header },
-				{ default: () => headerCells },
-			);
+			const headerRow = h(TableHeaderRowComp, { node: node.header }, { default: () => headerCells });
 			const bodyRows = node.rows.map((row, ri) =>
 				h(
 					TableRowComp,
@@ -96,20 +92,17 @@ function buildVisitor(components: PolicyComponents): Visitor<VNodeChild> {
 					},
 				),
 			);
-			const inner = [
-				h(TableHeaderComp, null, { default: () => headerRow }),
-				h(TableBodyComp, null, { default: () => bodyRows }),
-			];
-			return h(TableComp, { node }, { default: () => inner });
+			return h(TableComp, { node }, { default: () => [headerRow, ...bodyRows] });
 		},
 		// Owned by the `table` arm — present only for exhaustiveness.
 		tableHeaderRow: () => null,
 		tableRow: () => null,
 		tableHeaderCell: () => null,
 		tableCell: () => null,
-		// Forward-compat no-op: unrecognized future block nodes render as
-		// nothing rather than crashing the renderer (see ADR 0001).
-		unknown: () => null,
+		unknown: (node) => {
+			const UnknownComp = components.Unknown ?? DefaultUnknown;
+			return h(UnknownComp, { node });
+		},
 		text: (node) => {
 			const Comp = components.Text ?? DefaultText;
 			return h(Comp, { node });

@@ -29,5 +29,9 @@ export function CookiePolicy({ config: configProp, locale, components, style }: 
 		: compile({ type: "cookie", ...config });
 	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
-	return <Root style={style}>{renderDocument(doc, components)}</Root>;
+	return (
+		<Root node={doc} style={style}>
+			{renderDocument(doc, components)}
+		</Root>
+	);
 }

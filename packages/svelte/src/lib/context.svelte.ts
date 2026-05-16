@@ -1,6 +1,6 @@
 import type { OpenPolicyConfig } from "@openpolicy/core";
 import { getContext, setContext } from "svelte";
-import type { PolicyOverrides } from "./types";
+import type { PolicyComponents } from "./types";
 
 const CONFIG_KEY = Symbol("openpolicy.config");
 const OVERRIDES_KEY = Symbol("openpolicy.overrides");
@@ -15,10 +15,10 @@ export function getConfigContext(): ConfigGetter | undefined {
 	return getContext<ConfigGetter | undefined>(CONFIG_KEY);
 }
 
-export function setOverridesContext(getter: () => PolicyOverrides): void {
+export function setOverridesContext(getter: () => PolicyComponents): void {
 	setContext(OVERRIDES_KEY, getter);
 }
 
-export function getOverridesContext(): () => PolicyOverrides {
-	return getContext<(() => PolicyOverrides) | undefined>(OVERRIDES_KEY) ?? (() => ({}));
+export function getOverridesContext(): () => PolicyComponents {
+	return getContext<(() => PolicyComponents) | undefined>(OVERRIDES_KEY) ?? (() => ({}));
 }

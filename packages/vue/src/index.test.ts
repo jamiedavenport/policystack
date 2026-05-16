@@ -1,4 +1,9 @@
-import { compile, type HeadingNode, type PrivacyPolicyConfig } from "@openpolicy/core";
+import {
+	compile,
+	type HeadingNode,
+	type PrivacyPolicyConfig,
+	type SlotName,
+} from "@openpolicy/core";
 import { expect, test } from "vite-plus/test";
 import { defineComponent, h, isVNode, type PropType } from "vue";
 import { type PolicyComponents, renderDocument } from ".";
@@ -91,3 +96,14 @@ test("custom components in PolicyComponents override defaults", () => {
 
 	expect(containsCustomHeading(result)).toBe(true);
 });
+
+// PS-15 (§2.4) drift guard: the Vue override map must expose exactly the
+// canonical slot set from `@openpolicy/core`. If this framework's keys ever
+// diverge, `_keysAreCanonical` collapses to `never` and `vp check` fails.
+type KeysAreCanonical = [keyof PolicyComponents] extends [SlotName]
+	? [SlotName] extends [keyof PolicyComponents]
+		? true
+		: never
+	: never;
+const _keysAreCanonical: KeysAreCanonical = true;
+void _keysAreCanonical;

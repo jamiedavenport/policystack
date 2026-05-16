@@ -10,4 +10,6 @@ let {
 } = $props();
 </script>
 
-<tr data-op-table-row="">{@render children()}</tr>
+<!-- `<thead>` is a rendering detail owned by the default header-row component,
+     not a node/slot of its own — there is exactly one header row per table. -->
+<thead data-op-table-header=""><tr data-op-table-row="">{@render children()}</tr></thead>

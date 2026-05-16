@@ -1,4 +1,4 @@
-import type { PrivacyPolicyConfig } from "@openpolicy/core";
+import type { PrivacyPolicyConfig, SlotName } from "@openpolicy/core";
 import { compile } from "@openpolicy/core";
 import { isValidElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -83,16 +83,15 @@ const rnLikeComponents: PolicyComponents = {
 	List: Slot("list"),
 	ListItem: Slot("listItem"),
 	Table: Slot("table"),
-	TableHeader: Slot("tableHeader"),
-	TableBody: Slot("tableBody"),
 	TableHeaderRow: Slot("tableHeaderRow"),
+	TableHeaderCell: Slot("tableHeaderCell"),
 	TableRow: Slot("tableRow"),
-	TableHead: Slot("tableHead"),
 	TableCell: Slot("tableCell"),
 	Text: Empty("text"),
 	Bold: Empty("bold"),
 	Italic: Empty("italic"),
 	Link: Empty("link"),
+	Unknown: Empty("unknown"),
 };
 
 const forbiddenTagPattern =
@@ -112,3 +111,15 @@ test("renderDocument with full overrides emits no host DOM tags", () => {
 	const html = renderToStaticMarkup(<>{renderDocument(doc, rnLikeComponents)}</>);
 	expect(html).not.toMatch(forbiddenTagPattern);
 });
+
+// PS-15 (§2.4) drift guard: the React override map must expose exactly the
+// canonical slot set from `@openpolicy/core` — no more, no less. If this
+// framework's keys ever diverge, `_keysAreCanonical` collapses to `never` and
+// `vp check` fails.
+type KeysAreCanonical = [keyof PolicyComponents] extends [SlotName]
+	? [SlotName] extends [keyof PolicyComponents]
+		? true
+		: never
+	: never;
+const _keysAreCanonical: KeysAreCanonical = true;
+void _keysAreCanonical;

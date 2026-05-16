@@ -3,18 +3,18 @@ import type { DocumentSection } from "@openpolicy/core";
 import type { Snippet } from "svelte";
 
 let {
-	section,
+	node,
 	children,
 }: {
-	section: DocumentSection;
+	node: DocumentSection;
 	children: Snippet;
 } = $props();
 </script>
 
 <section
 	data-op-section=""
-	id={section.id}
-	data-op-reason={section.context?.reason?.code}
+	id={node.id}
+	data-op-reason={node.context?.reason?.code}
 >
 	{@render children()}
 </section>

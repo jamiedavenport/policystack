@@ -34,5 +34,9 @@ export function PrivacyPolicy({
 		: compile({ type: "privacy", ...config });
 	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
-	return <Root style={style}>{renderDocument(doc, components)}</Root>;
+	return (
+		<Root node={doc} style={style}>
+			{renderDocument(doc, components)}
+		</Root>
+	);
 }
