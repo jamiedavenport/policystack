@@ -56,6 +56,7 @@ We're actively working on the 1.0.0 release.
 
 - The primary branch for this is `v1`.
 - **All PRs for 1.0 / PolicyStack work (any `PS-*` ticket) MUST target the `v1` branch, not `main`.** `v1` is well ahead of `main`; opening against `main` produces a wrong, bloated diff. Cut feature branches from `v1` and set the PR base to `v1` explicitly (the harness default of `main` is incorrect for this work).
+- **Name the feature branch with the Linear-provided branch name when one exists** — use the issue's `gitBranchName` (e.g. `ps-20`), available from the Linear MCP `get_issue`/`list_issues` `gitBranchName` field or "Copy git branch name" in Linear. Linear auto-links any PR whose head branch matches, so the ticket tracks the PR and its status with no manual linking. Still cut it from `v1` and target `v1`.
 - Breaking changes are allowed on the `v1` branch.
 - Failing tests are acceptable on the `v1` branch.
 - **Do not add changesets for 1.0 / PolicyStack work (any `PS-*` ticket).** The 1.0 release is versioned as a single event; per-feature changesets going into `v1` are noise. Do not create `.changeset/*.md` files for this work.
