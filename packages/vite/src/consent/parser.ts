@@ -55,7 +55,26 @@ function parsePlain(
 		lineOffset,
 		localBindings: collectTopLevelBindings(ast),
 		imports: collectImports(ast),
+		importSources: collectImportSources(ast),
 	};
+}
+
+/**
+ * Distinct, non-type `import … from "<source>"` specifier strings in program
+ * order — the set the unified driver batch-resolves through the Vite SDK
+ * resolver. Mirrors the legacy `analyse.ts` collector.
+ */
+function collectImportSources(program: AnyNode): string[] {
+	const seen = new Set<string>();
+	const body = program.body as AnyNode[] | undefined;
+	if (!body) return [];
+	for (const node of body) {
+		if (node.type !== "ImportDeclaration") continue;
+		if ((node.importKind as string | undefined) === "type") continue;
+		const source = node.source as AnyNode | undefined;
+		if (source && typeof source.value === "string") seen.add(source.value);
+	}
+	return [...seen];
 }
 
 function collectImports(program: AnyNode): Map<string, ImportInfo> {

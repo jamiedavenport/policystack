@@ -171,166 +171,62 @@ export function extractFromParsed(
 	isSdkSpecifier: SdkSpecifierMatcher,
 ): ExtractResult {
 	const { program, code, filename } = parsed;
-	const collectingNames = collectBindings(program, isSdkSpecifier, COLLECTING_NAME);
-	const thirdPartyNames = collectBindings(program, isSdkSpecifier, THIRD_PARTY_NAME);
-	const ignoreNames = collectBindings(program, isSdkSpecifier, IGNORE_NAME);
-	const defineCookieNames = collectBindings(program, isSdkSpecifier, DEFINE_COOKIE_NAME);
-	const sharingNames = collectBindings(program, isSdkSpecifier, SHARING_NAME);
+	const bindings = collectSdkBindings(program, isSdkSpecifier);
 	if (
-		collectingNames.size === 0 &&
-		thirdPartyNames.size === 0 &&
-		defineCookieNames.size === 0 &&
-		sharingNames.size === 0
+		bindings.collecting.size === 0 &&
+		bindings.thirdParty.size === 0 &&
+		bindings.defineCookie.size === 0 &&
+		bindings.sharing.size === 0
 	)
 		return emptyResult();
-
-	const dataCollected: Record<string, string[]> = {};
-	const thirdParties: ThirdPartyEntry[] = [];
-	const seenThirdParties = new Set<string>();
-	const cookieSet = new Set<string>();
-	const sharing: SharingEntry[] = [];
-	const seenSharing = new Set<string>();
-	const diagnostics: ScannerDiagnostic[] = [];
-	const locate = makeLineLocator(code);
-	const record: RecordFn = (skipCode, message, node) => {
-		const offset = node && typeof node.start === "number" ? (node.start as number) : 0;
-		const { line, column } = locate(offset);
-		diagnostics.push({ code: skipCode, message, file: filename, line, column });
-	};
-
-	walk(program, (node) => {
-		if (node.type !== "CallExpression") return;
-		const callee = node.callee as AnyNode | undefined;
-		const args = node.arguments as AnyNode[] | undefined;
-
-		if (!callee || callee.type !== "Identifier") return;
-		const calleeName = callee.name as string;
-
-		if (collectingNames.has(calleeName)) {
-			if (!args || args.length < 3) {
-				record(
-					"missing-arguments",
-					"collecting() requires 3 arguments (category, value, labels)",
-					node,
-				);
-				return;
-			}
-			const category = extractStringLiteral(args[0]);
-			if (category === null) {
-				record("non-literal-argument", "collecting() category must be a string literal", node);
-				return;
-			}
-			const labels = extractLabelKeys(args[2], ignoreNames, node, record);
-			if (labels === null) {
-				record(
-					"non-object-label-map",
-					"collecting() labels (3rd argument) must be an object literal",
-					node,
-				);
-				return;
-			}
-			const existing = dataCollected[category] ?? [];
-			const seen = new Set(existing);
-			for (const label of labels) {
-				if (!seen.has(label)) {
-					existing.push(label);
-					seen.add(label);
-				}
-			}
-			dataCollected[category] = existing;
-			return;
-		}
-
-		if (thirdPartyNames.has(calleeName)) {
-			if (!args || args.length < 3) {
-				record(
-					"missing-arguments",
-					"thirdParty() requires 3 arguments (name, purpose, policyUrl)",
-					node,
-				);
-				return;
-			}
-			const name = extractStringLiteral(args[0]);
-			if (name === null) {
-				record("non-literal-argument", "thirdParty() name must be a string literal", node);
-				return;
-			}
-			const purpose = extractStringLiteral(args[1]);
-			if (purpose === null) {
-				record("non-literal-argument", "thirdParty() purpose must be a string literal", node);
-				return;
-			}
-			const policyUrl = extractStringLiteral(args[2]);
-			if (policyUrl === null) {
-				record("non-literal-argument", "thirdParty() policyUrl must be a string literal", node);
-				return;
-			}
-			// Within-file duplicate of an already-captured entry — intentional
-			// dedup, the data is not lost, so no diagnostic.
-			if (seenThirdParties.has(name)) return;
-			seenThirdParties.add(name);
-			thirdParties.push({ name, purpose, policyUrl });
-			return;
-		}
-
-		if (defineCookieNames.has(calleeName)) {
-			if (!args || args.length < 1) {
-				record("missing-arguments", "defineCookie() requires 1 argument (category)", node);
-				return;
-			}
-			const category = extractStringLiteral(args[0]);
-			if (category === null) {
-				record("non-literal-argument", "defineCookie() category must be a string literal", node);
-				return;
-			}
-			cookieSet.add(category);
-			return;
-		}
-
-		if (sharingNames.has(calleeName)) {
-			if (!args || args.length < 3) {
-				record("missing-arguments", "sharing() requires 3 arguments (key, recipient, value)", node);
-				return;
-			}
-			const key = extractStringLiteral(args[0]);
-			if (key === null) {
-				record("non-literal-argument", "sharing() key must be a string literal", node);
-				return;
-			}
-			const recipient = extractStringLiteral(args[1]);
-			if (recipient === null) {
-				record("non-literal-argument", "sharing() recipient must be a string literal", node);
-				return;
-			}
-			// args[2] is the payload — returned unchanged at runtime, never read
-			// statically (same as collecting()'s value argument).
-			// Within-file duplicate of an already-captured edge — intentional
-			// dedup, the data is not lost, so no diagnostic. JSON tuple key so
-			// a space in either string can't alias a different (key, recipient).
-			const dedup = JSON.stringify([key, recipient]);
-			if (seenSharing.has(dedup)) return;
-			seenSharing.add(dedup);
-			sharing.push({ key, recipient });
-		}
+	const extractor = createPolicyExtractor({
+		filename,
+		bindings,
+		locate: makeLineLocator(code),
 	});
-
-	return { dataCollected, thirdParties, cookies: [...cookieSet], sharing, diagnostics };
+	walk(program, (node) => extractor.visit(node));
+	return extractor.result();
 }
 
 /**
- * Walk `ImportDeclaration` nodes and return the local names bound to the given
- * `exportName` imported from a module `isSdkSpecifier` accepts. Skips type-only
- * imports (so type-only imports are never resolved or matched) and specifiers
- * whose imported name doesn't match.
+ * The local names a module binds to each tracked `@openpolicy/sdk` export.
+ * Resolved once per file by {@link collectSdkBindings} so the single unified
+ * walk (PS-25) and the legacy {@link extractFromParsed} share one binding
+ * pass instead of five.
  */
-function collectBindings(
+export type SdkBindings = {
+	collecting: Set<string>;
+	thirdParty: Set<string>;
+	defineCookie: Set<string>;
+	sharing: Set<string>;
+	ignore: Set<string>;
+};
+
+/**
+ * Walk the import declarations once and bucket every local name by which
+ * tracked SDK export it binds (one pass for all five, instead of five
+ * separate scans). Skips type-only imports and non-SDK sources.
+ */
+export function collectSdkBindings(
 	program: AnyNode,
 	isSdkSpecifier: SdkSpecifierMatcher,
-	exportName: string,
-): Set<string> {
-	const names = new Set<string>();
+): SdkBindings {
+	const out: SdkBindings = {
+		collecting: new Set<string>(),
+		thirdParty: new Set<string>(),
+		defineCookie: new Set<string>(),
+		sharing: new Set<string>(),
+		ignore: new Set<string>(),
+	};
+	const byExport: Record<string, Set<string>> = {
+		[COLLECTING_NAME]: out.collecting,
+		[THIRD_PARTY_NAME]: out.thirdParty,
+		[DEFINE_COOKIE_NAME]: out.defineCookie,
+		[SHARING_NAME]: out.sharing,
+		[IGNORE_NAME]: out.ignore,
+	};
 	const body = program.body as AnyNode[] | undefined;
-	if (!body) return names;
+	if (!body) return out;
 	for (const node of body) {
 		if (node.type !== "ImportDeclaration") continue;
 		if ((node.importKind as string | undefined) === "type") continue;
@@ -351,13 +247,172 @@ function collectBindings(
 							? imported.value
 							: undefined
 						: undefined;
-			if (importedName !== exportName) continue;
+			if (importedName === undefined) continue;
+			const bucket = byExport[importedName];
+			if (!bucket) continue;
 			const local = spec.local as AnyNode | undefined;
 			if (!local || local.type !== "Identifier") continue;
-			names.add(local.name as string);
+			bucket.add(local.name as string);
 		}
 	}
-	return names;
+	return out;
+}
+
+export type PolicyExtractor = {
+	/** Inspect one AST node; accumulates `collecting`/`thirdParty`/etc. */
+	visit: (node: AnyNode) => void;
+	/** The merged per-file result after the walk has visited every node. */
+	result: () => ExtractResult;
+};
+
+/**
+ * The shared policy-extraction algorithm, decoupled from the traversal so it
+ * can be driven by the single unified walk (PS-25) *or* the legacy
+ * {@link extractFromParsed}. `locate` maps a node offset to a 1-based
+ * line/column — pass {@link makeLineLocator} for plain modules, or an
+ * SFC-offset-aware locator so Vue/Svelte policy diagnostics point at the
+ * right source line.
+ */
+export function createPolicyExtractor(args: {
+	filename: string;
+	bindings: SdkBindings;
+	locate: (offset: number) => { line: number; column: number };
+}): PolicyExtractor {
+	const { filename, bindings, locate } = args;
+	const dataCollected: Record<string, string[]> = {};
+	const thirdParties: ThirdPartyEntry[] = [];
+	const seenThirdParties = new Set<string>();
+	const cookieSet = new Set<string>();
+	const sharing: SharingEntry[] = [];
+	const seenSharing = new Set<string>();
+	const diagnostics: ScannerDiagnostic[] = [];
+	const record: RecordFn = (skipCode, message, node) => {
+		const offset = node && typeof node.start === "number" ? (node.start as number) : 0;
+		const { line, column } = locate(offset);
+		diagnostics.push({ code: skipCode, message, file: filename, line, column });
+	};
+
+	function visit(node: AnyNode): void {
+		if (node.type !== "CallExpression") return;
+		const callee = node.callee as AnyNode | undefined;
+		const args2 = node.arguments as AnyNode[] | undefined;
+
+		if (!callee || callee.type !== "Identifier") return;
+		const calleeName = callee.name as string;
+
+		if (bindings.collecting.has(calleeName)) {
+			if (!args2 || args2.length < 3) {
+				record(
+					"missing-arguments",
+					"collecting() requires 3 arguments (category, value, labels)",
+					node,
+				);
+				return;
+			}
+			const category = extractStringLiteral(args2[0]);
+			if (category === null) {
+				record("non-literal-argument", "collecting() category must be a string literal", node);
+				return;
+			}
+			const labels = extractLabelKeys(args2[2], bindings.ignore, node, record);
+			if (labels === null) {
+				record(
+					"non-object-label-map",
+					"collecting() labels (3rd argument) must be an object literal",
+					node,
+				);
+				return;
+			}
+			const existing = dataCollected[category] ?? [];
+			const seen = new Set(existing);
+			for (const label of labels) {
+				if (!seen.has(label)) {
+					existing.push(label);
+					seen.add(label);
+				}
+			}
+			dataCollected[category] = existing;
+			return;
+		}
+
+		if (bindings.thirdParty.has(calleeName)) {
+			if (!args2 || args2.length < 3) {
+				record(
+					"missing-arguments",
+					"thirdParty() requires 3 arguments (name, purpose, policyUrl)",
+					node,
+				);
+				return;
+			}
+			const name = extractStringLiteral(args2[0]);
+			if (name === null) {
+				record("non-literal-argument", "thirdParty() name must be a string literal", node);
+				return;
+			}
+			const purpose = extractStringLiteral(args2[1]);
+			if (purpose === null) {
+				record("non-literal-argument", "thirdParty() purpose must be a string literal", node);
+				return;
+			}
+			const policyUrl = extractStringLiteral(args2[2]);
+			if (policyUrl === null) {
+				record("non-literal-argument", "thirdParty() policyUrl must be a string literal", node);
+				return;
+			}
+			// Within-file duplicate of an already-captured entry — intentional
+			// dedup, the data is not lost, so no diagnostic.
+			if (seenThirdParties.has(name)) return;
+			seenThirdParties.add(name);
+			thirdParties.push({ name, purpose, policyUrl });
+			return;
+		}
+
+		if (bindings.defineCookie.has(calleeName)) {
+			if (!args2 || args2.length < 1) {
+				record("missing-arguments", "defineCookie() requires 1 argument (category)", node);
+				return;
+			}
+			const category = extractStringLiteral(args2[0]);
+			if (category === null) {
+				record("non-literal-argument", "defineCookie() category must be a string literal", node);
+				return;
+			}
+			cookieSet.add(category);
+			return;
+		}
+
+		if (bindings.sharing.has(calleeName)) {
+			if (!args2 || args2.length < 3) {
+				record("missing-arguments", "sharing() requires 3 arguments (key, recipient, value)", node);
+				return;
+			}
+			const key = extractStringLiteral(args2[0]);
+			if (key === null) {
+				record("non-literal-argument", "sharing() key must be a string literal", node);
+				return;
+			}
+			const recipient = extractStringLiteral(args2[1]);
+			if (recipient === null) {
+				record("non-literal-argument", "sharing() recipient must be a string literal", node);
+				return;
+			}
+			// args[2] is the payload — returned unchanged at runtime, never read
+			// statically (same as collecting()'s value argument).
+			// Within-file duplicate of an already-captured edge — intentional
+			// dedup, the data is not lost, so no diagnostic. JSON tuple key so
+			// a space in either string can't alias a different (key, recipient).
+			const dedup = JSON.stringify([key, recipient]);
+			if (seenSharing.has(dedup)) return;
+			seenSharing.add(dedup);
+			sharing.push({ key, recipient });
+		}
+	}
+
+	function result(): ExtractResult {
+		return { dataCollected, thirdParties, cookies: [...cookieSet], sharing, diagnostics };
+	}
+
+	return { visit, result };
 }
 
 /**
@@ -449,7 +504,9 @@ function extractLabelKeys(
  * The newline index is computed once on first use (diagnostics are rare, so
  * files with no skipped calls never pay for it).
  */
-function makeLineLocator(code: string): (offset: number) => { line: number; column: number } {
+export function makeLineLocator(
+	code: string,
+): (offset: number) => { line: number; column: number } {
 	let cached: number[] | null = null;
 	const lineStartsFor = (): number[] => {
 		if (cached) return cached;

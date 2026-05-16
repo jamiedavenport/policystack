@@ -17,6 +17,14 @@ export type Cookie = {
 
 export type VendorVia = "import" | "global" | "script-url";
 
+/**
+ * Which detector identified a vendor (PS-25). `via` is the AST mechanism;
+ * `detector` is the user-facing label surfaced in diagnostics and the
+ * declared-vs-used cross-check — `"package.json"` for the opt-in dependency
+ * scan, `"import"` / `"global"` for the single AST walk.
+ */
+export type VendorDetector = "package.json" | "import" | "global";
+
 export type VendorHit = {
 	file: string;
 	line: number;
@@ -24,6 +32,7 @@ export type VendorHit = {
 	vendor: string;
 	category: string;
 	via: VendorVia;
+	detector: VendorDetector;
 };
 
 export type Hit = Cookie | VendorHit;
@@ -67,6 +76,13 @@ export type ParsedFile = {
 	lineOffset: number;
 	localBindings: Set<string>;
 	imports: Map<string, ImportInfo>;
+	/**
+	 * De-duplicated non-type `import … from "<source>"` specifiers, in program
+	 * order. The unified driver (PS-25) resolves these through the Vite SDK
+	 * resolver once, in batch, before extraction — same role as the legacy
+	 * `ParsedModule.importSources`.
+	 */
+	importSources: string[];
 };
 
 export type ParsedComment = {

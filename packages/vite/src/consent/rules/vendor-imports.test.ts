@@ -1,11 +1,10 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
-import vendors from "../vendors.json";
+import { CONSENT_REGISTRY } from "../../registry";
 import { loadFixtures, partition } from "../test-helpers";
 import { parseFile } from "../parser";
 import { walk } from "../visit";
-import type { VendorRegistry } from "../types";
 import { vendorImportsRule } from "./vendor-imports";
 
 const FIXTURES = join(
@@ -16,7 +15,7 @@ const FIXTURES = join(
 	"vendor-imports",
 );
 
-const registry = vendors as VendorRegistry;
+const registry = CONSENT_REGISTRY;
 
 describe("vendor-imports rule", () => {
 	for (const fx of loadFixtures(FIXTURES)) {

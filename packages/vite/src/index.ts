@@ -1,18 +1,8 @@
-import { access, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { access, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import type { IssueCode } from "@openpolicy/core";
 import type { Plugin, ViteDevServer } from "vite";
-import {
-	extractFromParsed,
-	parseModule,
-	type ParsedModule,
-	type ScannerDiagnostic,
-	type SharingEntry,
-	type ThirdPartyEntry,
-} from "./analyse";
-import { KNOWN_COOKIE_PACKAGES, KNOWN_PACKAGES } from "./known-packages";
-import { walkSources } from "./scan";
-import { type CookieMap, renderGenModule, type Scanned } from "./scanned";
+import { renderGenModule, type Scanned } from "./scanned";
 import { createSdkMatcher, type ResolveId } from "./sdk-resolver";
 import { isCanonicalSdkSpecifier, type SdkSpecifierMatcher } from "./sdk-specifier";
 import {
@@ -21,8 +11,16 @@ import {
 	loadAndValidateConfig,
 	type ValidatedConfig,
 } from "./validate";
-import type { Logger, Mode } from "./consent/reporter";
-import { type ConsentRunner, createConsentRunner } from "./consent/runner";
+import { applyDriftPolicy, crossCheck, type DriftCode, formatDrift } from "./drift";
+import {
+	formatHitLocation,
+	formatUngated,
+	type Logger,
+	type Mode,
+	report,
+	reportFileDelta,
+} from "./consent/reporter";
+import { createUnifiedScanner, type UnifiedScanner } from "./unified-scan";
 
 export type OpenPolicyOptions = {
 	/**
@@ -70,13 +68,13 @@ export type OpenPolicyOptions = {
 	strict?: boolean;
 
 	/**
-	 * Issue codes to drop from the result entirely, at any level (errors
-	 * included). Applied *before* `strict`. Use this to accept a known
-	 * disclosure gap — the list lives in `vite.config.ts`, so the decision is
-	 * committed and shows up in review. Does not silence config load/parse
-	 * failures. Defaults to `[]`.
+	 * Issue / drift codes to drop from the result entirely, at any level
+	 * (errors included). Applied *before* `strict`. Use this to accept a known
+	 * disclosure gap or an intentional declared-vs-used drift — the list lives
+	 * in `vite.config.ts`, so the decision is committed and shows up in
+	 * review. Does not silence config load/parse failures. Defaults to `[]`.
 	 */
-	suppress?: IssueCode[];
+	suppress?: (IssueCode | DriftCode)[];
 
 	/**
 	 * Opt-in OpenCookies consent scanner (folded in by PS-19). When this key
@@ -200,8 +198,10 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 	let resolvedCommand: "build" | "serve" = "build";
 	// Opt-in OpenCookies consent scanner (PS-19). Stays null unless
 	// `options.consent` is set, so existing policy-only users see no change.
-	let consentRunner: ConsentRunner | null = null;
 	let consentLogger: Logger | null = null;
+	let consentMode: Mode = "warn";
+	const consentEnabled = options.consent !== undefined;
+	let unifiedScanner: UnifiedScanner | null = null;
 	// Resolver-backed SDK matcher, built from `this.resolve` in `buildStart`.
 	// Defaults are the pure dual-scope predicate so an out-of-order or
 	// resolver-less call (test stubs, a dev rescan that somehow beats
@@ -218,136 +218,6 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 		sharing: [],
 		diagnostics: [],
 	};
-
-	async function readPackageJsonDeps(root: string): Promise<Record<string, string>> {
-		let raw: string;
-		try {
-			raw = await readFile(resolve(root, "package.json"), "utf8");
-		} catch {
-			return {};
-		}
-		let pkg: {
-			dependencies?: Record<string, string>;
-			devDependencies?: Record<string, string>;
-		};
-		try {
-			pkg = JSON.parse(raw) as typeof pkg;
-		} catch {
-			return {};
-		}
-		return { ...pkg.dependencies, ...pkg.devDependencies };
-	}
-
-	async function detectThirdPartiesFromPackageJson(root: string): Promise<ThirdPartyEntry[]> {
-		const allDeps = await readPackageJsonDeps(root);
-		const entries: ThirdPartyEntry[] = [];
-		const seenNames = new Set<string>();
-		for (const pkgName of Object.keys(allDeps)) {
-			const entry = KNOWN_PACKAGES.get(pkgName);
-			if (entry && !seenNames.has(entry.name)) {
-				seenNames.add(entry.name);
-				entries.push(entry);
-			}
-		}
-		return entries;
-	}
-
-	async function detectCookiesFromPackageJson(root: string): Promise<string[]> {
-		const allDeps = await readPackageJsonDeps(root);
-		const categories = new Set<string>();
-		for (const pkgName of Object.keys(allDeps)) {
-			const cats = KNOWN_COOKIE_PACKAGES.get(pkgName);
-			if (!cats) continue;
-			for (const cat of cats) categories.add(cat);
-		}
-		return [...categories];
-	}
-
-	async function scanAndMerge(): Promise<Scanned> {
-		const files = await walkSources(resolvedSrcDir, extensions, ignore);
-		const mergedData: Record<string, string[]> = {};
-		const mergedParties: ThirdPartyEntry[] = [];
-		const seenParties = new Set<string>();
-		const cookieSet = new Set<string>();
-		const mergedSharing: SharingEntry[] = [];
-		const seenSharing = new Set<string>();
-		const diagnostics: ScannerDiagnostic[] = [];
-		const genFile = resolvedConfigDir ? resolve(resolvedConfigDir, GEN_FILENAME) : null;
-		// Phase 1: parse every file once and collect the union of import
-		// specifiers, so the resolver runs once per distinct specifier (in
-		// batch) — not once per import per file.
-		const parsedModules: ParsedModule[] = [];
-		const allImportSources = new Set<string>();
-		for (const file of files) {
-			if (file === genFile) continue;
-			let code: string;
-			try {
-				code = await readFile(file, "utf8");
-			} catch {
-				continue;
-			}
-			const parsed = parseModule(file, code);
-			if (!parsed) continue;
-			parsedModules.push(parsed);
-			for (const s of parsed.importSources) allImportSources.add(s);
-		}
-		// Phase 2: resolve specifiers, then extract from the already-parsed
-		// modules with the resolver-backed predicate (extraction stays sync).
-		await prewarmSdk(allImportSources);
-		for (const parsed of parsedModules) {
-			const extracted = extractFromParsed(parsed, sdkMatcher);
-			for (const d of extracted.diagnostics) diagnostics.push(d);
-			for (const [category, labels] of Object.entries(extracted.dataCollected)) {
-				const existing = mergedData[category] ?? [];
-				const seen = new Set(existing);
-				for (const label of labels) {
-					if (!seen.has(label)) {
-						existing.push(label);
-						seen.add(label);
-					}
-				}
-				mergedData[category] = existing;
-			}
-			for (const entry of extracted.thirdParties) {
-				if (!seenParties.has(entry.name)) {
-					seenParties.add(entry.name);
-					mergedParties.push(entry);
-				}
-			}
-			for (const cat of extracted.cookies) cookieSet.add(cat);
-			for (const edge of extracted.sharing) {
-				const dedup = JSON.stringify([edge.key, edge.recipient]);
-				if (seenSharing.has(dedup)) continue;
-				seenSharing.add(dedup);
-				mergedSharing.push(edge);
-			}
-		}
-		if (usePackageJsonOpt) {
-			const pkgEntries = await detectThirdPartiesFromPackageJson(resolvedRoot);
-			for (const entry of pkgEntries) {
-				if (!seenParties.has(entry.name)) {
-					seenParties.add(entry.name);
-					mergedParties.push(entry);
-				}
-			}
-		}
-		if (useCookiesPackageJsonOpt) {
-			const pkgCookies = await detectCookiesFromPackageJson(resolvedRoot);
-			for (const cat of pkgCookies) cookieSet.add(cat);
-		}
-		const cookies: CookieMap = { essential: true };
-		for (const cat of cookieSet) {
-			if (cat === "essential") continue;
-			cookies[cat] = true;
-		}
-		return {
-			dataCollected: mergedData,
-			thirdParties: mergedParties,
-			cookies,
-			sharing: mergedSharing,
-			diagnostics,
-		};
-	}
 
 	/**
 	 * Returns true when `file` lives inside `resolvedSrcDir` and has one of
@@ -370,7 +240,8 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 	 * manual full-reload.
 	 */
 	async function rescanAndRefresh(server: ViteDevServer): Promise<void> {
-		const next = await scanAndMerge();
+		if (!unifiedScanner) return;
+		const next = (await unifiedScanner.fullScan()).scanned;
 		const changed = JSON.stringify(next) !== JSON.stringify(scanned);
 		if (changed) {
 			// Commit the new in-memory state only once the write succeeds. On
@@ -420,6 +291,19 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			if (issue.level === "error") server.config.logger.error(line);
 			else server.config.logger.warn(line);
 		}
+		// §4.3 declared-vs-used cross-check replayed through the dev logger
+		// (never crashes HMR — mirrors the validation dev path above).
+		if (result.config) {
+			const drift = applyDriftPolicy(
+				crossCheck(result.config, scanned, unifiedScanner?.lastConsent()?.vendors ?? []),
+				{ strict: strictOpt, suppress: suppressOpt },
+			);
+			for (const d of drift) {
+				const line = formatDrift(d);
+				if (d.level === "error") server.config.logger.error(line);
+				else server.config.logger.warn(line);
+			}
+		}
 	}
 
 	return {
@@ -430,17 +314,11 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			resolvedSrcDir = resolve(config.root, srcDirOpt);
 			resolvedCommand = config.command;
 			if (options.consent) {
-				const mode: Mode = options.consent.mode ?? (config.command === "build" ? "error" : "warn");
+				consentMode = options.consent.mode ?? (config.command === "build" ? "error" : "warn");
 				// Report through Vite's logger (captured here), never via
 				// `this.error` — the consent scan must only abort the build
 				// from `buildEnd`, exactly like the old @opencookies/vite.
 				consentLogger = config.logger;
-				consentRunner = createConsentRunner({
-					root: config.root,
-					mode,
-					include: options.consent.include,
-					exclude: options.consent.exclude,
-				});
 			}
 		},
 		async buildStart() {
@@ -468,7 +346,22 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			});
 			sdkMatcher = matcher.match;
 			prewarmSdk = matcher.prewarm;
-			scanned = await scanAndMerge();
+			unifiedScanner = createUnifiedScanner({
+				root: resolvedRoot,
+				srcDir: resolvedSrcDir,
+				extensions,
+				ignore,
+				genFile: resolvedConfigDir ? resolve(resolvedConfigDir, GEN_FILENAME) : null,
+				consentEnabled,
+				consentInclude: options.consent?.include,
+				consentExclude: options.consent?.exclude,
+				usePackageJson: usePackageJsonOpt,
+				useCookiesPackageJson: useCookiesPackageJsonOpt,
+				sdkMatcher,
+				prewarm: prewarmSdk,
+			});
+			const unified = await unifiedScanner.fullScan();
+			scanned = unified.scanned;
 			// A failed write must not abort the build. The in-memory `scanned`
 			// stays fresh, so the validation block below is unaffected — only
 			// the committed artifact is stale (last-good is retained on disk).
@@ -508,18 +401,31 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 							`OpenPolicy validation found ${errors.length} error${errors.length === 1 ? "" : "s"}:\n${lines}`,
 						);
 					}
+					// §4.3 declared-vs-used cross-check (PS-25). Ordered *after*
+					// config validation so a config `this.error()` abort
+					// short-circuits it; drift then fails the build the same way.
+					if (result.config) {
+						const drift = applyDriftPolicy(
+							crossCheck(result.config, scanned, unified.consent.vendors),
+							{ strict: strictOpt, suppress: suppressOpt },
+						);
+						const driftErrors = drift.filter((d) => d.level === "error");
+						for (const d of drift) if (d.level === "warning") this.warn(formatDrift(d));
+						if (driftErrors.length > 0) {
+							const lines = driftErrors.map(formatDrift).join("\n");
+							this.error(
+								`OpenPolicy found ${driftErrors.length} declared-vs-used drift error${driftErrors.length === 1 ? "" : "s"}:\n${lines}`,
+							);
+						}
+					}
 				}
 			}
-			// Co-located OpenCookies consent scan (PS-19). Runs *after*
-			// policy validation, so a policy `this.error()` abort still
-			// short-circuits it. Reports through Vite's logger; only
-			// `buildEnd` fails the build — `build()` never rethrows.
-			if (consentRunner && consentLogger) {
-				try {
-					await consentRunner.build(consentLogger);
-				} catch (err) {
-					consentLogger.warn(`[opencookies] consent scan failed: ${err}`);
-				}
+			// Co-located OpenCookies consent reporting (PS-19 → PS-25: now from
+			// the same unified walk). Runs *after* policy validation, so a
+			// policy `this.error()` abort still short-circuits it. Reports
+			// through Vite's logger; only `buildEnd` fails the build.
+			if (consentEnabled && consentLogger && consentMode !== "off") {
+				report(unified.consent, consentLogger, { mode: consentMode, root: resolvedRoot });
 			}
 		},
 		configureServer(server) {
@@ -536,9 +442,16 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			const handler = async (file: string): Promise<void> => {
 				// Consent rescan runs on its own broader gate (vue/svelte,
 				// files outside srcDir) *before* the policy early-return.
-				if (consentRunner) {
+				if (unifiedScanner && consentEnabled && consentMode !== "off") {
 					try {
-						await consentRunner.hotUpdate(file, server.config.logger);
+						const delta = await unifiedScanner.rescanFileConsent(file);
+						if (delta) {
+							reportFileDelta(delta.prev, delta.next, server.config.logger, {
+								mode: consentMode,
+								root: resolvedRoot,
+								file,
+							});
+						}
 					} catch (error) {
 						server.config.logger.error(`[opencookies] consent rescan failed: ${error}`);
 					}
@@ -570,7 +483,15 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 		// — throws on remaining ungated findings when mode === "error".
 		// Policy still fails separately via `this.error()` in buildStart.
 		buildEnd(err?: Error) {
-			consentRunner?.buildEnd(err);
+			if (err) return;
+			if (!consentEnabled || consentMode !== "error" || !unifiedScanner) return;
+			const result = unifiedScanner.lastConsent();
+			if (!result || result.ungated.length === 0) return;
+			const first = result.ungated[0]!;
+			const loc = formatHitLocation(first.hit, resolvedRoot);
+			const summary = formatUngated(first, resolvedRoot);
+			const more = result.ungated.length > 1 ? ` (+${result.ungated.length - 1} more)` : "";
+			throw new Error(`[opencookies] ungated finding at ${loc}${more}\n${summary}`);
 		},
 	};
 }

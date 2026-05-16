@@ -2,9 +2,9 @@ import { readFile } from "node:fs/promises";
 import { availableParallelism } from "node:os";
 import { resolve } from "node:path";
 import { glob } from "tinyglobby";
+import { CONSENT_REGISTRY } from "../registry";
 import { parseFile } from "./parser";
 import { applySuppressions } from "./suppress";
-import vendorsJson from "./vendors.json";
 import { walk } from "./visit";
 import { cookiesNextRule } from "./rules/cookies-next";
 import { documentCookieRule } from "./rules/document-cookie";
@@ -24,8 +24,8 @@ import type {
 	VendorRegistry,
 } from "./types";
 
-const DEFAULT_INCLUDE = ["**/*.{js,jsx,ts,tsx,vue,svelte,mjs,cjs,mts,cts}"];
-const DEFAULT_EXCLUDE = [
+export const DEFAULT_INCLUDE = ["**/*.{js,jsx,ts,tsx,vue,svelte,mjs,cjs,mts,cts}"];
+export const DEFAULT_EXCLUDE = [
 	"**/node_modules/**",
 	"**/dist/**",
 	"**/build/**",
@@ -46,7 +46,7 @@ export const defaultRules: Rule[] = [
 	vendorImportsRule,
 ];
 
-export const defaultVendors: VendorRegistry = vendorsJson as VendorRegistry;
+export const defaultVendors: VendorRegistry = CONSENT_REGISTRY;
 
 export async function scan(options: ScanOptions): Promise<ScanResult> {
 	const cwd = resolve(options.cwd);

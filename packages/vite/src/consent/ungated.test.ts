@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
-import vendors from "./vendors.json";
+import { CONSENT_REGISTRY } from "../registry";
 import { documentCookieRule } from "./rules/document-cookie";
 import { vendorImportsRule } from "./rules/vendor-imports";
 import { parseFile } from "./parser";
-import type { VendorRegistry } from "./types";
 import { walk } from "./visit";
 
-const registry = vendors as VendorRegistry;
+const registry = CONSENT_REGISTRY;
 
 function ungated(source: string, file = "x.tsx"): ReturnType<typeof walk>["ungated"] {
 	const parsed = parseFile(file, source)!;

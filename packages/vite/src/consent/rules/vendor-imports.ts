@@ -17,6 +17,7 @@ export const vendorImportsRule: Rule = {
 				vendor: entry.vendor,
 				category: entry.category,
 				via: "import",
+				detector: "import",
 			});
 			return;
 		}
@@ -33,6 +34,7 @@ export const vendorImportsRule: Rule = {
 						vendor: entry.vendor,
 						category: entry.category,
 						via: "import",
+						detector: "import",
 					});
 				}
 			}
@@ -54,6 +56,7 @@ export const vendorImportsRule: Rule = {
 						vendor: entry.vendor,
 						category: entry.category,
 						via: "global",
+						detector: "global",
 					});
 				}
 			}

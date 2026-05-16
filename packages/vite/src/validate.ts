@@ -1,4 +1,4 @@
-import { type Issue, type IssueCode, type OpenPolicyConfig, validate } from "@openpolicy/core";
+import { type Issue, type OpenPolicyConfig, validate } from "@openpolicy/core";
 import { bundleRequire } from "bundle-require";
 import type { ScannerDiagnostic } from "./analyse";
 
@@ -15,7 +15,11 @@ export type ValidatedConfig = {
  */
 export type IssuePolicy = {
 	strict?: boolean;
-	suppress?: readonly IssueCode[];
+	// `string` not `IssueCode`: the same suppress list also carries PS-25
+	// `DriftCode`s. A drift code simply never matches an `Issue.code`, so it
+	// is an inert no-op here — keeping one shared list (and decoupling
+	// validate.ts from drift.ts).
+	suppress?: readonly string[];
 };
 
 /**
@@ -25,7 +29,7 @@ export type IssuePolicy = {
  * never promoted. Pure; an absent/empty policy is the identity transform.
  */
 export function applyIssuePolicy(issues: Issue[], policy: IssuePolicy): Issue[] {
-	const suppressed = new Set<IssueCode>(policy.suppress ?? []);
+	const suppressed = new Set<string>(policy.suppress ?? []);
 	const kept = suppressed.size > 0 ? issues.filter((i) => !suppressed.has(i.code)) : issues;
 	if (!policy.strict) return kept;
 	return kept.map((i) => (i.level === "warning" ? { ...i, level: "error" } : i));
