@@ -97,6 +97,7 @@ type ScannedResult = {
 	dataCollected: Record<string, string[]>;
 	thirdParties: ThirdPartyEntry[];
 	cookies: { essential: boolean; [key: string]: boolean };
+	sharing: { key: string; recipient: string }[];
 };
 
 /**
@@ -119,6 +120,7 @@ async function readScanned(root: string): Promise<ScannedResult> {
 		dataCollected: parse<Record<string, string[]>>("dataCollected"),
 		thirdParties: parse<ThirdPartyEntry[]>("thirdParties"),
 		cookies: parse<{ essential: boolean; [key: string]: boolean }>("cookies"),
+		sharing: parse<{ key: string; recipient: string }[]>("sharing"),
 	};
 }
 
@@ -610,6 +612,56 @@ test("thirdParty() deduplication across files — same name in two files yields 
 	]);
 });
 
+test("sharing() calls are scanned and appear in the gen module sharing export", async () => {
+	await touch(
+		"src/payments.ts",
+		`
+		import { sharing } from "@openpolicy/sdk";
+		export const charge = (email: string) =>
+			fetch("/x", { body: JSON.stringify(sharing("Account Information", "Stripe", { email })) });
+		`,
+	);
+
+	const plugin = openPolicy();
+	await runPluginBuildStart(plugin, tmp);
+
+	expect((await readScanned(tmp)).sharing).toEqual([
+		{ key: "Account Information", recipient: "Stripe" },
+	]);
+
+	// The data-category axis is also surfaced as the ScannedSharingKeys seam.
+	const dts = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	expect(dts).toContain("interface ScannedSharingKeys");
+	expect(dts).toContain('"Account Information": true');
+});
+
+test("sharing() dedup across files — same (key, recipient) in two files yields one edge", async () => {
+	// Files are walked in sorted order: a-file.ts before b-file.ts.
+	await touch(
+		"src/a-file.ts",
+		`
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe", a);
+		`,
+	);
+	await touch(
+		"src/b-file.ts",
+		`
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe", b);
+		sharing("Usage Data", "PostHog", c);
+		`,
+	);
+
+	const plugin = openPolicy();
+	await runPluginBuildStart(plugin, tmp);
+
+	expect((await readScanned(tmp)).sharing).toEqual([
+		{ key: "Account Information", recipient: "Stripe" },
+		{ key: "Usage Data", recipient: "PostHog" },
+	]);
+});
+
 test("dev watcher triggers reload when thirdParty() call is added", async () => {
 	await touch("src/payments.ts", `export const x = 1;\n`);
 
@@ -875,6 +927,8 @@ test("buildStart writes openpolicy.gen.ts with scanned keys", async () => {
 	expect(dts).toContain("export const dataCollected:");
 	expect(dts).toContain("export const thirdParties:");
 	expect(dts).toContain("export const cookies:");
+	expect(dts).toContain("export const sharing:");
+	expect(dts).toContain("interface ScannedSharingKeys");
 	expect(dts).not.toContain("export {};");
 	// The emitted values round-trip back through the reader.
 	expect((await readScanned(tmp)).dataCollected).toEqual({

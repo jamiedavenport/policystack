@@ -40,12 +40,17 @@ export {
 	Voluntary,
 } from "@openpolicy/core";
 
-export type { ScannedCollectionKeys, ScannedCookieKeys } from "./auto-collected";
+export type {
+	ScannedCollectionKeys,
+	ScannedCookieKeys,
+	ScannedSharingKeys,
+} from "./auto-collected";
 export { collecting, Ignore } from "./collecting";
 export { Compliance } from "./compliance";
 export { DataCategories, LegalBases, Retention } from "./data";
 export { defineCookie } from "./define-cookie";
 export { Providers } from "./providers";
+export { sharing } from "./sharing";
 export { thirdParty } from "./third-parties";
 
 type ScannedDataKey = keyof ScannedCollectionKeys & string;

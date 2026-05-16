@@ -5,6 +5,7 @@ const COLLECTING_NAME = "collecting";
 const THIRD_PARTY_NAME = "thirdParty";
 const IGNORE_NAME = "Ignore";
 const DEFINE_COOKIE_NAME = "defineCookie";
+const SHARING_NAME = "sharing";
 
 type AnyNode = { type: string; [key: string]: unknown };
 
@@ -12,6 +13,17 @@ export type ThirdPartyEntry = {
 	name: string;
 	purpose: string;
 	policyUrl: string;
+};
+
+/**
+ * One scanned `sharing(key, recipient, value)` edge: the personal-data
+ * category (`key`) that leaves to `recipient`. The data-flow edge powering the
+ * CCPA/CPRA sell/share posture and the §4.3 declared-vs-used cross-check —
+ * distinct from {@link ThirdPartyEntry}, which is only the vendor declaration.
+ */
+export type SharingEntry = {
+	key: string;
+	recipient: string;
 };
 
 /**
@@ -45,11 +57,12 @@ type ExtractResult = {
 	dataCollected: Record<string, string[]>;
 	thirdParties: ThirdPartyEntry[];
 	cookies: string[];
+	sharing: SharingEntry[];
 	diagnostics: ScannerDiagnostic[];
 };
 
 function emptyResult(): ExtractResult {
-	return { dataCollected: {}, thirdParties: [], cookies: [], diagnostics: [] };
+	return { dataCollected: {}, thirdParties: [], cookies: [], sharing: [], diagnostics: [] };
 }
 
 /**
@@ -114,15 +127,15 @@ function collectImportSources(program: AnyNode): string[] {
 }
 
 /**
- * Extract `collecting()`, `thirdParty()`, and `defineCookie()` call metadata
- * from a single source file.
+ * Extract `collecting()`, `thirdParty()`, `defineCookie()`, and `sharing()`
+ * call metadata from a single source file.
  *
  * Returns an `ExtractResult` with `dataCollected` (category → labels),
  * `thirdParties` (array of third-party entries), `cookies` (array of
- * category names), and `diagnostics` — one located warning for every
- * recognized call that couldn't be read statically (so no recognized call is
- * ever dropped silently). Files with no matching calls — or that fail to
- * parse — return empty defaults.
+ * category names), `sharing` (array of key → recipient edges), and
+ * `diagnostics` — one located warning for every recognized call that couldn't
+ * be read statically (so no recognized call is ever dropped silently). Files
+ * with no matching calls — or that fail to parse — return empty defaults.
  *
  * `isSdkSpecifier` decides whether an import source is the SDK. It defaults
  * to {@link isCanonicalSdkSpecifier} (exact dual-scope match) so direct
@@ -148,8 +161,8 @@ export function extractFromFile(
  *
  * Runs in two phases:
  * 1. Collect local names bound to `collecting` / `thirdParty` / `defineCookie`
- *    imported from an SDK specifier (handles renamed imports, skips type-only
- *    imports, ignores look-alikes from other modules).
+ *    / `sharing` imported from an SDK specifier (handles renamed imports, skips
+ *    type-only imports, ignores look-alikes from other modules).
  * 2. Walk the program body and inspect `CallExpression` nodes whose target
  *    is one of those tracked local names.
  */
@@ -162,13 +175,21 @@ export function extractFromParsed(
 	const thirdPartyNames = collectBindings(program, isSdkSpecifier, THIRD_PARTY_NAME);
 	const ignoreNames = collectBindings(program, isSdkSpecifier, IGNORE_NAME);
 	const defineCookieNames = collectBindings(program, isSdkSpecifier, DEFINE_COOKIE_NAME);
-	if (collectingNames.size === 0 && thirdPartyNames.size === 0 && defineCookieNames.size === 0)
+	const sharingNames = collectBindings(program, isSdkSpecifier, SHARING_NAME);
+	if (
+		collectingNames.size === 0 &&
+		thirdPartyNames.size === 0 &&
+		defineCookieNames.size === 0 &&
+		sharingNames.size === 0
+	)
 		return emptyResult();
 
 	const dataCollected: Record<string, string[]> = {};
 	const thirdParties: ThirdPartyEntry[] = [];
 	const seenThirdParties = new Set<string>();
 	const cookieSet = new Set<string>();
+	const sharing: SharingEntry[] = [];
+	const seenSharing = new Set<string>();
 	const diagnostics: ScannerDiagnostic[] = [];
 	const locate = makeLineLocator(code);
 	const record: RecordFn = (skipCode, message, node) => {
@@ -263,10 +284,37 @@ export function extractFromParsed(
 				return;
 			}
 			cookieSet.add(category);
+			return;
+		}
+
+		if (sharingNames.has(calleeName)) {
+			if (!args || args.length < 3) {
+				record("missing-arguments", "sharing() requires 3 arguments (key, recipient, value)", node);
+				return;
+			}
+			const key = extractStringLiteral(args[0]);
+			if (key === null) {
+				record("non-literal-argument", "sharing() key must be a string literal", node);
+				return;
+			}
+			const recipient = extractStringLiteral(args[1]);
+			if (recipient === null) {
+				record("non-literal-argument", "sharing() recipient must be a string literal", node);
+				return;
+			}
+			// args[2] is the payload — returned unchanged at runtime, never read
+			// statically (same as collecting()'s value argument).
+			// Within-file duplicate of an already-captured edge — intentional
+			// dedup, the data is not lost, so no diagnostic. JSON tuple key so
+			// a space in either string can't alias a different (key, recipient).
+			const dedup = JSON.stringify([key, recipient]);
+			if (seenSharing.has(dedup)) return;
+			seenSharing.add(dedup);
+			sharing.push({ key, recipient });
 		}
 	});
 
-	return { dataCollected, thirdParties, cookies: [...cookieSet], diagnostics };
+	return { dataCollected, thirdParties, cookies: [...cookieSet], sharing, diagnostics };
 }
 
 /**

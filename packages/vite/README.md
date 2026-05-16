@@ -1,8 +1,8 @@
 # `@openpolicy/vite`
 
-> Vite plugin that scans source files for [OpenPolicy](https://openpolicy.sh) `collecting()` and `thirdParty()` calls and populates the SDK's auto-collected registry at build time.
+> Vite plugin that scans source files for [OpenPolicy](https://openpolicy.sh) `collecting()`, `thirdParty()`, `defineCookie()`, and `sharing()` calls and populates the SDK's auto-collected registry at build time.
 
-At `buildStart` the plugin walks your `srcDir`, extracts every `collecting()` / `thirdParty()` call from `@openpolicy/sdk`, and exposes the merged result as `dataCollected` / `thirdParties` on `@openpolicy/sdk`. Your policy config spreads those values into the runtime-rendered policy — no files are written to disk.
+At `buildStart` the plugin walks your `srcDir`, extracts every `collecting()` / `thirdParty()` / `defineCookie()` / `sharing()` call from `@openpolicy/sdk`, and emits the merged result (`dataCollected` / `thirdParties` / `cookies` / `sharing`) into the on-disk `openpolicy.gen.ts` your config imports. `sharing(key, recipient, value)` marks personal data _leaving_ to a third party at the egress point — the data-flow edge that feeds the CCPA/CPRA sell/share posture, distinct from `thirdParty()` which only declares that a vendor exists.
 
 ## Install
 
@@ -30,7 +30,7 @@ Astro users: add it the same way under `vite.plugins` in `astro.config.mjs`.
 
 | Option                        | Type          | Default           | Description                                                                                                                                     |
 | ----------------------------- | ------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `srcDir`                      | `string`      | `"src"`           | Directory walked for `collecting()` / `thirdParty()` calls, relative to the Vite root.                                                          |
+| `srcDir`                      | `string`      | `"src"`           | Directory walked for `collecting()` / `thirdParty()` / `defineCookie()` / `sharing()` calls, relative to the Vite root.                         |
 | `extensions`                  | `string[]`    | `[".ts", ".tsx"]` | File extensions to scan.                                                                                                                        |
 | `ignore`                      | `string[]`    | `[]`              | Extra directory basenames to skip (appended to the built-in list: `node_modules`, `dist`, `.git`, `.next`, `.output`, `.svelte-kit`, `.cache`). |
 | `thirdParties.usePackageJson` | `boolean`     | `false`           | Auto-detect third-party services from `package.json` dependencies against the built-in registry (Stripe, Sentry, PostHog, etc.).                |

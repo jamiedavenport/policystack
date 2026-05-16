@@ -7,6 +7,7 @@ import {
 	parseModule,
 	type ParsedModule,
 	type ScannerDiagnostic,
+	type SharingEntry,
 	type ThirdPartyEntry,
 } from "./analyse";
 import { KNOWN_COOKIE_PACKAGES, KNOWN_PACKAGES } from "./known-packages";
@@ -214,6 +215,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 		dataCollected: {},
 		thirdParties: [],
 		cookies: { essential: true },
+		sharing: [],
 		diagnostics: [],
 	};
 
@@ -267,6 +269,8 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 		const mergedParties: ThirdPartyEntry[] = [];
 		const seenParties = new Set<string>();
 		const cookieSet = new Set<string>();
+		const mergedSharing: SharingEntry[] = [];
+		const seenSharing = new Set<string>();
 		const diagnostics: ScannerDiagnostic[] = [];
 		const genFile = resolvedConfigDir ? resolve(resolvedConfigDir, GEN_FILENAME) : null;
 		// Phase 1: parse every file once and collect the union of import
@@ -311,6 +315,12 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 				}
 			}
 			for (const cat of extracted.cookies) cookieSet.add(cat);
+			for (const edge of extracted.sharing) {
+				const dedup = JSON.stringify([edge.key, edge.recipient]);
+				if (seenSharing.has(dedup)) continue;
+				seenSharing.add(dedup);
+				mergedSharing.push(edge);
+			}
 		}
 		if (usePackageJsonOpt) {
 			const pkgEntries = await detectThirdPartiesFromPackageJson(resolvedRoot);
@@ -334,6 +344,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			dataCollected: mergedData,
 			thirdParties: mergedParties,
 			cookies,
+			sharing: mergedSharing,
 			diagnostics,
 		};
 	}

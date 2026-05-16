@@ -4,6 +4,7 @@ import type { ScannedCollectionKeys } from "@openpolicy/sdk";
 export const dataCollected: Record<keyof ScannedCollectionKeys & string, string[]> = {"Account Information":["Name","Email"],"Usage Data":["Pages visited","Browser type"]};
 export const thirdParties: { name: string; purpose: string; policyUrl: string }[] = [{"name":"Stripe","purpose":"Payment processing","policyUrl":"https://stripe.com/privacy"}];
 export const cookies: { essential: true; [key: string]: boolean } = {"essential":true};
+export const sharing: { key: string; recipient: string }[] = [{"key":"Account Information","recipient":"Stripe"}];
 
 declare module "@openpolicy/sdk" {
 	interface ScannedCollectionKeys {
@@ -12,5 +13,8 @@ declare module "@openpolicy/sdk" {
 	}
 	interface ScannedCookieKeys {
 		"essential": true;
+	}
+	interface ScannedSharingKeys {
+		"Account Information": true;
 	}
 }

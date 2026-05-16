@@ -1,4 +1,4 @@
-import type { ScannerDiagnostic, ThirdPartyEntry } from "./analyse";
+import type { ScannerDiagnostic, SharingEntry, ThirdPartyEntry } from "./analyse";
 
 export type CookieMap = { essential: boolean; [key: string]: boolean };
 
@@ -6,6 +6,7 @@ export type Scanned = {
 	dataCollected: Record<string, string[]>;
 	thirdParties: ThirdPartyEntry[];
 	cookies: CookieMap;
+	sharing: SharingEntry[];
 	/**
 	 * Located warnings for recognized calls that couldn't be read statically.
 	 * Carried through the scan but never rendered into the generated module.
@@ -19,13 +20,14 @@ export type Scanned = {
  * config and carries two things:
  *
  *  1. The scanned runtime values (`dataCollected` / `thirdParties` /
- *     `cookies`), annotated with the exact public types `@openpolicy/sdk`
- *     used to export so `defineConfig`'s generic inference is unchanged. The
- *     values are emitted as JSON, which is valid TypeScript.
+ *     `cookies` / `sharing`), annotated with the exact public types
+ *     `@openpolicy/sdk` used to export so `defineConfig`'s generic inference
+ *     is unchanged. The values are emitted as JSON, which is valid TypeScript.
  *  2. A `declare module "@openpolicy/sdk"` augmentation of
  *     `ScannedCollectionKeys` / `ScannedCookieKeys` so `defineConfig` requires
  *     a sibling `data.context` / `cookies.context` entry for every scanned
- *     key.
+ *     key, plus `ScannedSharingKeys` (one key per shared data category) — a
+ *     typed seam the §4.3 declared-vs-used cross-check keys off.
  *
  * The augmentation keys are sorted so the committed file is deterministic.
  * The file is excluded from formatting (`fmt.ignorePatterns`), so the compact
@@ -37,6 +39,10 @@ export function renderGenModule(scanned: Scanned): string {
 		.map((k) => `\t\t${JSON.stringify(k)}: true;`)
 		.join("\n");
 	const cookieAugment = Object.keys(scanned.cookies)
+		.sort()
+		.map((k) => `\t\t${JSON.stringify(k)}: true;`)
+		.join("\n");
+	const sharingAugment = [...new Set(scanned.sharing.map((s) => s.key))]
 		.sort()
 		.map((k) => `\t\t${JSON.stringify(k)}: true;`)
 		.join("\n");
@@ -54,6 +60,9 @@ export function renderGenModule(scanned: Scanned): string {
 		`export const cookies: { essential: true; [key: string]: boolean } = ${JSON.stringify(
 			scanned.cookies,
 		)};\n` +
+		`export const sharing: { key: string; recipient: string }[] = ${JSON.stringify(
+			scanned.sharing,
+		)};\n` +
 		`\n` +
 		`declare module "@openpolicy/sdk" {\n` +
 		`\tinterface ScannedCollectionKeys {\n` +
@@ -61,6 +70,9 @@ export function renderGenModule(scanned: Scanned): string {
 		`\t}\n` +
 		`\tinterface ScannedCookieKeys {\n` +
 		(cookieAugment ? `${cookieAugment}\n` : "") +
+		`\t}\n` +
+		`\tinterface ScannedSharingKeys {\n` +
+		(sharingAugment ? `${sharingAugment}\n` : "") +
 		`\t}\n` +
 		`}\n`
 	);

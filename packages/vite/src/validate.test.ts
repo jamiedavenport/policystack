@@ -129,6 +129,7 @@ export default defineConfig({
 		dataCollected: { "Browser Telemetry": ["User-Agent"] },
 		thirdParties: [],
 		cookies: { essential: true },
+		sharing: [],
 		diagnostics: [],
 	});
 	const result = await loadAndValidateConfig({ configFile: file });

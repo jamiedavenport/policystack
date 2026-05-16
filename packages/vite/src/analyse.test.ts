@@ -563,6 +563,151 @@ test("cookies + collecting + thirdParty coexist in one file", () => {
 });
 
 // ---------------------------------------------------------------------------
+// sharing() — data-egress edge detection
+// ---------------------------------------------------------------------------
+
+test("sharing: canonical case with 2 string literals + a value", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe", { email });
+	`;
+	expect(extractFromFile("a.ts", code).sharing).toEqual([
+		{ key: "Account Information", recipient: "Stripe" },
+	]);
+});
+
+test("sharing: renamed import", () => {
+	const code = `
+		import { sharing as shareWith } from "@openpolicy/sdk";
+		shareWith("Usage Data", "PostHog", payload);
+	`;
+	expect(extractFromFile("a.ts", code).sharing).toEqual([
+		{ key: "Usage Data", recipient: "PostHog" },
+	]);
+});
+
+test("sharing: ignored if imported from non-SDK module", () => {
+	const code = `
+		import { sharing } from "./local-sharing";
+		sharing("Account Information", "Stripe", v);
+	`;
+	expect(extractFromFile("a.ts", code).sharing).toEqual([]);
+});
+
+test("sharing: ignored for type-only imports", () => {
+	const code = `
+		import type { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe", v);
+	`;
+	expect(extractFromFile("a.ts", code).sharing).toEqual([]);
+});
+
+test("sharing with fewer than 3 args is diagnosed", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe");
+	`;
+	const result = extractFromFile("a.ts", code);
+	expect(result.sharing).toEqual([]);
+	expect(result.diagnostics).toEqual([
+		{
+			code: "missing-arguments",
+			message: "sharing() requires 3 arguments (key, recipient, value)",
+			file: "a.ts",
+			line: 3,
+			column: 3,
+		},
+	]);
+});
+
+test("sharing with a non-literal key is diagnosed", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		const key = "Account Information";
+		sharing(key, "Stripe", v);
+	`;
+	const result = extractFromFile("a.ts", code);
+	expect(result.sharing).toEqual([]);
+	expect(result.diagnostics).toEqual([
+		{
+			code: "non-literal-argument",
+			message: "sharing() key must be a string literal",
+			file: "a.ts",
+			line: 4,
+			column: 3,
+		},
+	]);
+});
+
+test("sharing with a non-literal recipient is diagnosed", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", getRecipient(), v);
+	`;
+	const result = extractFromFile("a.ts", code);
+	expect(result.sharing).toEqual([]);
+	expect(result.diagnostics).toEqual([
+		{
+			code: "non-literal-argument",
+			message: "sharing() recipient must be a string literal",
+			file: "a.ts",
+			line: 3,
+			column: 3,
+		},
+	]);
+});
+
+test("sharing: the value argument is never scanned and never diagnosed", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe", buildPayload(user, opts));
+	`;
+	const result = extractFromFile("a.ts", code);
+	expect(result.sharing).toEqual([{ key: "Account Information", recipient: "Stripe" }]);
+	expect(result.diagnostics).toEqual([]);
+});
+
+test("sharing: identical (key, recipient) in same file appears once, no diagnostic", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Account Information", "Stripe", a);
+		sharing("Account Information", "Stripe", b);
+	`;
+	const result = extractFromFile("a.ts", code);
+	expect(result.sharing).toEqual([{ key: "Account Information", recipient: "Stripe" }]);
+	// Within-file duplicate edge is intentional dedup, not data loss.
+	expect(result.diagnostics).toEqual([]);
+});
+
+test("sharing: same key to different recipients are distinct edges", () => {
+	const code = `
+		import { sharing } from "@openpolicy/sdk";
+		sharing("Usage Data", "PostHog", a);
+		sharing("Usage Data", "Stripe", b);
+	`;
+	expect(extractFromFile("a.ts", code).sharing).toEqual([
+		{ key: "Usage Data", recipient: "PostHog" },
+		{ key: "Usage Data", recipient: "Stripe" },
+	]);
+});
+
+test("all four call-site helpers coexist in one file", () => {
+	const code = `
+		import { collecting, thirdParty, defineCookie, sharing } from "@openpolicy/sdk";
+		collecting("Account Information", v, { name: "Name" });
+		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
+		defineCookie("analytics");
+		sharing("Account Information", "Stripe", v);
+	`;
+	const result = extractFromFile("a.tsx", code);
+	expect(result.dataCollected).toEqual({ "Account Information": ["Name"] });
+	expect(result.thirdParties).toHaveLength(1);
+	expect(result.cookies).toEqual(["analytics"]);
+	expect(result.sharing).toEqual([{ key: "Account Information", recipient: "Stripe" }]);
+	expect(result.diagnostics).toEqual([]);
+});
+
+// ---------------------------------------------------------------------------
 // diagnostic location + aggregation
 // ---------------------------------------------------------------------------
 
