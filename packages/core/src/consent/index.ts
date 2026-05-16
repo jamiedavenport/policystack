@@ -9,6 +9,12 @@ export {
 	manualResolver,
 	timezoneResolver,
 } from "./jurisdiction";
+export {
+	type ConsentModel,
+	jurisdictionPosture,
+	postureDecisions,
+	toJurisdictionId,
+} from "./posture";
 export { defineScript, gateScript, gateScripts } from "./scripts";
 export { createConsentStore } from "./store";
 export type {

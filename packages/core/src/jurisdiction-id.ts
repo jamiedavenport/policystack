@@ -36,6 +36,9 @@ export type JurisdictionCapability = {
 
 export type JurisdictionTable = Readonly<Record<JurisdictionId, JurisdictionCapability>>;
 
+/** §4.2 default consent posture for a jurisdiction. */
+export type ConsentModel = "opt-in" | "opt-out";
+
 /**
  * 3 `specific` (hand-authored: `eea`, `uk`, `us-ca`) + 8 `equivalent`
  * (posture-correct + parent text + a suppressible diagnostic — a legitimate,
@@ -93,6 +96,16 @@ export function resolveJurisdiction(code: string): JurisdictionId | null {
 	if (isJurisdictionId(code)) return code;
 	if (code.startsWith("us-")) return "us";
 	return null;
+}
+
+/**
+ * The §4.2 posture for a canonical jurisdiction. The single seam the policy
+ * renderer and the consent runtime both read, so policy prose and banner
+ * behaviour provably agree (they cannot disagree about a jurisdiction's
+ * posture if they consult the same table row).
+ */
+export function consentModelFor(id: JurisdictionId): ConsentModel {
+	return JURISDICTION_TABLE[id].consentModel;
 }
 
 export { JURISDICTION_IDS };

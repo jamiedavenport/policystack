@@ -15,6 +15,7 @@ const baseState: ConsentState = {
 	source: "user",
 	repromptReason: null,
 	canWithdraw: false,
+	consentModel: "opt-in",
 };
 
 const v1: ConsentRecord = {

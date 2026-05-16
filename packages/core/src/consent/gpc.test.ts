@@ -96,6 +96,7 @@ describe("applyGPC", () => {
 			source: "default",
 			repromptReason: null,
 			canWithdraw: false,
+			consentModel: "opt-out",
 			...overrides,
 		};
 	}
