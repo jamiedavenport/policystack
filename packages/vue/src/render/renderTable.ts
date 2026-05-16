@@ -1,4 +1,4 @@
-import type { TableCellNode, TableNode, TableRowNode } from "@openpolicy/core";
+import type { TableCellNode, TableHeaderCellNode, TableNode, TableRowNode } from "@openpolicy/core";
 import { h, type VNodeChild } from "vue";
 import {
 	DefaultTable,
@@ -6,6 +6,7 @@ import {
 	DefaultTableCell,
 	DefaultTableHead,
 	DefaultTableHeader,
+	DefaultTableHeaderRow,
 	DefaultTableRow,
 } from "../defaults/table";
 import type { PolicyComponents } from "../types";
@@ -21,29 +22,28 @@ export function renderTable(
 	const TableHeaderComp = components.TableHeader ?? DefaultTableHeader;
 	const TableBodyComp = components.TableBody ?? DefaultTableBody;
 	const TableRowComp = components.TableRow ?? DefaultTableRow;
+	const TableHeaderRowComp = components.TableHeaderRow ?? DefaultTableHeaderRow;
 	const TableHeadComp = components.TableHead ?? DefaultTableHead;
 	const TableCellComp = components.TableCell ?? DefaultTableCell;
 
-	const renderCell = (
-		cell: TableCellNode,
-		cellKey: number,
-		CellComp: typeof TableHeadComp | typeof TableCellComp,
-	) => {
+	const renderHeaderCell = (cell: TableHeaderCellNode, cellKey: number) => {
 		const cellChildren = cell.children.map((n, i) => renderNode(n, components, i));
-		return h(CellComp, { key: cellKey, node: cell }, { default: () => cellChildren });
+		return h(TableHeadComp, { key: cellKey, node: cell }, { default: () => cellChildren });
 	};
 
-	const renderRow = (
-		row: TableRowNode,
-		rowKey: number | undefined,
-		CellComp: typeof TableHeadComp | typeof TableCellComp,
-	) => {
-		const rowChildren = row.cells.map((c, ci) => renderCell(c, ci, CellComp));
+	const renderBodyCell = (cell: TableCellNode, cellKey: number) => {
+		const cellChildren = cell.children.map((n, i) => renderNode(n, components, i));
+		return h(TableCellComp, { key: cellKey, node: cell }, { default: () => cellChildren });
+	};
+
+	const renderBodyRow = (row: TableRowNode, rowKey: number) => {
+		const rowChildren = row.cells.map((c, ci) => renderBodyCell(c, ci));
 		return h(TableRowComp, { key: rowKey, node: row }, { default: () => rowChildren });
 	};
 
-	const headerRow = renderRow(node.header, undefined, TableHeadComp);
-	const bodyRows = node.rows.map((row, ri) => renderRow(row, ri, TableCellComp));
+	const headerCells = node.header.cells.map((c, ci) => renderHeaderCell(c, ci));
+	const headerRow = h(TableHeaderRowComp, { node: node.header }, { default: () => headerCells });
+	const bodyRows = node.rows.map((row, ri) => renderBodyRow(row, ri));
 	const inner = [
 		h(TableHeaderComp, null, { default: () => headerRow }),
 		h(TableBodyComp, null, { default: () => bodyRows }),

@@ -31,6 +31,12 @@ export const renderNode: RenderNode = (node, components, key) => {
 			return renderTable(node, components, renderNode, key);
 		case "tableRow":
 		case "tableCell":
+		case "tableHeaderRow":
+		case "tableHeaderCell":
+			return null;
+		// Forward-compat no-op: unrecognized future block nodes render as
+		// nothing rather than crashing the renderer (see ADR 0001).
+		case "unknown":
 			return null;
 		case "text":
 			return renderText(node, components, key);

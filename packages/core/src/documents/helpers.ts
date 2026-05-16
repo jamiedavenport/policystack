@@ -11,6 +11,8 @@ import type {
 	NodeContext,
 	ParagraphNode,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
@@ -85,13 +87,29 @@ export const row = (cells: TableCellNode[], context?: NodeContext): TableRowNode
 	cells,
 	...(context && { context }),
 });
+export const headerCell = (
+	children: (string | InlineNode)[],
+	context?: NodeContext,
+): TableHeaderCellNode => ({
+	type: "tableHeaderCell",
+	children: children.map((c) => (typeof c === "string" ? text(c) : c)),
+	...(context && { context }),
+});
+export const headerRow = (
+	cells: TableHeaderCellNode[],
+	context?: NodeContext,
+): TableHeaderRowNode => ({
+	type: "tableHeaderRow",
+	cells,
+	...(context && { context }),
+});
 export const table = (
 	headerLabels: (string | InlineNode)[],
 	rows: TableRowNode[],
 	context?: NodeContext,
 ): TableNode => ({
 	type: "table",
-	header: row(headerLabels.map((l) => cell([l]))),
+	header: headerRow(headerLabels.map((l) => headerCell([l]))),
 	rows,
 	...(context && { context }),
 });

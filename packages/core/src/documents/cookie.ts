@@ -2,7 +2,7 @@ import type { T } from "../i18n";
 import { formatDate } from "../i18n";
 import type { CookiePolicyConfig } from "../types";
 import { bold, cell, heading, li, link, p, row, section, table, ul } from "./helpers";
-import type { DocumentSection, TableRowNode } from "./types";
+import type { ComplianceReason, DocumentSection, TableRowNode } from "./types";
 
 function versionSuffix(config: CookiePolicyConfig, t: T): string {
 	return config.version ? t.shared.versionSuffix({ version: config.version }) : "";
@@ -119,9 +119,17 @@ function buildJurisdictionEuUk(config: CookiePolicyConfig, t: T): DocumentSectio
 	const hasUk = config.jurisdictions.includes("uk");
 	if (!hasEu && !hasUk) return null;
 	const branch: "euAndUk" | "eu" | "uk" = hasEu && hasUk ? "euAndUk" : hasEu ? "eu" : "uk";
-	const reason = hasUk
-		? "Required under the UK-GDPR and PECR"
-		: "Required under ePrivacy Directive and GDPR";
+	const reason: ComplianceReason = hasUk
+		? {
+				code: "cookie-jurisdiction-eu-uk",
+				jurisdiction: "uk",
+				citation: "Required under the UK-GDPR and PECR",
+			}
+		: {
+				code: "cookie-jurisdiction-eu-uk",
+				jurisdiction: "eea",
+				citation: "Required under ePrivacy Directive and GDPR",
+			};
 	return section("cookie-jurisdiction-eu-uk", [
 		heading(t.cookie.jurisdictionEuUk.heading[branch](), { reason }),
 		p([t.cookie.jurisdictionEuUk.body({ region: t.cookie.jurisdictionEuUk.region[branch]() })]),

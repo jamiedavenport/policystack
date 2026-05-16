@@ -1,10 +1,12 @@
 export type {
 	BoldNode,
+	ComplianceReason,
 	ContentNode,
 	Document,
 	DocumentSection,
 	HeadingNode,
 	InlineNode,
+	IssueCode,
 	ItalicNode,
 	LinkNode,
 	ListItemNode,
@@ -14,14 +16,21 @@ export type {
 	ParagraphNode,
 	PolicyType,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
+	UnknownNode,
+	Visitor,
 } from "./documents";
 export {
+	AST_VERSION,
 	bold,
 	cell,
 	compile,
+	headerCell,
+	headerRow,
 	heading,
 	italic,
 	li,
@@ -33,7 +42,9 @@ export {
 	table,
 	text,
 	ul,
+	visit,
 } from "./documents";
+export type { JurisdictionId } from "./jurisdiction-id";
 export { isJurisdiction, JURISDICTIONS } from "./jurisdictions";
 export type {
 	AutomatedDecision,

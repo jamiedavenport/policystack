@@ -151,6 +151,9 @@ function renderSection(
 			case "table":
 				renderTable(doc, node);
 				break;
+			case "unknown":
+				// forward-compat: unrecognized node renders as nothing (ADR 0001)
+				break;
 		}
 	}
 }

@@ -8,13 +8,13 @@ export const DefaultSection = defineComponent({
 	},
 	setup(props, { slots }) {
 		return () => {
-			const reason = props.section.context?.reason;
+			const reasonCode = props.section.context?.reason?.code;
 			return h(
 				"section",
 				{
 					"data-op-section": "",
 					id: props.section.id,
-					...(reason ? { "data-op-reason": reason } : {}),
+					...(reasonCode ? { "data-op-reason": reasonCode } : {}),
 				},
 				slots.default?.(),
 			);

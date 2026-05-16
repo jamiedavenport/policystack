@@ -1,11 +1,11 @@
 <script lang="ts">
-import type { TableCellNode } from "@openpolicy/core";
+import type { TableHeaderCellNode } from "@openpolicy/core";
 import type { Snippet } from "svelte";
 
 let {
 	children,
 }: {
-	node: TableCellNode;
+	node: TableHeaderCellNode;
 	children: Snippet;
 } = $props();
 </script>

@@ -92,4 +92,8 @@ const overrides = $derived(overridesGetter());
 	{:else}
 		<DefaultLink {node} />
 	{/if}
+{:else if node.type === "unknown"}
+	<!-- Forward-compat escape hatch: an UnknownNode renders as a no-op so a
+	     reader on an older astVersion that meets an unrecognized block-level
+	     node degrades gracefully instead of crashing (ADR 0001). -->
 {/if}

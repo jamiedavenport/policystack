@@ -9,6 +9,8 @@ import type {
 	Node,
 	ParagraphNode,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
@@ -57,8 +59,8 @@ export function DefaultSection({
 		<section
 			data-op-section
 			id={section.id}
-			{...(section.context?.reason && {
-				"data-op-reason": section.context.reason,
+			{...(section.context?.reason?.code && {
+				"data-op-reason": section.context.reason.code,
 			})}
 		>
 			{children}
@@ -113,11 +115,21 @@ export function DefaultTableRow({
 	return <tr data-op-table-row>{children}</tr>;
 }
 
+export function DefaultTableHeaderRow({
+	node: _node,
+	children,
+}: {
+	node: TableHeaderRowNode;
+	children: ReactNode;
+}) {
+	return <tr data-op-table-row>{children}</tr>;
+}
+
 export function DefaultTableHead({
 	node: _node,
 	children,
 }: {
-	node: TableCellNode;
+	node: TableHeaderCellNode;
 	children: ReactNode;
 }) {
 	return (
@@ -187,29 +199,28 @@ export function renderNode(node: Node, components: PolicyComponents, key?: numbe
 			const TableComp = components.Table ?? DefaultTable;
 			const TableHeaderComp = components.TableHeader ?? DefaultTableHeader;
 			const TableBodyComp = components.TableBody ?? DefaultTableBody;
+			const TableHeaderRowComp = components.TableHeaderRow ?? DefaultTableHeaderRow;
 			const TableRowComp = components.TableRow ?? DefaultTableRow;
 			const TableHeadComp = components.TableHead ?? DefaultTableHead;
 			const TableCellComp = components.TableCell ?? DefaultTableCell;
-			const renderCell = (
-				cell: TableCellNode,
-				cellKey: number,
-				Comp: typeof TableHeadComp | typeof TableCellComp,
-			) => (
-				<Comp key={cellKey} node={cell}>
-					{cell.children.map((n, i) => renderNode(n, components, i))}
-				</Comp>
+			const headerRow = (
+				<TableHeaderRowComp node={node.header}>
+					{node.header.cells.map((cell, ci) => (
+						<TableHeadComp key={ci} node={cell}>
+							{cell.children.map((n, i) => renderNode(n, components, i))}
+						</TableHeadComp>
+					))}
+				</TableHeaderRowComp>
 			);
-			const renderRow = (
-				row: TableRowNode,
-				rowKey: number | undefined,
-				CellComp: typeof TableHeadComp | typeof TableCellComp,
-			) => (
-				<TableRowComp key={rowKey} node={row}>
-					{row.cells.map((c, ci) => renderCell(c, ci, CellComp))}
+			const bodyRows = node.rows.map((row, ri) => (
+				<TableRowComp key={ri} node={row}>
+					{row.cells.map((cell, ci) => (
+						<TableCellComp key={ci} node={cell}>
+							{cell.children.map((n, i) => renderNode(n, components, i))}
+						</TableCellComp>
+					))}
 				</TableRowComp>
-			);
-			const headerRow = renderRow(node.header, undefined, TableHeadComp);
-			const bodyRows = node.rows.map((row, ri) => renderRow(row, ri, TableCellComp));
+			));
 			return (
 				<TableComp key={key} node={node}>
 					<TableHeaderComp>{headerRow}</TableHeaderComp>
@@ -220,6 +231,13 @@ export function renderNode(node: Node, components: PolicyComponents, key?: numbe
 
 		case "tableRow":
 		case "tableCell":
+		case "tableHeaderRow":
+		case "tableHeaderCell":
+			return null;
+
+		// Forward-compat no-op: unrecognized future block-level nodes are
+		// represented as UnknownNode and rendered as nothing (see ADR 0001).
+		case "unknown":
 			return null;
 
 		case "text": {

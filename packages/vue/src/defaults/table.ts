@@ -1,4 +1,10 @@
-import type { TableCellNode, TableNode, TableRowNode } from "@openpolicy/core";
+import type {
+	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
+	TableNode,
+	TableRowNode,
+} from "@openpolicy/core";
 import { defineComponent, h, type PropType } from "vue";
 
 export const DefaultTable = defineComponent({
@@ -35,10 +41,20 @@ export const DefaultTableRow = defineComponent({
 	},
 });
 
+export const DefaultTableHeaderRow = defineComponent({
+	name: "DefaultTableHeaderRow",
+	props: {
+		node: { type: Object as PropType<TableHeaderRowNode>, required: true },
+	},
+	setup(_props, { slots }) {
+		return () => h("tr", { "data-op-table-row": "" }, slots.default?.());
+	},
+});
+
 export const DefaultTableHead = defineComponent({
 	name: "DefaultTableHead",
 	props: {
-		node: { type: Object as PropType<TableCellNode>, required: true },
+		node: { type: Object as PropType<TableHeaderCellNode>, required: true },
 	},
 	setup(_props, { slots }) {
 		return () => h("th", { "data-op-table-cell": "", scope: "col" }, slots.default?.());

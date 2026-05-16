@@ -1,11 +1,18 @@
 <script lang="ts">
-import type { TableCellNode, TableNode, TableRowNode } from "@openpolicy/core";
+import type {
+	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
+	TableNode,
+	TableRowNode,
+} from "@openpolicy/core";
 import { getOverridesContext } from "./context.svelte";
 import DefaultTable from "./defaults/DefaultTable.svelte";
 import DefaultTableBody from "./defaults/DefaultTableBody.svelte";
 import DefaultTableCell from "./defaults/DefaultTableCell.svelte";
 import DefaultTableHead from "./defaults/DefaultTableHead.svelte";
 import DefaultTableHeader from "./defaults/DefaultTableHeader.svelte";
+import DefaultTableHeaderRow from "./defaults/DefaultTableHeaderRow.svelte";
 import DefaultTableRow from "./defaults/DefaultTableRow.svelte";
 import RenderNode from "./RenderNode.svelte";
 
@@ -14,29 +21,49 @@ const overridesGetter = getOverridesContext();
 const overrides = $derived(overridesGetter());
 </script>
 
-{#snippet renderCell(cell: TableCellNode, kind: "head" | "cell")}
+{#snippet renderHeaderCell(cell: TableHeaderCellNode)}
 	{#snippet cellChildren()}
 		{#each cell.children as child, i (i)}
 			<RenderNode node={child} />
 		{/each}
 	{/snippet}
-	{#if kind === "head"}
-		{#if overrides.tableHead}
-			{@render overrides.tableHead({ node: cell, children: cellChildren })}
-		{:else}
-			<DefaultTableHead node={cell}>{@render cellChildren()}</DefaultTableHead>
-		{/if}
-	{:else if overrides.tableCell}
+	{#if overrides.tableHead}
+		{@render overrides.tableHead({ node: cell, children: cellChildren })}
+	{:else}
+		<DefaultTableHead node={cell}>{@render cellChildren()}</DefaultTableHead>
+	{/if}
+{/snippet}
+
+{#snippet renderCell(cell: TableCellNode)}
+	{#snippet cellChildren()}
+		{#each cell.children as child, i (i)}
+			<RenderNode node={child} />
+		{/each}
+	{/snippet}
+	{#if overrides.tableCell}
 		{@render overrides.tableCell({ node: cell, children: cellChildren })}
 	{:else}
 		<DefaultTableCell node={cell}>{@render cellChildren()}</DefaultTableCell>
 	{/if}
 {/snippet}
 
-{#snippet renderRow(row: TableRowNode, kind: "head" | "cell")}
+{#snippet renderHeaderRow(row: TableHeaderRowNode)}
 	{#snippet rowChildren()}
 		{#each row.cells as cell, i (i)}
-			{@render renderCell(cell, kind)}
+			{@render renderHeaderCell(cell)}
+		{/each}
+	{/snippet}
+	{#if overrides.tableHeaderRow}
+		{@render overrides.tableHeaderRow({ node: row, children: rowChildren })}
+	{:else}
+		<DefaultTableHeaderRow node={row}>{@render rowChildren()}</DefaultTableHeaderRow>
+	{/if}
+{/snippet}
+
+{#snippet renderRow(row: TableRowNode)}
+	{#snippet rowChildren()}
+		{#each row.cells as cell, i (i)}
+			{@render renderCell(cell)}
 		{/each}
 	{/snippet}
 	{#if overrides.tableRow}
@@ -47,12 +74,12 @@ const overrides = $derived(overridesGetter());
 {/snippet}
 
 {#snippet headerContents()}
-	{@render renderRow(node.header, "head")}
+	{@render renderHeaderRow(node.header)}
 {/snippet}
 
 {#snippet bodyContents()}
 	{#each node.rows as row, i (i)}
-		{@render renderRow(row, "cell")}
+		{@render renderRow(row)}
 	{/each}
 {/snippet}
 

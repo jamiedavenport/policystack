@@ -1,11 +1,4 @@
-import type {
-	Document,
-	InlineNode,
-	ListItemNode,
-	ListNode,
-	TableNode,
-	TableRowNode,
-} from "@openpolicy/core";
+import type { Document, InlineNode, ListItemNode, ListNode, TableNode } from "@openpolicy/core";
 
 function escapeHtml(str: string): string {
 	return str
@@ -41,14 +34,14 @@ function renderList(node: ListNode): string {
 	return `<${tag}>${items}</${tag}>`;
 }
 
-function renderRowCells(row: TableRowNode, tag: "th" | "td"): string {
-	return row.cells.map((c) => `<${tag}>${c.children.map(renderInline).join("")}</${tag}>`).join("");
+function renderRowCells(cells: { children: InlineNode[] }[], tag: "th" | "td"): string {
+	return cells.map((c) => `<${tag}>${c.children.map(renderInline).join("")}</${tag}>`).join("");
 }
 
 function renderTable(node: TableNode): string {
-	const head = `<thead><tr>${renderRowCells(node.header, "th")}</tr></thead>`;
+	const head = `<thead><tr>${renderRowCells(node.header.cells, "th")}</tr></thead>`;
 	const body = `<tbody>${node.rows
-		.map((r) => `<tr>${renderRowCells(r, "td")}</tr>`)
+		.map((r) => `<tr>${renderRowCells(r.cells, "td")}</tr>`)
 		.join("")}</tbody>`;
 	return `<table>${head}${body}</table>`;
 }
@@ -69,6 +62,9 @@ export function renderHTML(doc: Document): string {
 						return renderList(node);
 					case "table":
 						return renderTable(node);
+					case "unknown":
+						// forward-compat: unrecognized node renders as nothing (ADR 0001)
+						return "";
 				}
 			});
 			return blocks.join("\n");

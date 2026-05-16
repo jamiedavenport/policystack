@@ -7,6 +7,8 @@ import type {
 	ListNode,
 	ParagraphNode,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
@@ -22,7 +24,8 @@ export type PolicyComponents = {
 	TableHeader?: Component;
 	TableBody?: Component;
 	TableRow?: Component<{ node: TableRowNode }>;
-	TableHead?: Component<{ node: TableCellNode }>;
+	TableHeaderRow?: Component<{ node: TableHeaderRowNode }>;
+	TableHead?: Component<{ node: TableHeaderCellNode }>;
 	TableCell?: Component<{ node: TableCellNode }>;
 	Text?: Component<{ node: TextNode }>;
 	Bold?: Component<{ node: BoldNode }>;

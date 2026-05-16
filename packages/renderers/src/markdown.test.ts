@@ -1,9 +1,9 @@
 import { expect, test } from "vite-plus/test";
-import type { Document } from "@openpolicy/core";
+import { AST_VERSION, type Document } from "@openpolicy/core";
 import { renderMarkdown } from "./markdown";
 
 function doc(sections: Document["sections"]): Document {
-	return { type: "document", policyType: "privacy", sections };
+	return { type: "document", astVersion: AST_VERSION, policyType: "privacy", sections };
 }
 
 test("renders a heading node", () => {
@@ -220,10 +220,10 @@ test("renders a table as GFM", () => {
 					{
 						type: "table",
 						header: {
-							type: "tableRow",
+							type: "tableHeaderRow",
 							cells: [
-								{ type: "tableCell", children: [{ type: "text", value: "Name" }] },
-								{ type: "tableCell", children: [{ type: "text", value: "Purpose" }] },
+								{ type: "tableHeaderCell", children: [{ type: "text", value: "Name" }] },
+								{ type: "tableHeaderCell", children: [{ type: "text", value: "Purpose" }] },
 							],
 						},
 						rows: [
@@ -253,8 +253,8 @@ test("escapes pipe characters in table cells", () => {
 					{
 						type: "table",
 						header: {
-							type: "tableRow",
-							cells: [{ type: "tableCell", children: [{ type: "text", value: "Field" }] }],
+							type: "tableHeaderRow",
+							cells: [{ type: "tableHeaderCell", children: [{ type: "text", value: "Field" }] }],
 						},
 						rows: [
 							{

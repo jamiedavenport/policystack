@@ -8,6 +8,8 @@ import type {
 	ListNode,
 	ParagraphNode,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
@@ -25,7 +27,8 @@ export type PolicyComponents = {
 	TableHeader?: ComponentType<{ children: ReactNode }>;
 	TableBody?: ComponentType<{ children: ReactNode }>;
 	TableRow?: ComponentType<{ node: TableRowNode; children: ReactNode }>;
-	TableHead?: ComponentType<{ node: TableCellNode; children: ReactNode }>;
+	TableHeaderRow?: ComponentType<{ node: TableHeaderRowNode; children: ReactNode }>;
+	TableHead?: ComponentType<{ node: TableHeaderCellNode; children: ReactNode }>;
 	TableCell?: ComponentType<{ node: TableCellNode; children: ReactNode }>;
 	Text?: ComponentType<{ node: TextNode }>;
 	Bold?: ComponentType<{ node: BoldNode }>;

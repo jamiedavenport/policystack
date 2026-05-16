@@ -2,7 +2,7 @@ import { createT } from "../i18n";
 import type { PolicyInput } from "../types";
 import { compileCookieDocument } from "./cookie";
 import { compilePrivacyDocument } from "./privacy";
-import type { Document } from "./types";
+import { AST_VERSION, type Document } from "./types";
 
 export function compile(input: PolicyInput): Document {
 	const t = createT(input.locale);
@@ -10,6 +10,7 @@ export function compile(input: PolicyInput): Document {
 		const { type: _, ...config } = input;
 		return {
 			type: "document",
+			astVersion: AST_VERSION,
 			policyType: "privacy",
 			sections: compilePrivacyDocument(config, t),
 		};
@@ -17,6 +18,7 @@ export function compile(input: PolicyInput): Document {
 	const { type: _, ...config } = input;
 	return {
 		type: "document",
+		astVersion: AST_VERSION,
 		policyType: "cookie",
 		sections: compileCookieDocument(config, t),
 	};
@@ -25,6 +27,8 @@ export function compile(input: PolicyInput): Document {
 export {
 	bold,
 	cell,
+	headerCell,
+	headerRow,
 	heading,
 	italic,
 	li,
@@ -37,13 +41,16 @@ export {
 	text,
 	ul,
 } from "./helpers";
+export { AST_VERSION } from "./types";
 export type {
 	BoldNode,
+	ComplianceReason,
 	ContentNode,
 	Document,
 	DocumentSection,
 	HeadingNode,
 	InlineNode,
+	IssueCode,
 	ItalicNode,
 	LinkNode,
 	ListItemNode,
@@ -53,7 +60,12 @@ export type {
 	ParagraphNode,
 	PolicyType,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
+	UnknownNode,
 } from "./types";
+export { visit } from "./visit";
+export type { Visitor } from "./visit";

@@ -7,6 +7,8 @@ import type {
 	ListNode,
 	ParagraphNode,
 	TableCellNode,
+	TableHeaderCellNode,
+	TableHeaderRowNode,
 	TableNode,
 	TableRowNode,
 	TextNode,
@@ -22,7 +24,8 @@ export type PolicyOverrides = {
 	tableHeader?: Snippet<[{ children: Snippet }]>;
 	tableBody?: Snippet<[{ children: Snippet }]>;
 	tableRow?: Snippet<[{ node: TableRowNode; children: Snippet }]>;
-	tableHead?: Snippet<[{ node: TableCellNode; children: Snippet }]>;
+	tableHeaderRow?: Snippet<[{ node: TableHeaderRowNode; children: Snippet }]>;
+	tableHead?: Snippet<[{ node: TableHeaderCellNode; children: Snippet }]>;
 	tableCell?: Snippet<[{ node: TableCellNode; children: Snippet }]>;
 	text?: Snippet<[{ node: TextNode }]>;
 	bold?: Snippet<[{ node: BoldNode }]>;

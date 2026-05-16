@@ -1,11 +1,4 @@
-import type {
-	Document,
-	InlineNode,
-	ListItemNode,
-	ListNode,
-	TableNode,
-	TableRowNode,
-} from "@openpolicy/core";
+import type { Document, InlineNode, ListItemNode, ListNode, TableNode } from "@openpolicy/core";
 
 function renderInline(node: InlineNode): string {
 	switch (node.type) {
@@ -45,14 +38,14 @@ function renderCellInline(children: InlineNode[]): string {
 	return children.map(renderInline).join("").replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
-function renderTableRow(row: TableRowNode): string {
-	return `| ${row.cells.map((c) => renderCellInline(c.children)).join(" | ")} |`;
+function renderRowCells(cells: { children: InlineNode[] }[]): string {
+	return `| ${cells.map((c) => renderCellInline(c.children)).join(" | ")} |`;
 }
 
 function renderTable(node: TableNode): string {
-	const headerLine = renderTableRow(node.header);
+	const headerLine = renderRowCells(node.header.cells);
 	const separatorLine = `| ${node.header.cells.map(() => "---").join(" | ")} |`;
-	const bodyLines = node.rows.map(renderTableRow);
+	const bodyLines = node.rows.map((r) => renderRowCells(r.cells));
 	return [headerLine, separatorLine, ...bodyLines].join("\n");
 }
 
@@ -74,6 +67,9 @@ export function renderMarkdown(doc: Document): string {
 							.join("\n");
 					case "table":
 						return renderTable(node);
+					case "unknown":
+						// forward-compat: unrecognized node renders as nothing (ADR 0001)
+						return "";
 				}
 			});
 			return blocks.join("\n\n");

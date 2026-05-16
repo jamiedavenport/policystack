@@ -85,6 +85,7 @@ const rnLikeComponents: PolicyComponents = {
 	Table: Slot("table"),
 	TableHeader: Slot("tableHeader"),
 	TableBody: Slot("tableBody"),
+	TableHeaderRow: Slot("tableHeaderRow"),
 	TableRow: Slot("tableRow"),
 	TableHead: Slot("tableHead"),
 	TableCell: Slot("tableCell"),

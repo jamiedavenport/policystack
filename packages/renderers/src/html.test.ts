@@ -1,9 +1,9 @@
 import { expect, test } from "vite-plus/test";
-import type { Document } from "@openpolicy/core";
+import { AST_VERSION, type Document } from "@openpolicy/core";
 import { renderHTML } from "./html";
 
 function doc(sections: Document["sections"]): Document {
-	return { type: "document", policyType: "privacy", sections };
+	return { type: "document", astVersion: AST_VERSION, policyType: "privacy", sections };
 }
 
 test("renders heading as <h2>", () => {
@@ -144,10 +144,10 @@ test("renders a table with thead/tbody/th/td", () => {
 					{
 						type: "table",
 						header: {
-							type: "tableRow",
+							type: "tableHeaderRow",
 							cells: [
-								{ type: "tableCell", children: [{ type: "text", value: "Name" }] },
-								{ type: "tableCell", children: [{ type: "text", value: "Purpose" }] },
+								{ type: "tableHeaderCell", children: [{ type: "text", value: "Name" }] },
+								{ type: "tableHeaderCell", children: [{ type: "text", value: "Purpose" }] },
 							],
 						},
 						rows: [
@@ -196,4 +196,23 @@ test("renders list as <ul>/<li>", () => {
 	expect(result).toContain("<ul>");
 	expect(result).toContain("<li>Alpha</li>");
 	expect(result).toContain("<li>Beta</li>");
+});
+
+test("forward-compat: an unknown node renders as a no-op", () => {
+	const result = renderHTML(
+		doc([
+			{
+				type: "section",
+				id: "s1",
+				content: [
+					{ type: "heading", value: "Before" },
+					{ type: "unknown", raw: { type: "future-node", value: "ignored" } },
+					{ type: "heading", value: "After" },
+				],
+			},
+		]),
+	);
+	expect(result).toContain("<h2>Before</h2>");
+	expect(result).toContain("<h2>After</h2>");
+	expect(result).not.toContain("ignored");
 });

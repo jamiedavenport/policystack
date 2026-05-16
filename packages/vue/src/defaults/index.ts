@@ -6,5 +6,6 @@ export {
 	DefaultTableCell,
 	DefaultTableHead,
 	DefaultTableHeader,
+	DefaultTableHeaderRow,
 	DefaultTableRow,
 } from "./table";

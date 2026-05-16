@@ -14,7 +14,7 @@ let {
 <section
 	data-op-section=""
 	id={section.id}
-	data-op-reason={section.context?.reason}
+	data-op-reason={section.context?.reason?.code}
 >
 	{@render children()}
 </section>
