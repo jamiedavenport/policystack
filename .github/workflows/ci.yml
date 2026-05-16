@@ -17,8 +17,8 @@ jobs:
           node-version: "24"
           cache: true
       - run: vp install --frozen-lockfile
-      - run: vp check
       - run: vp run -r build
+      - run: vp check
       - run: vp run -r check-types
       # TEMP: svelte tests pass per-package (`cd packages/svelte && vp test`)
       # but the root aggregate run doesn't apply the package's `svelte()` Vite
