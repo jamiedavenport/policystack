@@ -50,6 +50,11 @@ export type ConsentState = {
 	decidedAt: string | null;
 	source: ConsentSource;
 	repromptReason: RepromptReason | null;
+	// Whether consent can be withdrawn/managed after the initial decision —
+	// derived from `consentMechanism.canWithdraw` by the §4.1 bridge. UI
+	// adapters read this to decide whether to surface a preferences-route
+	// (withdraw/manage) affordance.
+	canWithdraw: boolean;
 };
 
 export type RepromptReason = "policyVersion" | "categoriesAdded" | "expired" | "jurisdiction";
@@ -93,6 +98,7 @@ export type OpenCookiesConfig = {
 	gpc?: GPCConfig;
 	adapter?: StorageAdapter;
 	triggers?: RepromptTriggers;
+	canWithdraw?: boolean;
 };
 
 export type ActionOptions = {

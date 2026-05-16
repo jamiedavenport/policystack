@@ -575,6 +575,68 @@ test("validate: EU/UK + canWithdraw:false warns; canWithdraw:true does not", () 
 	expect(can.some((i) => i.code === "consent-withdrawal-required")).toBe(false);
 });
 
+test("validate: hasBanner:false with a consent-gated category warns", () => {
+	const gated = validate({
+		...baseConfig,
+		cookies: {
+			used: { essential: true, analytics: true },
+			context: {
+				essential: { lawfulBasis: "legal_obligation" },
+				analytics: { lawfulBasis: "consent" },
+			},
+		},
+		consentMechanism: { hasBanner: false, hasPreferencePanel: true, canWithdraw: true },
+	});
+	expect(gated.some((i) => i.code === "consent-banner-required" && i.level === "warning")).toBe(
+		true,
+	);
+});
+
+test("validate: hasBanner:false with no consent-gated category does not warn", () => {
+	const notGated = validate({
+		...baseConfig,
+		cookies: {
+			used: { essential: true },
+			context: { essential: { lawfulBasis: "legal_obligation" } },
+		},
+		consentMechanism: { hasBanner: false, hasPreferencePanel: true, canWithdraw: true },
+	});
+	expect(notGated.some((i) => i.code === "consent-banner-required")).toBe(false);
+});
+
+test("validate: a wired banner does not warn even with gated categories", () => {
+	const wired = validate({
+		...baseConfig,
+		cookies: {
+			used: { essential: true, analytics: true },
+			context: {
+				essential: { lawfulBasis: "legal_obligation" },
+				analytics: { lawfulBasis: "consent" },
+			},
+		},
+		consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
+	});
+	expect(wired.some((i) => i.code === "consent-banner-required")).toBe(false);
+});
+
+test("validate: canWithdraw:true with hasPreferencePanel:false warns", () => {
+	const issues = validate({
+		...baseConfig,
+		consentMechanism: { hasBanner: true, hasPreferencePanel: false, canWithdraw: true },
+	});
+	expect(
+		issues.some((i) => i.code === "consent-preference-panel-required" && i.level === "warning"),
+	).toBe(true);
+});
+
+test("validate: canWithdraw:false does not require a preference panel", () => {
+	const issues = validate({
+		...baseConfig,
+		consentMechanism: { hasBanner: true, hasPreferencePanel: false, canWithdraw: false },
+	});
+	expect(issues.some((i) => i.code === "consent-preference-panel-required")).toBe(false);
+});
+
 // --- emission gating ---
 
 test("validate: errors when the config produces no policy", () => {

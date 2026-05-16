@@ -14,6 +14,7 @@ const baseState: ConsentState = {
 	decidedAt: "2026-04-29T00:00:00.000Z",
 	source: "user",
 	repromptReason: null,
+	canWithdraw: false,
 };
 
 const v1: ConsentRecord = {

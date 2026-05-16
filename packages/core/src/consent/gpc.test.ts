@@ -95,6 +95,7 @@ describe("applyGPC", () => {
 			decidedAt: null,
 			source: "default",
 			repromptReason: null,
+			canWithdraw: false,
 			...overrides,
 		};
 	}

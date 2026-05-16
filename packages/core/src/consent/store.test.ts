@@ -74,6 +74,39 @@ describe("createConsentStore", () => {
 		it("jurisdiction is null when no resolver is configured", () => {
 			expect(createConsentStore(makeConfig()).getState().jurisdiction).toBeNull();
 		});
+
+		it("canWithdraw reflects config and defaults to false", () => {
+			expect(createConsentStore(makeConfig()).getState().canWithdraw).toBe(false);
+			expect(createConsentStore(makeConfig({ canWithdraw: true })).getState().canWithdraw).toBe(
+				true,
+			);
+		});
+
+		it("canWithdraw survives a policyVersion reprompt", () => {
+			const adapter: StorageAdapter = {
+				read: () => ({
+					schemaVersion: 1,
+					decisions: { essential: true, analytics: true, marketing: true },
+					policyVersion: "old",
+					decidedAt: "2026-01-01T00:00:00.000Z",
+					jurisdiction: null,
+					locale: "en",
+					source: "banner",
+				}),
+				write: () => {},
+				clear: () => {},
+			};
+			const store = createConsentStore(
+				makeConfig({
+					canWithdraw: true,
+					policyVersion: "new",
+					triggers: { policyVersionChanged: true },
+					adapter,
+				}),
+			);
+			expect(store.getState().repromptReason).toBe("policyVersion");
+			expect(store.getState().canWithdraw).toBe(true);
+		});
 	});
 
 	describe("jurisdiction resolver", () => {

@@ -143,3 +143,46 @@ test("enabled cookie with no context entry is gated with no lawfulBasis", () => 
 	expect(analytics?.lawfulBasis).toBeUndefined();
 	expect(analytics?.locked).toBe(false);
 });
+
+test("derives canWithdraw from policy.consentMechanism.canWithdraw", () => {
+	const can = toOpenCookiesConfig({
+		...policy,
+		consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
+	});
+	expect(can.canWithdraw).toBe(true);
+
+	const cannot = toOpenCookiesConfig({
+		...policy,
+		consentMechanism: { hasBanner: true, hasPreferencePanel: false, canWithdraw: false },
+	});
+	expect(cannot.canWithdraw).toBe(false);
+});
+
+test("canWithdraw is unset when no consentMechanism is declared", () => {
+	const config = toOpenCookiesConfig(policy);
+	expect(config.canWithdraw).toBeUndefined();
+});
+
+test("explicit canWithdraw option overrides policy.consentMechanism", () => {
+	const config = toOpenCookiesConfig(
+		{
+			...policy,
+			consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
+		},
+		{ canWithdraw: false },
+	);
+	expect(config.canWithdraw).toBe(false);
+});
+
+test("defaults triggers.policyVersionChanged on for automatic re-prompt", () => {
+	const config = toOpenCookiesConfig({ ...policy, cookieVersion: "abc12345" });
+	expect(config.triggers?.policyVersionChanged).toBe(true);
+});
+
+test("options.triggers merges over the policyVersionChanged default", () => {
+	const config = toOpenCookiesConfig(policy, {
+		triggers: { policyVersionChanged: false, jurisdictionChanged: true },
+	});
+	expect(config.triggers?.policyVersionChanged).toBe(false);
+	expect(config.triggers?.jurisdictionChanged).toBe(true);
+});

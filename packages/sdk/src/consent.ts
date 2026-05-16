@@ -1,4 +1,5 @@
 import type { OpenPolicyConfig } from "@openpolicy/core";
+import { isConsentGated } from "@openpolicy/core";
 import type { Category, OpenCookiesConfig } from "@openpolicy/core/consent";
 
 export type ToOpenCookiesConfigOptions = Omit<OpenCookiesConfig, "categories">;
@@ -16,16 +17,28 @@ export function toOpenCookiesConfig(
 			return {
 				key,
 				label: key.charAt(0).toUpperCase() + key.slice(1),
-				// `consent` ⇒ consent-gated (not locked). Any other lawful basis
-				// ⇒ not gated. An unknown/missing basis stays gated — the bridge
-				// may run on an unvalidated config (validate() flags it as
-				// cookie-lawful-basis-missing); defaulting to gated is the
-				// privacy-safe choice. The basis itself rides on the Category so
-				// the §4.2 posture resolver and audit keep the full signal.
-				locked: lawfulBasis != null && lawfulBasis !== "consent",
+				// Gating is the explicit, exhaustive bridge table (§4.1) — not a
+				// `=== "consent"` string heuristic. `consent` ⇒ gated (not
+				// locked); every other basis ⇒ locked; a missing basis stays
+				// gated (privacy-safe; validate() hard-errors it separately).
+				// The basis itself rides on the Category so the §4.2 posture
+				// resolver and audit keep the full signal.
+				locked: !isConsentGated(lawfulBasis),
 				...(lawfulBasis ? { lawfulBasis } : {}),
 			};
 		});
 	const policyVersion = options?.policyVersion ?? policy.cookieVersion;
-	return { ...options, ...(policyVersion ? { policyVersion } : {}), categories };
+	const canWithdraw = options?.canWithdraw ?? policy.consentMechanism?.canWithdraw;
+	// The OpenPolicy version hash drives an automatic re-prompt on policy
+	// change: default `policyVersionChanged` on so a changed `cookieVersion`
+	// actually invalidates stored consent. Callers can still override any
+	// individual trigger via `options.triggers`.
+	const triggers = { policyVersionChanged: true, ...options?.triggers };
+	return {
+		...options,
+		...(policyVersion ? { policyVersion } : {}),
+		...(canWithdraw != null ? { canWithdraw } : {}),
+		triggers,
+		categories,
+	};
 }

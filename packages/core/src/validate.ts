@@ -2,6 +2,7 @@ import { isLocale, LOCALES } from "./i18n";
 import { shouldEmit } from "./index";
 import { JURISDICTION_IDS, JURISDICTION_TABLE, resolveJurisdiction } from "./jurisdiction-id";
 import type { Issue, OpenPolicyConfig } from "./types";
+import { isConsentGated } from "./types";
 
 /**
  * The single validator. Pure `(config) => Issue[]` over the flat, public
@@ -275,6 +276,36 @@ export function validate(config: OpenPolicyConfig): Issue[] {
 				message:
 					"GDPR and UK-GDPR require that users can withdraw cookie consent — consider setting consentMechanism.canWithdraw to true",
 			});
+		}
+
+		// Cross-check the declared consentMechanism against the runtime the
+		// §4.1 bridge will wire: consent-gated categories need a banner to
+		// collect affirmative consent, and withdrawal needs a panel to do it
+		// in. Warnings — the bridge still derives a runtime, but the declared
+		// mechanism contradicts it.
+		if (config.consentMechanism) {
+			const hasGatedCategory = enabledKeys.some((key) =>
+				isConsentGated(config.cookies?.context?.[key]?.lawfulBasis),
+			);
+			if (config.consentMechanism.hasBanner === false && hasGatedCategory) {
+				issues.push({
+					code: "consent-banner-required",
+					level: "warning",
+					message:
+						"consentMechanism.hasBanner is false but at least one cookie category is consent-gated — a banner is needed to collect affirmative consent for the wired runtime.",
+				});
+			}
+			if (
+				config.consentMechanism.hasPreferencePanel === false &&
+				config.consentMechanism.canWithdraw === true
+			) {
+				issues.push({
+					code: "consent-preference-panel-required",
+					level: "warning",
+					message:
+						"consentMechanism.canWithdraw is true but hasPreferencePanel is false — withdrawal/management has no preference panel in the wired runtime.",
+				});
+			}
 		}
 	}
 

@@ -30,6 +30,28 @@ export type LegalBasis =
 	| "public_task"
 	| "legitimate_interests";
 
+// The explicit shared-config bridge (§4.1): a total, compiler-checked mapping
+// from every Article 6 lawful basis to whether a category built on it is
+// consent-gated. `Record<LegalBasis, …>` makes omitting a basis a type error,
+// so this is a reviewable table rather than a lossy string heuristic. Only
+// `consent` is gated; every other basis is a standing legal ground that does
+// not require (and cannot be revoked by) a consent decision.
+export const LAWFUL_BASIS_CONSENT_GATED: Record<LegalBasis, boolean> = {
+	consent: true,
+	contract: false,
+	legal_obligation: false,
+	vital_interests: false,
+	public_task: false,
+	legitimate_interests: false,
+};
+
+// A missing basis is treated as gated — the privacy-safe default for a config
+// the bridge may run before validation (validate() hard-errors a missing basis
+// via `cookie-lawful-basis-missing`).
+export function isConsentGated(basis: LegalBasis | undefined): boolean {
+	return basis == null ? true : LAWFUL_BASIS_CONSENT_GATED[basis];
+}
+
 // GDPR Art. 13(2)(f) requires disclosing each automated-decision-making
 // or profiling activity (Art. 22) — the existence, the logic involved,
 // and the significance and envisaged consequences for the data subject.
@@ -238,6 +260,8 @@ export type IssueCode =
 	| "cookie-lawful-basis-missing" //      error   — enabled cookie lacks lawful basis
 	| "consent-mechanism-undeclared" //     warning — consentMechanism absent
 	| "consent-withdrawal-required" //      warning — withdrawal not enabled under GDPR/UK
+	| "consent-banner-required" //          warning — gated category but consentMechanism.hasBanner false
+	| "consent-preference-panel-required" //warning — canWithdraw true but hasPreferencePanel false
 	| "jurisdiction-generic-policy-text"; //warning — declared jurisdiction ships only equivalent (parent) policy text
 
 export type Issue = {

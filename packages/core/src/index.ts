@@ -90,7 +90,7 @@ export type {
 	TrackingTechnology,
 	UserRight,
 } from "./types";
-export { isOpenPolicyConfig } from "./types";
+export { isOpenPolicyConfig, LAWFUL_BASIS_CONSENT_GATED, isConsentGated } from "./types";
 export { Contractual, ContractPrerequisite, Statutory, Voluntary } from "./provision";
 export { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 export { deriveUserRights } from "./user-rights";

@@ -35,6 +35,7 @@ export function createConsentStore(config: OpenCookiesConfig): ConsentStore {
 		decidedAt: null,
 		source: "default",
 		repromptReason: null,
+		canWithdraw: config.canWithdraw ?? false,
 	};
 
 	let state: ConsentState;
