@@ -1,6 +1,7 @@
 import { evaluate } from "./expr";
 import { applyGPC } from "./gpc";
 import { resolveLocale } from "./locale";
+import { jurisdictionPosture, postureDecisions } from "./posture";
 import { fromUnknown, recordEquals, toRecord } from "./storage/record";
 import { evaluateTriggers } from "./triggers";
 import type {
@@ -26,16 +27,18 @@ export function createConsentStore(config: OpenCookiesConfig): ConsentStore {
 	const initialJurisdiction = resolveSync(config, config.request);
 	const initialRecord = readSync(config, locale);
 
+	const initialModel = jurisdictionPosture(initialJurisdiction.value);
 	const baseState: ConsentState = {
 		route: config.initialRoute ?? "cookie",
 		categories: config.categories,
-		decisions: Object.fromEntries(config.categories.map((c) => [c.key, c.locked === true])),
+		decisions: postureDecisions(config.categories, initialModel),
 		jurisdiction: initialJurisdiction.value,
 		policyVersion: config.policyVersion ?? "",
 		decidedAt: null,
 		source: "default",
 		repromptReason: null,
 		canWithdraw: config.canWithdraw ?? false,
+		consentModel: initialModel,
 	};
 
 	let state: ConsentState;
@@ -100,7 +103,16 @@ export function createConsentStore(config: OpenCookiesConfig): ConsentStore {
 	}
 
 	function handleJurisdictionChange(value: Jurisdiction | null): void {
-		let next: ConsentState = { ...state, jurisdiction: value };
+		const model = jurisdictionPosture(value);
+		let next: ConsentState = { ...state, jurisdiction: value, consentModel: model };
+		// While pristine (no user decision, no stored record, no pending
+		// reprompt) re-default to the resolved jurisdiction's posture — this
+		// closes the silent-opt-in footgun for async resolvers. applyGPC
+		// re-runs at commit, so an opt-out default still composes with GPC.
+		// A user decision or stored record is never overridden here.
+		if (state.decidedAt === null && lastWritten === null && state.repromptReason === null) {
+			next = { ...next, decisions: postureDecisions(next.categories, model) };
+		}
 		if (state.repromptReason === null && lastWritten !== null) {
 			const reason = evaluateTriggers({
 				record: lastWritten,
@@ -134,13 +146,18 @@ export function createConsentStore(config: OpenCookiesConfig): ConsentStore {
 	}
 
 	function invalidate(current: ConsentState, reason: RepromptReason): ConsentState {
+		// Re-default to the posture of where the visitor is *now* (current.jurisdiction
+		// is already the post-change value on the jurisdiction-change path), so a
+		// reprompt never falls back to stale opt-in.
+		const model = jurisdictionPosture(current.jurisdiction);
 		return {
 			...current,
-			decisions: Object.fromEntries(current.categories.map((c) => [c.key, c.locked === true])),
+			decisions: postureDecisions(current.categories, model),
 			decidedAt: null,
 			route: "cookie",
 			source: "default",
 			repromptReason: reason,
+			consentModel: model,
 		};
 	}
 
@@ -398,14 +415,18 @@ function mergeRecord(state: ConsentState, record: ConsentRecord | null): Consent
 			decisions[c.key] = record.decisions[c.key] === true;
 		}
 	}
+	const jurisdiction = record.jurisdiction ?? state.jurisdiction;
 	return {
 		...state,
 		decisions,
-		jurisdiction: record.jurisdiction ?? state.jurisdiction,
+		jurisdiction,
 		policyVersion: record.policyVersion || state.policyVersion,
 		decidedAt: record.decidedAt,
 		route: state.route === "cookie" ? "closed" : state.route,
 		source: "user",
 		repromptReason: null,
+		// Decisions stay the user's; the UI hint still tracks the resolved
+		// jurisdiction so the banner/preferences render the right affordance.
+		consentModel: jurisdictionPosture(jurisdiction),
 	};
 }

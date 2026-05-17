@@ -1,3 +1,4 @@
+import type { ConsentModel } from "../jurisdiction-id";
 import type { LegalBasis } from "../types";
 
 export type Route = "cookie" | "preferences" | "closed";
@@ -55,6 +56,11 @@ export type ConsentState = {
 	// adapters read this to decide whether to surface a preferences-route
 	// (withdraw/manage) affordance.
 	canWithdraw: boolean;
+	// Resolved §4.2 posture for the current jurisdiction, read from the same
+	// JURISDICTION_TABLE as the policy text so prose and banner provably
+	// agree. UI adapters render an opt-out "Do Not Sell/Share" affordance vs
+	// an opt-in consent prompt off this; the route stays "cookie" in both.
+	consentModel: ConsentModel;
 };
 
 export type RepromptReason = "policyVersion" | "categoriesAdded" | "expired" | "jurisdiction";

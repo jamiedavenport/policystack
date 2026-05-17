@@ -46,8 +46,14 @@ export {
 	ul,
 	visit,
 } from "./documents";
-export type { JurisdictionCapability, JurisdictionId, JurisdictionTable } from "./jurisdiction-id";
+export type {
+	ConsentModel,
+	JurisdictionCapability,
+	JurisdictionId,
+	JurisdictionTable,
+} from "./jurisdiction-id";
 export {
+	consentModelFor,
 	isJurisdictionId,
 	JURISDICTION_IDS,
 	JURISDICTION_TABLE,

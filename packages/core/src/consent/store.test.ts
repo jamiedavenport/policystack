@@ -109,6 +109,116 @@ describe("createConsentStore", () => {
 		});
 	});
 
+	describe("jurisdiction posture (§4.2 flagship)", () => {
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
+		it("opt-out jurisdiction: non-essential defaults ON, consentModel opt-out", () => {
+			const s = createConsentStore(
+				makeConfig({ jurisdictionResolver: manualResolver("US") }),
+			).getState();
+			expect(s.decisions).toEqual({ essential: true, analytics: true, marketing: true });
+			expect(s.consentModel).toBe("opt-out");
+		});
+
+		it("opt-in jurisdiction: non-essential defaults OFF, consentModel opt-in", () => {
+			const s = createConsentStore(
+				makeConfig({ jurisdictionResolver: manualResolver("EEA") }),
+			).getState();
+			expect(s.decisions).toEqual({ essential: true, analytics: false, marketing: false });
+			expect(s.consentModel).toBe("opt-in");
+		});
+
+		it("no resolver → conservative opt-in (row) — regression guard", () => {
+			const s = createConsentStore(makeConfig()).getState();
+			expect(s.decisions).toEqual({ essential: true, analytics: false, marketing: false });
+			expect(s.consentModel).toBe("opt-in");
+		});
+
+		it("async resolver: opt-in until resolved, opt-out after (footgun gone for async)", async () => {
+			const store = createConsentStore(
+				makeConfig({ jurisdictionResolver: { resolve: () => Promise.resolve("US") } }),
+			);
+			expect(store.getState().decisions).toEqual({
+				essential: true,
+				analytics: false,
+				marketing: false,
+			});
+			expect(store.getState().consentModel).toBe("opt-in");
+			await flushMicrotasks();
+			expect(store.getState().decisions).toEqual({
+				essential: true,
+				analytics: true,
+				marketing: true,
+			});
+			expect(store.getState().consentModel).toBe("opt-out");
+		});
+
+		it("GPC is the opt-out: opt-out posture set ON, GPC flips it back OFF", () => {
+			const s = createConsentStore(
+				makeConfig({ jurisdictionResolver: manualResolver("US"), gpc: { signal: true } }),
+			).getState();
+			expect(s.decisions).toEqual({ essential: true, analytics: false, marketing: false });
+			expect(s.source).toBe("gpc");
+			expect(s.consentModel).toBe("opt-out");
+		});
+
+		it("a prior user decision is never overridden by a later jurisdiction change", async () => {
+			let where: "EEA" | "US" = "EEA";
+			const store = createConsentStore(
+				makeConfig({ jurisdictionResolver: { resolve: () => where } }),
+			);
+			store.acceptNecessary();
+			expect(store.getState().decisions).toEqual({
+				essential: true,
+				analytics: false,
+				marketing: false,
+			});
+			where = "US";
+			await store.refreshJurisdiction();
+			expect(store.getState().jurisdiction).toBe("US");
+			// decisions stay the user's; only the UI hint tracks the new jurisdiction.
+			expect(store.getState().decisions).toEqual({
+				essential: true,
+				analytics: false,
+				marketing: false,
+			});
+			expect(store.getState().consentModel).toBe("opt-out");
+		});
+
+		it("a jurisdictionChanged reprompt re-defaults to the NEW jurisdiction's posture", async () => {
+			const adapter: StorageAdapter = {
+				read: () => ({
+					schemaVersion: 1,
+					decisions: { essential: true, analytics: false, marketing: false },
+					policyVersion: "",
+					decidedAt: "2026-01-01T00:00:00.000Z",
+					jurisdiction: "EEA",
+					locale: "en",
+					source: "banner",
+				}),
+				write: () => {},
+				clear: () => {},
+			};
+			const store = createConsentStore(
+				makeConfig({
+					jurisdictionResolver: { resolve: () => Promise.resolve("US") },
+					triggers: { jurisdictionChanged: true },
+					adapter,
+				}),
+			);
+			await flushMicrotasks();
+			expect(store.getState().repromptReason).toBe("jurisdiction");
+			expect(store.getState().decisions).toEqual({
+				essential: true,
+				analytics: true,
+				marketing: true,
+			});
+			expect(store.getState().consentModel).toBe("opt-out");
+		});
+	});
+
 	describe("jurisdiction resolver", () => {
 		afterEach(() => {
 			vi.restoreAllMocks();
