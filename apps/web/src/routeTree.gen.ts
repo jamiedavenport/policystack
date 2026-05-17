@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SdkDottxtRouteImport } from './routes/sdk[.]txt'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PolicycloudDotmdRouteImport } from './routes/policycloud[.]md'
 import { Route as PolicycloudRouteImport } from './routes/policycloud'
@@ -28,6 +29,11 @@ import { Route as OgSplatRouteImport } from './routes/og/$'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 
+const SdkDottxtRoute = SdkDottxtRouteImport.update({
+  id: '/sdk.txt',
+  path: '/sdk.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/policycloud': typeof PolicycloudRoute
   '/policycloud.md': typeof PolicycloudDotmdRoute
   '/privacy': typeof PrivacyRoute
+  '/sdk.txt': typeof SdkDottxtRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/og/$': typeof OgSplatRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/policycloud': typeof PolicycloudRoute
   '/policycloud.md': typeof PolicycloudDotmdRoute
   '/privacy': typeof PrivacyRoute
+  '/sdk.txt': typeof SdkDottxtRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/og/$': typeof OgSplatRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/policycloud': typeof PolicycloudRoute
   '/policycloud.md': typeof PolicycloudDotmdRoute
   '/privacy': typeof PrivacyRoute
+  '/sdk.txt': typeof SdkDottxtRoute
   '/blog_/$slug': typeof BlogSlugRoute
   '/docs/$': typeof DocsSplatRoute
   '/og/$': typeof OgSplatRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/policycloud'
     | '/policycloud.md'
     | '/privacy'
+    | '/sdk.txt'
     | '/blog/$slug'
     | '/docs/$'
     | '/og/$'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/policycloud'
     | '/policycloud.md'
     | '/privacy'
+    | '/sdk.txt'
     | '/blog/$slug'
     | '/docs/$'
     | '/og/$'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/policycloud'
     | '/policycloud.md'
     | '/privacy'
+    | '/sdk.txt'
     | '/blog_/$slug'
     | '/docs/$'
     | '/og/$'
@@ -256,12 +268,20 @@ export interface RootRouteChildren {
   PolicycloudRoute: typeof PolicycloudRoute
   PolicycloudDotmdRoute: typeof PolicycloudDotmdRoute
   PrivacyRoute: typeof PrivacyRoute
+  SdkDottxtRoute: typeof SdkDottxtRoute
   BlogSlugRoute: typeof BlogSlugRoute
   OgSplatRoute: typeof OgSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sdk.txt': {
+      id: '/sdk.txt'
+      path: '/sdk.txt'
+      fullPath: '/sdk.txt'
+      preLoaderRoute: typeof SdkDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -420,6 +440,7 @@ const rootRouteChildren: RootRouteChildren = {
   PolicycloudRoute: PolicycloudRoute,
   PolicycloudDotmdRoute: PolicycloudDotmdRoute,
   PrivacyRoute: PrivacyRoute,
+  SdkDottxtRoute: SdkDottxtRoute,
   BlogSlugRoute: BlogSlugRoute,
   OgSplatRoute: OgSplatRoute,
 }

@@ -13,6 +13,7 @@
 	},
 	"files": [
 		"dist",
+		"llms.txt",
 		"README.md",
 		"NOTICE.md",
 		"skills"
@@ -26,11 +27,13 @@
 		"./consent": {
 			"import": "./dist/consent.js",
 			"types": "./dist/consent.d.ts"
-		}
+		},
+		"./llms.txt": "./llms.txt"
 	},
 	"scripts": {
 		"dev": "vp pack --watch",
-		"build": "vp pack",
+		"build": "vp pack && vp run gen:llms",
+		"gen:llms": "node scripts/gen-llms.mjs",
 		"check-types": "tsc --noEmit",
 		"test": "vp test"
 	},

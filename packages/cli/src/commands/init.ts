@@ -2,8 +2,9 @@ import { existsSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { defineCommand } from "citty";
 import consola from "consola";
-import { AGENT_PROMPT } from "../prompt";
+import { buildAgentPrompt } from "../prompt";
 import { detectIntegrations, type Integration } from "../utils/detect-integrations";
+import { resolveLlmsPath, writeLlms } from "../utils/llms";
 import {
 	detectPackageManager,
 	type PackageManager,
@@ -25,10 +26,10 @@ type InitArgs = {
 	force: boolean;
 };
 
-function printPrompt() {
+function printPrompt(prompt: string) {
 	const top = "─── Copy the prompt below into your coding agent ───";
 	const bottom = "─── End of prompt ───";
-	process.stdout.write(`\n${top}\n\n${AGENT_PROMPT}\n${bottom}\n\n`);
+	process.stdout.write(`\n${top}\n\n${prompt}\n${bottom}\n\n`);
 }
 
 function summarize(
@@ -109,19 +110,24 @@ export async function runInit(args: InitArgs): Promise<void> {
 		}
 	}
 
+	const llmsPath = resolveLlmsPath(stubPath);
+	const stubRel = relative(cwd, stubPath) || stubPath;
+	const llmsRel = relative(cwd, llmsPath) || llmsPath;
+
 	if (args.dryRun) {
 		consola.info("Dry run — no files written.");
 	} else {
-		const result = await writeStub(stubPath, args.force);
-		const rel = relative(cwd, result.path) || result.path;
-		if (result.written) {
-			consola.success(`Created ${rel}`);
+		const stub = await writeStub(stubPath, args.force);
+		if (stub.written) {
+			consola.success(`Created ${stubRel}`);
 		} else {
-			consola.info(`Kept existing ${rel}`);
+			consola.info(`Kept existing ${stubRel}`);
 		}
+		const llms = await writeLlms(llmsPath);
+		consola.success(`${llms.written ? "Created" : "Updated"} ${llmsRel}`);
 	}
 
-	printPrompt();
+	printPrompt(buildAgentPrompt({ stubRel, llmsRel }));
 
 	consola.success(
 		"Paste the prompt above into your coding agent (Claude Code, Cursor, etc.) to finish setup.",

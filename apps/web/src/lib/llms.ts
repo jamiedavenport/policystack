@@ -89,6 +89,10 @@ export function renderLlmsTxt() {
 		`- [OpenCookies](${SITE}/opencookies.md): Sub-4kb headless cookie-consent state machine`,
 		`- [PolicyCloud](${SITE}/policycloud.md): Hosted policy versioning and consent analytics (early access)`,
 		"",
+		"## SDK",
+		"",
+		`- [SDK reference (llms.txt)](${SITE}/sdk.txt): Type-generated \`@openpolicy/sdk\` API surface — feed it to a coding agent to produce a correct openpolicy.ts`,
+		"",
 		"## Documentation",
 		"",
 	];

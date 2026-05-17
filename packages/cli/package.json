@@ -24,6 +24,7 @@
 		"test": "vp test"
 	},
 	"devDependencies": {
+		"@openpolicy/sdk": "workspace:*",
 		"@openpolicy/tooling": "workspace:*",
 		"citty": "^0.1.6",
 		"consola": "^3.4.2",

@@ -279,6 +279,9 @@ importers:
 
   packages/cli:
     devDependencies:
+      '@openpolicy/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       '@openpolicy/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

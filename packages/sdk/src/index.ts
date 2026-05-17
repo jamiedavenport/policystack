@@ -49,6 +49,7 @@ export type {
 } from "./auto-collected";
 export { collecting, Ignore } from "./collecting";
 export { Compliance } from "./compliance";
+export { renderLlmsTxt } from "./llms";
 export { DataCategories, LegalBases, Retention } from "./data";
 export { defineCookie } from "./define-cookie";
 export { Providers } from "./providers";
