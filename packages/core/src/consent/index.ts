@@ -32,6 +32,7 @@ export type {
 	Jurisdiction,
 	JurisdictionResolver,
 	OpenCookiesConfig,
+	OpenPolicyConsentConfig,
 	RepromptEventDetail,
 	RepromptReason,
 	RepromptTriggers,

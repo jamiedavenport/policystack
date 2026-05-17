@@ -4,6 +4,21 @@ import type { Category, OpenCookiesConfig } from "@openpolicy/core/consent";
 
 export type ToOpenCookiesConfigOptions = Omit<OpenCookiesConfig, "categories">;
 
+// The canonical home for these options is `OpenPolicyConfig.consent` — re-export
+// the type here so power users authoring the field import it alongside the
+// bridge that consumes it.
+export type { OpenPolicyConsentConfig } from "@openpolicy/core/consent";
+
+// Derives an OpenCookiesConfig from the policy: categories + `locked` flags come
+// from `cookies.used`/`.context`, version/locale/canWithdraw from the policy.
+// `options` are the runtime-only knobs that cannot be derived.
+//
+// This stays the public, pure derivation primitive for non-React frameworks and
+// power users — but it is OFF the documented happy path. The single-config flow
+// is: author `OpenPolicyConfig.consent` and pass the whole config to
+// `<PolicyStackProvider>`, which calls `toOpenCookiesConfig(config, config.consent)`
+// internally. `OpenPolicyConsentConfig` is exactly assignable to the `options`
+// type here (both are `OpenCookiesConfig` minus `categories`).
 export function toOpenCookiesConfig(
 	policy: OpenPolicyConfig,
 	options?: ToOpenCookiesConfigOptions,

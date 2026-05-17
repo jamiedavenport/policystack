@@ -107,6 +107,23 @@ export type OpenCookiesConfig = {
 	canWithdraw?: boolean;
 };
 
+// Runtime-only consent knobs toOpenCookiesConfig() CANNOT derive from the
+// policy. Everything else in OpenCookiesConfig (categories, policyVersion,
+// locale, canWithdraw) is derived from the OpenPolicyConfig. This is the only
+// consent surface a user authors by hand, and it lives under
+// OpenPolicyConfig.consent so policy + consent are ONE config. Pick<> keeps it
+// structurally locked to OpenCookiesConfig — change a knob there, this follows.
+export type OpenPolicyConsentConfig = Pick<
+	OpenCookiesConfig,
+	| "adapter"
+	| "jurisdictionResolver"
+	| "request"
+	| "gpc"
+	| "initialRoute"
+	| "triggers"
+	| "onUnknownCategory"
+>;
+
 export type ActionOptions = {
 	source?: ConsentRecordSource;
 };
