@@ -55,6 +55,9 @@ importers:
       '@offstage/react':
         specifier: ^0.0.2
         version: 0.0.2(react@19.2.6)
+      '@openpolicy/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@openpolicy/react':
         specifier: workspace:*
         version: link:../../packages/react

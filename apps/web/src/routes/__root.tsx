@@ -4,11 +4,16 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Databuddy } from "@databuddy/sdk/react";
 import { OffstageProvider } from "@offstage/react";
 import { ArrowRightIcon, ArrowUpRightIcon } from "@phosphor-icons/react";
+import { ConsentGate, OpenCookiesProvider } from "@openpolicy/react/consent";
 
 import favicon from "../assets/favicon.svg?url";
 import appCss from "../styles.css?url";
 import { SITE_NAME, SITE_URL } from "../lib/seo";
+import { consentConfig } from "../lib/consent";
 import { NotFound } from "../components/NotFound";
+import { CookieBanner } from "../components/CookieBanner";
+import { CookiePreferences } from "../components/CookiePreferences";
+import { CookieSettingsLink } from "../components/CookieSettingsLink";
 
 const ORG_JSON_LD = {
 	"@context": "https://schema.org",
@@ -61,13 +66,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body className="bg-canvas font-sans text-ink">
-				<OffstageProvider apiKey="pk_live_IeaDz82n3CMK_bXICW_Q1aGfN96as_HZ">
+				<OpenCookiesProvider config={consentConfig}>
 					<div id="app" className="isolate flex min-h-dvh flex-col">
 						<SiteHeader />
 						<main className="flex-1">{children ?? <Outlet />}</main>
 						<SiteFooter />
 					</div>
-				</OffstageProvider>
+					<CookieBanner />
+					<CookiePreferences />
+					{/* Analytics only loads once the visitor allows it. Offstage has
+					    no context consumers in this app, so gating it as a sibling
+					    (rather than wrapping #app) keeps the app from remounting
+					    when consent is toggled. */}
+					<ConsentGate requires="analytics">
+						<OffstageProvider apiKey="pk_live_IeaDz82n3CMK_bXICW_Q1aGfN96as_HZ">
+							<></>
+						</OffstageProvider>
+						<Databuddy clientId="831fa430-6fdb-4fe2-ab59-867bdc90847a" />
+					</ConsentGate>
+				</OpenCookiesProvider>
 				<TanStackDevtools
 					config={{ position: "bottom-right" }}
 					plugins={[
@@ -77,7 +94,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						},
 					]}
 				/>
-				<Databuddy clientId="831fa430-6fdb-4fe2-ab59-867bdc90847a" />
 				<Scripts />
 			</body>
 		</html>
@@ -205,7 +221,17 @@ function SiteFooter() {
 						{ href: "mailto:jamie@openpolicy.sh", label: "Contact" },
 					]}
 				/>
-				<FooterCol title="legal" links={[{ to: "/privacy", label: "Privacy" }]} />
+				<div>
+					<h3 className="text-xs tracking-wide text-ink uppercase">legal</h3>
+					<ul role="list" className="mt-6 space-y-4 text-sm text-mute">
+						<li>
+							<Link to="/privacy" className="hover:text-ink">
+								Privacy
+							</Link>
+						</li>
+						<CookieSettingsLink />
+					</ul>
+				</div>
 			</div>
 			<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-8 py-6 text-xs tracking-wide text-mute uppercase">
 				<span>© {new Date().getFullYear()} PolicyStack Ltd — apache-2.0 where noted</span>

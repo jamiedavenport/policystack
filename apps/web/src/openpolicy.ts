@@ -46,7 +46,7 @@ export default defineConfig({
 		},
 		context: {
 			essential: { lawfulBasis: LegalBases.LegalObligation },
-			analytics: { lawfulBasis: LegalBases.LegitimateInterests },
+			analytics: { lawfulBasis: LegalBases.Consent },
 			marketing: { lawfulBasis: LegalBases.Consent },
 		},
 	},

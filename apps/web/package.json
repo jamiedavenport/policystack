@@ -18,6 +18,7 @@
 		"@databuddy/sdk": "^2.4.11",
 		"@jxdltd/tanstack": "^0.0.1",
 		"@offstage/react": "^0.0.2",
+		"@openpolicy/core": "workspace:*",
 		"@openpolicy/react": "workspace:*",
 		"@openpolicy/sdk": "workspace:*",
 		"@phosphor-icons/react": "^2.1.10",
