@@ -23,6 +23,10 @@
 		".": {
 			"import": "./dist/index.js",
 			"types": "./dist/index.d.ts"
+		},
+		"./consent": {
+			"import": "./dist/consent.js",
+			"types": "./dist/consent.d.ts"
 		}
 	},
 	"scripts": {

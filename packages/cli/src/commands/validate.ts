@@ -79,17 +79,22 @@ function reportHuman(result: ValidateResult): void {
 	}
 }
 
-export async function runValidate(args: {
+/**
+ * The pure core of `openpolicy validate`: resolve the config path, load it, run
+ * the frozen {@link validate}, and return the {@link ValidateResult}. No I/O
+ * side effects (no stdout, no `process.exitCode`) — `runValidate` adds those,
+ * and the `policystack mcp` `validate_config` tool (PS-29) reuses *this*
+ * directly because its stdout is the MCP stdio transport and must stay clean.
+ */
+export async function resolveValidateResult(args: {
 	cwd: string;
 	config?: string;
-	json: boolean;
 }): Promise<ValidateResult> {
 	const cwd = resolve(args.cwd);
 	const file = resolveStubPath(cwd, args.config);
 
-	let result: ValidateResult;
 	if (!existsSync(file)) {
-		result = {
+		return {
 			ok: false,
 			config: file,
 			issues: [],
@@ -97,30 +102,36 @@ export async function runValidate(args: {
 			warningCount: 0,
 			loadError: `No config found at ${file} — pass a path or run \`openpolicy init\` first.`,
 		};
-	} else {
-		const { config, loadError } = await loadConfig(file);
-		if (loadError || !config) {
-			result = {
-				ok: false,
-				config: file,
-				issues: [],
-				errorCount: 0,
-				warningCount: 0,
-				loadError: (loadError ?? new Error(`${file} did not load`)).message,
-			};
-		} else {
-			const issues = validate(config);
-			const errorCount = issues.filter((i) => i.level === "error").length;
-			result = {
-				ok: errorCount === 0,
-				config: file,
-				issues,
-				errorCount,
-				warningCount: issues.length - errorCount,
-				loadError: null,
-			};
-		}
 	}
+	const { config, loadError } = await loadConfig(file);
+	if (loadError || !config) {
+		return {
+			ok: false,
+			config: file,
+			issues: [],
+			errorCount: 0,
+			warningCount: 0,
+			loadError: (loadError ?? new Error(`${file} did not load`)).message,
+		};
+	}
+	const issues = validate(config);
+	const errorCount = issues.filter((i) => i.level === "error").length;
+	return {
+		ok: errorCount === 0,
+		config: file,
+		issues,
+		errorCount,
+		warningCount: issues.length - errorCount,
+		loadError: null,
+	};
+}
+
+export async function runValidate(args: {
+	cwd: string;
+	config?: string;
+	json: boolean;
+}): Promise<ValidateResult> {
+	const result = await resolveValidateResult({ cwd: args.cwd, config: args.config });
 
 	if (args.json) {
 		// `--json` contract: exactly one JSON object on stdout, nothing else.

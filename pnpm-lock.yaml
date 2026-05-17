@@ -282,12 +282,21 @@ importers:
 
   packages/cli:
     dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.29.0
+        version: 1.29.0(zod@3.25.76)
+      '@openpolicy/vite':
+        specifier: workspace:*
+        version: link:../vite
       bundle-require:
         specifier: ^5.1.0
         version: 5.1.0(esbuild@0.25.12)
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@openpolicy/core':
         specifier: workspace:*

@@ -1,11 +1,13 @@
 import {
-	isConsentGated,
+	type JurisdictionId,
 	JURISDICTION_TABLE,
 	LAWFUL_BASIS_CONSENT_GATED,
+	type LegalBasis,
 	LOCALES,
 } from "@openpolicy/core";
 import { Compliance } from "./compliance";
 import { DataCategories, LegalBases, Retention } from "./data";
+import { describeJurisdiction, describeLawfulBasis } from "./describe";
 import { Providers } from "./providers";
 
 /**
@@ -25,20 +27,15 @@ import { Providers } from "./providers";
  * provider and this document updates with it.
  */
 export function renderLlmsTxt(): string {
-	const jurisdictionRows = Object.entries(JURISDICTION_TABLE)
-		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([id, cap]) => {
-			const parent = cap.parent ? `, inherits \`${cap.parent}\`` : "";
-			const gpc = cap.gpcLegallyBinding ? ", GPC legally binding" : "";
-			return `- \`${id}\` — ${cap.consentModel}, ${cap.policyText} policy text${parent}${gpc}`;
-		});
+	// Both row sets are derived from the shared `describe*` helpers — the same
+	// source the `policystack mcp` tools use, so the prose cannot drift (PS-29).
+	const jurisdictionRows = Object.keys(JURISDICTION_TABLE)
+		.sort((a, b) => a.localeCompare(b))
+		.map((id) => `- ${describeJurisdiction(id as JurisdictionId).summary}`);
 
-	const lawfulBasisRows = Object.entries(LAWFUL_BASIS_CONSENT_GATED)
-		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([basis]) => {
-			const gated = isConsentGated(basis as keyof typeof LAWFUL_BASIS_CONSENT_GATED);
-			return `- \`${basis}\` — ${gated ? "consent-gated (toggleable in the banner)" : "standing legal ground (category renders locked-on)"}`;
-		});
+	const lawfulBasisRows = Object.keys(LAWFUL_BASIS_CONSENT_GATED)
+		.sort((a, b) => a.localeCompare(b))
+		.map((basis) => `- ${describeLawfulBasis(basis as LegalBasis).summary}`);
 
 	const localeList = [...LOCALES]
 		.sort()

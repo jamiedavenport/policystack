@@ -24,8 +24,11 @@
 		"test": "vp test"
 	},
 	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"@openpolicy/vite": "workspace:*",
 		"bundle-require": "^5.1.0",
-		"esbuild": "^0.25.12"
+		"esbuild": "^0.25.12",
+		"zod": "^3.25.76"
 	},
 	"devDependencies": {
 		"@openpolicy/core": "workspace:*",

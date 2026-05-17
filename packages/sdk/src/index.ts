@@ -38,9 +38,11 @@ export {
 	Contractual,
 	ContractPrerequisite,
 	createT,
+	ISSUE_CATALOG,
 	Statutory,
 	Voluntary,
 } from "@openpolicy/core";
+export type { IssueExplanation } from "@openpolicy/core";
 
 export type {
 	ScannedCollectionKeys,
@@ -49,6 +51,8 @@ export type {
 } from "./auto-collected";
 export { collecting, Ignore } from "./collecting";
 export { Compliance } from "./compliance";
+export { describeJurisdiction, describeLawfulBasis } from "./describe";
+export type { JurisdictionDescription, LawfulBasisDescription } from "./describe";
 export { renderLlmsTxt } from "./llms";
 export { renderSkillPack } from "./skills";
 export type { SkillFile } from "./skills";

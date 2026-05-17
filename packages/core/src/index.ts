@@ -103,6 +103,8 @@ export { Contractual, ContractPrerequisite, Statutory, Voluntary } from "./provi
 export { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 export { deriveUserRights } from "./user-rights";
 export { validate } from "./validate";
+export { ISSUE_CATALOG } from "./issue-catalog";
+export type { IssueExplanation } from "./issue-catalog";
 export { createT, isLocale, LOCALES } from "./i18n";
 export type { Dictionary, T } from "./i18n";
 
