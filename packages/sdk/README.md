@@ -98,13 +98,14 @@ Full field reference and guides: [openpolicy.sh/docs](https://openpolicy.sh/docs
 
 ## AI Agents
 
-If you use an AI coding agent (Claude Code, Cursor, Copilot, etc.), run:
+`openpolicy init` writes a type-accurate `openpolicy.llms.txt` into your project and prints a setup prompt — feed it to any coding agent (Claude Code, Cursor, Copilot, etc.).
 
-```sh
-npx @tanstack/intent@latest install
+For Claude Code, install the PolicyStack skill pack — guided procedures for setup, auditing, jurisdiction posture, and data-flow instrumentation, all resolved against the frozen SDK surface:
+
 ```
-
-This installs skill files that give your agent accurate, up-to-date guidance for OpenPolicy APIs.
+/plugin marketplace add jamiedavenport/openpolicy
+/plugin install policystack
+```
 
 ## Links
 

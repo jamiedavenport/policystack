@@ -26,6 +26,7 @@ export const docsNav: DocsGroup[] = [
 		items: [
 			{ type: "link", slug: "openpolicy", title: "Introduction" },
 			{ type: "link", slug: "openpolicy/cli", title: "CLI" },
+			{ type: "link", slug: "openpolicy/agent-skills", title: "AI skill pack" },
 			{ type: "link", slug: "openpolicy/configuration", title: "Configuration" },
 			{ type: "link", slug: "openpolicy/i18n", title: "Internationalization" },
 			{ type: "subsection", label: "Policies" },

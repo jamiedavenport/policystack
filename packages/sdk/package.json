@@ -2,9 +2,6 @@
 	"name": "@openpolicy/sdk",
 	"version": "0.0.34",
 	"description": "Public API for defining privacy policies with OpenPolicy",
-	"keywords": [
-		"tanstack-intent"
-	],
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
@@ -15,8 +12,7 @@
 		"dist",
 		"llms.txt",
 		"README.md",
-		"NOTICE.md",
-		"skills"
+		"NOTICE.md"
 	],
 	"type": "module",
 	"exports": {
@@ -32,8 +28,9 @@
 	},
 	"scripts": {
 		"dev": "vp pack --watch",
-		"build": "vp pack && vp run gen:llms",
+		"build": "vp pack && vp run gen:llms && vp run gen:skills",
 		"gen:llms": "node scripts/gen-llms.mjs",
+		"gen:skills": "node scripts/gen-skills.mjs",
 		"check-types": "tsc --noEmit",
 		"test": "vp test"
 	},

@@ -1,0 +1,11 @@
+{
+  "name": "policystack",
+  "version": "1.0.0",
+  "description": "PolicyStack AI skill pack — scaffold, audit, jurisdiction posture, and data-flow instrumentation for privacy-first apps. Resolves against the frozen 1.0 SDK surface.",
+  "author": {
+    "name": "PolicyStack",
+    "url": "https://github.com/jamiedavenport/openpolicy"
+  },
+  "homepage": "https://github.com/jamiedavenport/openpolicy#readme",
+  "license": "Apache-2.0"
+}

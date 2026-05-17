@@ -59,6 +59,8 @@ export {
 	JURISDICTION_TABLE,
 	resolveJurisdiction,
 } from "./jurisdiction-id";
+export { ISSUE_CODE_IDS, ISSUE_CODES } from "./issue-codes";
+export type { IssueEntry } from "./issue-codes";
 export { CONTAINER_SLOTS, SLOT_NAMES } from "./slots";
 export type { ContainerSlotName, SlotName, SlotNodes } from "./slots";
 export type {

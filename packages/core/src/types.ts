@@ -241,45 +241,8 @@ export function isOpenPolicyConfig(value: unknown): value is OpenPolicyConfig {
 	return "company" in obj && "effectiveDate" in obj && !("type" in obj);
 }
 
-// Stable public diagnostic codes emitted by validate(). Frozen at 1.0 (§6);
-// each is one-per-condition. The trailing severity is exactly what validate()
-// emits — it stays pure and frozen. Promotion (warnings→errors) and per-code
-// suppression are applied downstream by the @openpolicy/vite plugin's
-// `strict` / `suppress` options (PS-13), not here.
-export type IssueCode =
-	| "effective-date-required" //          error   — effectiveDate missing
-	| "company-name-required" //            error   — company.name missing
-	| "company-legal-name-required" //      error   — company.legalName missing
-	| "company-address-required" //         error   — company.address missing
-	| "company-contact-required" //         error   — company.contact.email missing
-	| "jurisdictions-required" //           error   — jurisdictions empty
-	| "jurisdiction-unknown" //             error   — code not a recognised JurisdictionId
-	| "locale-unknown" //                   error   — locale not in LOCALES
-	| "policy-empty" //                     error   — config produces no policy
-	| "policy-cookie-empty" //              error   — policies has "cookie" but cookies unset
-	| "data-missing" //                     error   — required data key omitted
-	| "data-collected-empty" //             warning — data.collected has no entries
-	| "data-context-missing" //             error   — collected category has no context entry
-	| "data-context-orphan" //              error   — context entry with no collected match
-	| "data-purpose-missing" //             error   — context entry lacks purpose
-	| "data-purpose-empty" //               error   — context purpose is blank
-	| "lawful-basis-incomplete" //          error   — GDPR Art. 13(1)(c) basis missing
-	| "statutory-contractual-obligation" // error   — GDPR Art. 13(2)(e) provision missing/blank
-	| "retention-incomplete" //             error   — retention period missing
-	| "automated-decision-making" //        warning — GDPR Art. 13(2)(f) not declared
-	| "children-under-age-invalid" //       error   — children.underAge not positive
-	| "company-dpo-undeclared" //           warning — GDPR Art. 13(1)(b) DPO undeclared
-	| "company-contact-phone-recommended" //warning — CCPA §1798.130(a)(1) phone absent
-	| "cookies-empty" //                    error   — no cookie category enabled
-	| "cookie-lawful-basis-missing" //      error   — enabled cookie lacks lawful basis
-	| "consent-mechanism-undeclared" //     warning — consentMechanism absent
-	| "consent-withdrawal-required" //      warning — withdrawal not enabled under GDPR/UK
-	| "consent-banner-required" //          warning — gated category but consentMechanism.hasBanner false
-	| "consent-preference-panel-required" //warning — canWithdraw true but hasPreferencePanel false
-	| "jurisdiction-generic-policy-text"; //warning — declared jurisdiction ships only equivalent (parent) policy text
-
-export type Issue = {
-	code: IssueCode;
-	level: "error" | "warning";
-	message: string;
-};
+// The stable public diagnostic codes and the `Issue` shape live in their own
+// module so the union can be *derived from* a runtime registry (PS-32) instead
+// of hand-maintained twice. Still frozen at 1.0 (§6); re-exported here so the
+// historical `@openpolicy/core` "./types" import path is unchanged (PS-11).
+export type { Issue, IssueCode } from "./issue-codes";

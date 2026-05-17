@@ -1,0 +1,14 @@
+{
+  "name": "policystack",
+  "owner": {
+    "name": "PolicyStack",
+    "url": "https://github.com/jamiedavenport/openpolicy"
+  },
+  "plugins": [
+    {
+      "name": "policystack",
+      "source": "./plugin",
+      "description": "PolicyStack AI skill pack: policystack-init, policystack-audit, policystack-jurisdiction, policystack-instrument."
+    }
+  ]
+}

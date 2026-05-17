@@ -6,10 +6,20 @@ export default defineConfig({
 		// `**/__fixtures__/**`: vendored OpenCookies consent-scanner fixtures
 		// (PS-19) are intentionally messy sample sources with frozen
 		// `.expected.json` snapshots — never reformat them.
-		ignorePatterns: ["**/*.gen.ts", "**/CHANGELOG.md", "**/__fixtures__/**"],
+		// `plugin/**` + `.claude-plugin/**`: the generated PolicyStack skill
+		// pack (PS-32) — `renderSkillPack()` is the single source of truth and
+		// `packages/sdk/src/skills.test.ts` guards it byte-for-byte; Oxfmt would
+		// rewrite the JSON/markdown and break the drift test.
+		ignorePatterns: [
+			"**/*.gen.ts",
+			"**/CHANGELOG.md",
+			"**/__fixtures__/**",
+			"plugin/**",
+			".claude-plugin/**",
+		],
 	},
 	lint: {
-		ignorePatterns: ["**/__fixtures__/**"],
+		ignorePatterns: ["**/__fixtures__/**", "plugin/**", ".claude-plugin/**"],
 	},
 	test: {
 		exclude: ["**/node_modules/**", "**/dist/**"],
