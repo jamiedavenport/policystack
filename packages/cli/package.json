@@ -23,7 +23,12 @@
 		"check-types": "tsc --noEmit",
 		"test": "vp test"
 	},
+	"dependencies": {
+		"bundle-require": "^5.1.0",
+		"esbuild": "^0.25.12"
+	},
 	"devDependencies": {
+		"@openpolicy/core": "workspace:*",
 		"@openpolicy/sdk": "workspace:*",
 		"@openpolicy/tooling": "workspace:*",
 		"citty": "^0.1.6",

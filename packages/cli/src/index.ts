@@ -10,6 +10,7 @@ export const mainCommand = defineCommand({
 	},
 	subCommands: {
 		init: () => import("./commands/init").then((m) => m.initCommand),
+		validate: () => import("./commands/validate").then((m) => m.validateCommand),
 	},
 });
 
