@@ -28,6 +28,10 @@
 			"import": "./dist/consent.js",
 			"types": "./dist/consent.d.ts"
 		},
+		"./provider": {
+			"import": "./dist/provider.js",
+			"types": "./dist/provider.d.ts"
+		},
 		"./package.json": "./package.json"
 	},
 	"publishConfig": {
@@ -40,6 +44,10 @@
 				"import": "./dist/consent.js",
 				"types": "./dist/consent.d.ts"
 			},
+			"./provider": {
+				"import": "./dist/provider.js",
+				"types": "./dist/provider.d.ts"
+			},
 			"./package.json": "./package.json"
 		}
 	},
@@ -51,6 +59,7 @@
 	},
 	"devDependencies": {
 		"@openpolicy/core": "workspace:*",
+		"@openpolicy/sdk": "workspace:*",
 		"@openpolicy/tooling": "workspace:*",
 		"@testing-library/react": "^16.3.2",
 		"@types/react": "^18.0.0 || ^19.0.0",

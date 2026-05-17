@@ -315,6 +315,9 @@ importers:
       '@openpolicy/core':
         specifier: workspace:*
         version: link:../core
+      '@openpolicy/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       '@openpolicy/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

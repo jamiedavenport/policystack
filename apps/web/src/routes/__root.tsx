@@ -4,12 +4,13 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Databuddy } from "@databuddy/sdk/react";
 import { OffstageProvider } from "@offstage/react";
 import { ArrowRightIcon, ArrowUpRightIcon } from "@phosphor-icons/react";
-import { ConsentGate, OpenCookiesProvider } from "@openpolicy/react/consent";
+import { ConsentGate } from "@openpolicy/react/consent";
+import { PolicyStackProvider } from "@openpolicy/react/provider";
 
 import favicon from "../assets/favicon.svg?url";
 import appCss from "../styles.css?url";
 import { SITE_NAME, SITE_URL } from "../lib/seo";
-import { consentConfig } from "../lib/consent";
+import openpolicy from "../openpolicy";
 import { NotFound } from "../components/NotFound";
 import { CookieBanner } from "../components/CookieBanner";
 import { CookiePreferences } from "../components/CookiePreferences";
@@ -66,7 +67,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body className="bg-canvas font-sans text-ink">
-				<OpenCookiesProvider config={consentConfig}>
+				<PolicyStackProvider config={openpolicy}>
 					<div id="app" className="isolate flex min-h-dvh flex-col">
 						<SiteHeader />
 						<main className="flex-1">{children ?? <Outlet />}</main>
@@ -84,7 +85,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						</OffstageProvider>
 						<Databuddy clientId="831fa430-6fdb-4fe2-ab59-867bdc90847a" />
 					</ConsentGate>
-				</OpenCookiesProvider>
+				</PolicyStackProvider>
 				<TanStackDevtools
 					config={{ position: "bottom-right" }}
 					plugins={[

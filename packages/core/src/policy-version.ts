@@ -18,9 +18,15 @@ function fnv1a32(str: string): string {
 	return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
-// Excluded from the hash:
+// Hashing is an explicit allowlist, NOT the whole config. Anything not listed
+// below is excluded by construction. In particular:
 // - The version fields themselves (chicken-and-egg).
 // - `policies`: explicit opt-in/out for which documents render — orthogonal to per-document content.
+// - `consent`: runtime-only knobs (adapter, jurisdictionResolver, …). It is
+//   absent from both allowlists on purpose — swapping a storage adapter or
+//   resolver MUST NOT churn privacyVersion/cookieVersion (which would falsely
+//   re-prompt every visitor). policy-version.test.ts pins this invariant; do
+//   not add "consent" to either list and do not switch to whole-object hashing.
 // `locale` is included so same-config-different-locale produces distinct versions.
 const PRIVACY_HASH_FIELDS = [
 	"company",

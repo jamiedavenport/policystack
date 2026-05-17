@@ -1,7 +1,7 @@
 import type { JurisdictionResolver } from "@openpolicy/core/consent";
 import { expect, test } from "vite-plus/test";
 import type { OpenPolicyConfig } from "./index";
-import { toOpenCookiesConfig } from "./consent";
+import { toOpenCookiesConfig, type OpenPolicyConsentConfig } from "./consent";
 
 const policy: OpenPolicyConfig = {
 	company: {
@@ -200,4 +200,25 @@ test("explicit options.locale overrides policy.locale", () => {
 test("locale is omitted when neither policy nor options provide one", () => {
 	const config = toOpenCookiesConfig(policy);
 	expect(config.locale).toBeUndefined();
+});
+
+test("OpenPolicyConfig.consent is the canonical options object (single-config flow)", () => {
+	const resolver: JurisdictionResolver = { resolve: () => "EEA" };
+	const consent: OpenPolicyConsentConfig = {
+		adapter: { read: () => null, write: () => {}, clear: () => {} },
+		jurisdictionResolver: resolver,
+		initialRoute: "cookie",
+	};
+	// This is exactly what <PolicyStackProvider> does internally:
+	// toOpenCookiesConfig(config, config.consent). OpenPolicyConsentConfig
+	// must be assignable to the options parameter with no cast.
+	const withConsent: OpenPolicyConfig = { ...policy, cookieVersion: "abc12345", consent };
+	const derived = toOpenCookiesConfig(withConsent, withConsent.consent);
+	expect(derived.adapter).toBe(consent.adapter);
+	expect(derived.jurisdictionResolver).toBe(resolver);
+	expect(derived.initialRoute).toBe("cookie");
+	// Derived bits still come from the policy, runtime knobs don't disturb them.
+	expect(derived.categories.map((c) => c.key)).toEqual(["essential", "analytics"]);
+	expect(derived.policyVersion).toBe("abc12345");
+	expect(derived.triggers?.policyVersionChanged).toBe(true);
 });

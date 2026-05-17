@@ -109,6 +109,10 @@ Optional:
 - \`cookies\`: \`{ used, context }\` — see "Cookies & consent" below
 - \`trackingTechnologies\`: \`string[]\`
 - \`consentMechanism\`: \`{ hasBanner, hasPreferencePanel, canWithdraw }\`
+- \`consent\`: runtime-only knobs for the consent banner —
+  \`{ adapter?, jurisdictionResolver?, gpc?, initialRoute?, triggers?, onUnknownCategory?, request? }\`.
+  The category data (categories, policyVersion, locale, canWithdraw) is **derived**
+  from \`cookies\`/\`consentMechanism\`/\`locale\`, NOT authored here.
 - \`policies\`: explicit \`("privacy" | "cookie")[]\` opt-out of auto-detection
 - \`privacyVersion\` / \`cookieVersion\`: override the auto-computed hash
 
@@ -168,8 +172,8 @@ cookies: {
 }
 \`\`\`
 
-The consent runtime is **derived**, never authored separately. Call
-\`toOpenCookiesConfig(config)\` from \`@openpolicy/sdk/consent\` to bridge:
+The consent category data is **derived** from this one config, never authored
+separately:
 
 - each truthy \`cookies.used\` key → a consent \`Category\`
 - \`lawfulBasis === "consent"\` → toggleable; any other basis → \`locked: true\`
@@ -177,6 +181,15 @@ The consent runtime is **derived**, never authored separately. Call
 - \`cookieVersion\` → \`policyVersion\`; a changed hash re-prompts automatically
 - \`consentMechanism.canWithdraw\` → the preferences-route affordance
 - \`config.locale\` → the consent UI locale (policy text and banner agree)
+
+Authoring: put runtime-only wiring (storage adapter, jurisdiction resolver,
+GPC, …) in the optional \`consent\` block, then pass the whole config to one
+provider — \`<PolicyStackProvider config={config}>\` from
+\`@openpolicy/react/provider\`. It supplies both the policy context and the
+consent store; \`<PrivacyPolicy>\`/\`<CookiePolicy>\`, \`useConsent\`,
+\`ConsentGate\` all work underneath it. For non-React frameworks (or advanced
+composition), \`toOpenCookiesConfig(config, config.consent)\` from
+\`@openpolicy/sdk/consent\` is the same derivation as a standalone primitive.
 
 ## Helper exports (from \`@openpolicy/sdk\`)
 

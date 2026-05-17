@@ -1,4 +1,9 @@
 import type { JurisdictionId } from "./jurisdiction-id";
+// MUST stay `import type` — it is erased to zero JS, so the `.` (compiler)
+// bundle never pulls the consent runtime. See packages/core/vite.config.ts:
+// `.` ⊥ `./consent` is the deliberate tree-shake split. Promoting this to a
+// value import would break it.
+import type { OpenPolicyConsentConfig } from "./consent/types";
 
 export type OutputFormat = "markdown" | "html" | "pdf";
 
@@ -211,6 +216,15 @@ export type OpenPolicyConfig = {
 	cookies?: CookiePolicyCookies;
 	trackingTechnologies?: TrackingTechnology[];
 	consentMechanism?: ConsentMechanism;
+
+	// Runtime-only consent knobs (storage adapter, jurisdiction resolver, GPC,
+	// triggers, …). Authored here so policy + consent are ONE config; the
+	// consent banner's category data is derived from `cookies`, not duplicated
+	// here. Excluded from the version hash by construction (policy-version.ts
+	// hashes an explicit field allowlist) so swapping an adapter never churns
+	// privacyVersion/cookieVersion, and ignored by validate()/compile/llms —
+	// this is runtime wiring, not document content.
+	consent?: OpenPolicyConsentConfig;
 
 	// Explicit opt-out. Omit to auto-detect based on which fields are present.
 	policies?: PolicyCategory[];

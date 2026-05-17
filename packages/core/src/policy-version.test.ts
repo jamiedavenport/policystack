@@ -123,6 +123,30 @@ test("effectiveDate change shifts both versions", () => {
 	expect(computeCookieVersion(after)).not.toBe(computeCookieVersion(base));
 });
 
+// Permanent guard for the no-churn invariant (policy-version.ts): `consent`
+// is runtime-only wiring and MUST be absent from both hash allowlists.
+// Swapping a storage adapter / resolver — or going from none to one — must
+// produce byte-identical versions, or every visitor gets falsely re-prompted.
+test("consent runtime knobs never affect privacyVersion or cookieVersion", () => {
+	const withConsent: OpenPolicyConfig = {
+		...base,
+		consent: {
+			adapter: { read: () => null, write: () => {}, clear: () => {} },
+			jurisdictionResolver: { resolve: () => null },
+			initialRoute: "cookie",
+			triggers: { policyVersionChanged: true },
+		},
+	};
+	const swappedAdapter: OpenPolicyConfig = {
+		...base,
+		consent: { adapter: { read: () => null, write: () => {}, clear: () => {} } },
+	};
+	expect(computePrivacyVersion(withConsent)).toBe(computePrivacyVersion(base));
+	expect(computeCookieVersion(withConsent)).toBe(computeCookieVersion(base));
+	expect(computePrivacyVersion(swappedAdapter)).toBe(computePrivacyVersion(base));
+	expect(computeCookieVersion(swappedAdapter)).toBe(computeCookieVersion(base));
+});
+
 test("policies override gates the hash", () => {
 	const onlyPrivacy: OpenPolicyConfig = { ...base, policies: ["privacy"] };
 	const onlyCookie: OpenPolicyConfig = { ...base, policies: ["cookie"] };
