@@ -1,3 +1,4 @@
+import type { Locale } from "../../types";
 import type { ConsentRecord, ConsentRecordSource, ConsentState, Jurisdiction } from "../types";
 
 const RECORD_SOURCES: ReadonlySet<ConsentRecordSource> = new Set([
@@ -7,10 +8,13 @@ const RECORD_SOURCES: ReadonlySet<ConsentRecordSource> = new Set([
 	"import",
 ]);
 
+// PS-26: write side is canonical Locale; ConsentRecord.locale stays `string`
+// at rest for legacy tolerance. Read tolerance (fromUnknown) is deliberately
+// untouched — see PS-36 for the eventual freeze.
 export function toRecord(
 	state: ConsentState,
 	source: ConsentRecordSource,
-	locale: string,
+	locale: Locale,
 ): ConsentRecord {
 	if (state.decidedAt === null) {
 		throw new Error("toRecord called before a decision was made");

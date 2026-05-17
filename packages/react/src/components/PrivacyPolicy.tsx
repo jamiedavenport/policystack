@@ -1,6 +1,7 @@
 import {
 	compile,
 	compilePrivacyPolicy,
+	type Dictionary,
 	isOpenPolicyConfig,
 	type Locale,
 	type OpenPolicyConfig,
@@ -15,6 +16,7 @@ import { DefaultRoot } from "./defaults";
 type PrivacyPolicyProps = {
 	config?: OpenPolicyConfig | PrivacyPolicyConfig;
 	locale?: Locale;
+	dictionary?: Dictionary;
 	components?: PolicyComponents;
 	style?: unknown;
 };
@@ -22,6 +24,7 @@ type PrivacyPolicyProps = {
 export function PrivacyPolicy({
 	config: configProp,
 	locale,
+	dictionary,
 	components,
 	style,
 }: PrivacyPolicyProps) {
@@ -30,8 +33,8 @@ export function PrivacyPolicy({
 	if (!baseConfig) return null;
 	const config = locale ? { ...baseConfig, locale } : baseConfig;
 	const doc = isOpenPolicyConfig(config)
-		? compilePrivacyPolicy(config)
-		: compile({ type: "privacy", ...config });
+		? compilePrivacyPolicy(config, dictionary)
+		: compile({ type: "privacy", ...config }, dictionary);
 	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
 	return (

@@ -20,6 +20,36 @@ test("createT falls back to English for an unknown locale", () => {
 	expect(t.privacy.introduction.heading()).toBe("Introduction");
 });
 
+const customDictionary: typeof en = {
+	...en,
+	privacy: {
+		...en.privacy,
+		introduction: {
+			...en.privacy.introduction,
+			heading: () => "CUSTOM_INTRO_HEADING_XYZ",
+		},
+	},
+};
+
+test("createT returns a caller-supplied dictionary verbatim (full replacement)", () => {
+	expect(createT("en", customDictionary).privacy.introduction.heading()).toBe(
+		"CUSTOM_INTRO_HEADING_XYZ",
+	);
+	// The locale argument is irrelevant to string content once a custom
+	// dictionary is supplied — it is used verbatim regardless of locale.
+	expect(createT("fr", customDictionary).privacy.introduction.heading()).toBe(
+		"CUSTOM_INTRO_HEADING_XYZ",
+	);
+});
+
+test("compile uses a custom dictionary for emitted strings; locale still drives dates", () => {
+	const doc = compile(buildPrivacyInput("fr"), customDictionary);
+	const blob = JSON.stringify(doc);
+	expect(blob).toContain("CUSTOM_INTRO_HEADING_XYZ");
+	// `locale: "fr"` still governs date formatting independently of the dictionary.
+	expect(blob).toContain("1 janvier 2026");
+});
+
 test("isLocale accepts registered locales and rejects others", () => {
 	for (const locale of LOCALES) expect(isLocale(locale)).toBe(true);
 	expect(isLocale("it")).toBe(false);

@@ -4,8 +4,8 @@ import type { Dictionary } from "./types";
 
 export type T = Dictionary;
 
-export function createT(locale: Locale): T {
-	return dictionaries[locale] ?? dictionaries.en;
+export function createT(locale: Locale, dictionary?: Dictionary): T {
+	return dictionary ?? dictionaries[locale] ?? dictionaries.en;
 }
 
 export { formatDate } from "./format";

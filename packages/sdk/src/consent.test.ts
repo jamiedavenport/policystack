@@ -186,3 +186,18 @@ test("options.triggers merges over the policyVersionChanged default", () => {
 	expect(config.triggers?.policyVersionChanged).toBe(false);
 	expect(config.triggers?.jurisdictionChanged).toBe(true);
 });
+
+test("carries policy.locale into the OpenCookies config (one shared Locale)", () => {
+	const config = toOpenCookiesConfig({ ...policy, locale: "fr" });
+	expect(config.locale).toBe("fr");
+});
+
+test("explicit options.locale overrides policy.locale", () => {
+	const config = toOpenCookiesConfig({ ...policy, locale: "fr" }, { locale: "de" });
+	expect(config.locale).toBe("de");
+});
+
+test("locale is omitted when neither policy nor options provide one", () => {
+	const config = toOpenCookiesConfig(policy);
+	expect(config.locale).toBeUndefined();
+});

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { GPC_LEGALLY_REQUIRED_JURISDICTIONS } from "./gpc";
 import { manualResolver } from "./jurisdiction";
 import { createConsentStore } from "./store";
@@ -798,13 +798,13 @@ describe("createConsentStore", () => {
 
 		it("does not write back the just-hydrated record (no-op on init)", () => {
 			const { adapter, writes } = makeAdapter(v1Record({ policyVersion: "v1" }));
-			createConsentStore(makeConfig({ adapter, policyVersion: "v1", locale: "en-GB" }));
+			createConsentStore(makeConfig({ adapter, policyVersion: "v1", locale: "en" }));
 			expect(writes).toEqual([]);
 		});
 
 		it("persists each user decision via adapter.write", () => {
 			const { adapter, writes } = makeAdapter();
-			const store = createConsentStore(makeConfig({ adapter, locale: "en-GB" }));
+			const store = createConsentStore(makeConfig({ adapter, locale: "en" }));
 			store.acceptAll();
 			expect(writes).toHaveLength(1);
 			expect(writes[0]?.decisions).toEqual({
@@ -813,12 +813,23 @@ describe("createConsentStore", () => {
 				marketing: true,
 			});
 			expect(writes[0]?.schemaVersion).toBe(1);
-			expect(writes[0]?.locale).toBe("en-GB");
+			expect(writes[0]?.locale).toBe("en");
 			expect(writes[0]?.source).toBe("banner");
 
 			store.toggle("marketing");
 			expect(writes).toHaveLength(2);
 			expect(writes[1]?.decisions.marketing).toBe(false);
+		});
+
+		it("writes the canonical Locale to the persisted record (PS-26 shim)", () => {
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			const { adapter, writes } = makeAdapter();
+			const store = createConsentStore(makeConfig({ adapter, locale: "en-GB" }));
+			store.acceptAll();
+			expect(writes).toHaveLength(1);
+			expect(writes[0]?.locale).toBe("en");
+			expect(warn).toHaveBeenCalled();
+			warn.mockRestore();
 		});
 
 		it("does not write when the record is unchanged (e.g. setRoute)", () => {
@@ -906,12 +917,12 @@ describe("createConsentStore", () => {
 				write: () => {},
 				clear: () => {},
 			};
-			const store = createConsentStore(makeConfig({ adapter, locale: "en-GB" }));
+			const store = createConsentStore(makeConfig({ adapter, locale: "en" }));
 			const record = store.getConsentRecord();
 			expect(record).not.toBeNull();
 			expect(record?.schemaVersion).toBe(1);
 			expect(record?.source).toBe("banner");
-			expect(record?.locale).toBe("en-GB");
+			expect(record?.locale).toBe("en");
 		});
 
 		it("hydrating from a malformed record (decidedAt missing) surfaces no record", () => {
@@ -937,12 +948,12 @@ describe("createConsentStore", () => {
 		});
 
 		it("returns a v1 record after acceptAll with route-inferred source 'banner'", () => {
-			const store = createConsentStore(makeConfig({ locale: "en-GB", policyVersion: "v2" }));
+			const store = createConsentStore(makeConfig({ locale: "en", policyVersion: "v2" }));
 			store.acceptAll();
 			const r = store.getConsentRecord();
 			expect(r).not.toBeNull();
 			expect(r?.schemaVersion).toBe(1);
-			expect(r?.locale).toBe("en-GB");
+			expect(r?.locale).toBe("en");
 			expect(r?.policyVersion).toBe("v2");
 			expect(r?.source).toBe("banner");
 			expect(r?.decisions).toEqual({ essential: true, analytics: true, marketing: true });
@@ -1005,28 +1016,50 @@ describe("createConsentStore", () => {
 	});
 
 	describe("locale resolution", () => {
+		// Earlier blocks (e.g. "storage adapter") spy console.warn without
+		// restoring; vi.spyOn on an already-spied method returns the same spy
+		// with its prior call history. Restore before each test so the
+		// no-warn assertions below see a clean slate.
+		beforeEach(() => {
+			vi.restoreAllMocks();
+		});
 		afterEach(() => {
 			vi.unstubAllGlobals();
+			vi.restoreAllMocks();
 		});
 
-		it("uses config.locale when provided", () => {
+		it("passes a canonical config.locale through unchanged with no warning", () => {
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+			const store = createConsentStore(makeConfig({ locale: "es" }));
+			store.acceptAll();
+			expect(store.getConsentRecord()?.locale).toBe("es");
+			expect(warn).not.toHaveBeenCalled();
+		});
+
+		it("normalizes a region-tagged config.locale to the canonical Locale (PS-26 shim)", () => {
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			const store = createConsentStore(makeConfig({ locale: "fr-FR" }));
 			store.acceptAll();
-			expect(store.getConsentRecord()?.locale).toBe("fr-FR");
+			expect(store.getConsentRecord()?.locale).toBe("fr");
+			expect(warn).toHaveBeenCalled();
 		});
 
-		it("falls back to navigator.language when config.locale is unset", () => {
+		it("silently coerces navigator.language (environmental, not a deprecated config)", () => {
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			vi.stubGlobal("navigator", { language: "de-DE" });
 			const store = createConsentStore(makeConfig());
 			store.acceptAll();
-			expect(store.getConsentRecord()?.locale).toBe("de-DE");
+			expect(store.getConsentRecord()?.locale).toBe("de");
+			expect(warn).not.toHaveBeenCalled();
 		});
 
 		it("defaults to 'en' when neither config.locale nor navigator.language is available", () => {
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			vi.stubGlobal("navigator", {});
 			const store = createConsentStore(makeConfig());
 			store.acceptAll();
 			expect(store.getConsentRecord()?.locale).toBe("en");
+			expect(warn).not.toHaveBeenCalled();
 		});
 	});
 

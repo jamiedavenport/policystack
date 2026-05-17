@@ -18,6 +18,9 @@ const baseState: ConsentState = {
 	consentModel: "opt-in",
 };
 
+// `locale: "en-GB"` exercises read-side legacy tolerance (ConsentRecord.locale
+// stays `string` at rest — see PS-26 / PS-36). The write side (toRecord) only
+// accepts a canonical `Locale`, so write-side fixtures use "en".
 const v1: ConsentRecord = {
 	schemaVersion: 1,
 	decisions: { essential: true, analytics: true },
@@ -28,19 +31,21 @@ const v1: ConsentRecord = {
 	source: "banner",
 };
 
+const canonical: ConsentRecord = { ...v1, locale: "en" };
+
 describe("toRecord", () => {
-	it("emits a v1 record from state + source + locale", () => {
-		expect(toRecord(baseState, "banner", "en-GB")).toEqual(v1);
+	it("emits a v1 record from state + source + canonical locale", () => {
+		expect(toRecord(baseState, "banner", "en")).toEqual(canonical);
 	});
 
 	it("clones decisions (no aliasing)", () => {
-		const record = toRecord(baseState, "banner", "en-GB");
+		const record = toRecord(baseState, "banner", "en");
 		record.decisions.analytics = false;
 		expect(baseState.decisions.analytics).toBe(true);
 	});
 
 	it("throws when state has no decidedAt", () => {
-		expect(() => toRecord({ ...baseState, decidedAt: null }, "banner", "en-GB")).toThrow();
+		expect(() => toRecord({ ...baseState, decidedAt: null }, "banner", "en")).toThrow();
 	});
 });
 

@@ -17,6 +17,7 @@ export type {
 	DataConfig,
 	DataContext,
 	DataContextEntry,
+	Dictionary,
 	Dpo,
 	EffectiveDate,
 	EuRepresentative,
@@ -36,6 +37,7 @@ export {
 	computePrivacyVersion,
 	Contractual,
 	ContractPrerequisite,
+	createT,
 	Statutory,
 	Voluntary,
 } from "@openpolicy/core";
