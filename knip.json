@@ -2,21 +2,99 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"tags": ["-lintignore"],
 	"ignoreBinaries": ["tsc"],
-	"ignore": ["**/*.gen.ts"],
+	"ignore": ["**/*.gen.ts", "**/__fixtures__/**"],
+	"ignoreDependencies": ["@policystack/tooling"],
+	"ignoreExportsUsedInFile": true,
+	"ignoreIssues": {
+		"pnpm-workspace.yaml": ["catalog"]
+	},
 	"workspaces": {
 		".": {
 			"entry": ["vite.config.ts"]
 		},
-		"packages/*": {
-			"entry": ["vite.config.ts", "**/*.test.{ts,tsx}"],
-			"ignoreDependencies": ["@policystack/tooling"]
+		"packages/core": {
+			"entry": [
+				"src/index.ts",
+				"src/consent/index.ts",
+				"src/consent/storage/*.ts",
+				"vite.config.ts",
+				"**/*.test.ts"
+			]
+		},
+		"packages/sdk": {
+			"entry": ["src/index.ts", "src/consent.ts", "scripts/*.mjs", "vite.config.ts", "**/*.test.ts"]
+		},
+		"packages/vite": {
+			"entry": ["src/index.ts", "src/consent/index.ts", "vite.config.ts", "**/*.test.ts"],
+			"ignoreDependencies": ["@policystack/sdk"]
+		},
+		"packages/cli": {
+			"entry": ["src/cli.ts", "src/index.ts", "vite.config.ts", "**/*.test.ts"]
+		},
+		"packages/react": {
+			"entry": [
+				"src/policy.ts",
+				"src/consent.tsx",
+				"src/provider.tsx",
+				"vite.config.ts",
+				"**/*.test.{ts,tsx}"
+			]
+		},
+		"packages/vue": {
+			"entry": ["src/policy.ts", "src/consent.ts", "vite.config.ts", "**/*.test.{ts,tsx}"]
 		},
 		"packages/svelte": {
-			"entry": ["src/lib/index.ts", "**/*.test.{ts,tsx}"],
-			"ignoreDependencies": ["@policystack/tooling"]
+			"entry": [
+				"src/lib/policy.ts",
+				"src/lib/consent/index.ts",
+				"src/lib/consent/stores.ts",
+				"vite.config.ts",
+				"**/*.test.{ts,tsx}"
+			]
+		},
+		"packages/solid": {
+			"entry": ["src/index.ts", "vite.config.ts", "**/*.test.{ts,tsx}"]
+		},
+		"packages/angular": {
+			"entry": ["src/public-api.ts", "vite.config.ts", "**/*.test.ts"],
+			"ignoreDependencies": ["@angular/common"]
+		},
+		"packages/scripts": {
+			"entry": [
+				"src/index.ts",
+				"src/ga4.ts",
+				"src/google-tag-manager.ts",
+				"src/hotjar.ts",
+				"src/meta-pixel.ts",
+				"src/posthog.ts",
+				"src/segment.ts",
+				"vite.config.ts",
+				"**/*.test.ts"
+			]
+		},
+		"packages/renderers": {
+			"entry": ["src/index.ts", "**/*.test.ts"]
+		},
+		"apps/web": {
+			"entry": [
+				"vite.config.ts",
+				"content-collections.ts",
+				"scripts/*.mjs",
+				"src/router.tsx",
+				"src/routes/**/*.{ts,tsx}",
+				"src/policystack.ts",
+				"src/og/**/*.{ts,tsx}"
+			],
+			"ignoreDependencies": ["@resvg/resvg-js", "pagefind"]
 		},
 		"examples/tanstack": {
-			"entry": ["src/policystack.ts", "src/lib/collection.ts", "src/lib/stripe.ts"]
+			"entry": [
+				"src/router.tsx",
+				"src/routes/**/*.{ts,tsx}",
+				"src/policystack.ts",
+				"src/lib/collection.ts",
+				"src/lib/stripe.ts"
+			]
 		}
 	}
 }
