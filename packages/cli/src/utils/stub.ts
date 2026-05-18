@@ -17,12 +17,13 @@ export function getStubContents(today = new Date().toISOString().slice(0, 10)) {
 	return `import { defineConfig } from "@openpolicy/sdk";
 
 export default defineConfig({
-	// Your legal entity — appears verbatim in the generated policies.
+	// Your legal entity. \`legalName\` and \`address\` appear verbatim in the
+	// generated policies and must be filled in. \`name\`, \`url\` and
+	// \`contact.email\` are seeded from this project's package.json (name /
+	// homepage / author.email) when omitted — add them here to override.
 	company: {
-		name: "",
 		legalName: "",
 		address: "",
-		contact: { email: "" },
 	},
 	// Date the policy takes effect (ISO 8601).
 	effectiveDate: "${today}",
@@ -40,10 +41,12 @@ export default defineConfig({
 	// ── Cookies & consent ────────────────────────────────────────────────
 	// Uncomment to declare cookies. The single provider (e.g.
 	// \`@openpolicy/react/provider\`'s PolicyStackProvider) derives the consent
-	// runtime from this block — categories, locked vs. consent-gated, and the
-	// automatic re-prompt on policy change — so consent is never configured
-	// twice. Import \`LegalBases\` from "@openpolicy/sdk" to use the values
-	// referenced below.
+	// runtime from this block — categories, locked vs. consent-gated, the
+	// automatic re-prompt on policy change, AND the consent mechanism (banner /
+	// preference panel / withdrawal) — so consent is never configured by hand.
+	// Import \`LegalBases\` from "@openpolicy/sdk" to use the values below; pass
+	// a generated \`./openpolicy.gen\` module as defineConfig's second argument
+	// to merge in scanned categories.
 	//
 	// cookies: {
 	// 	used: { essential: true, analytics: true, marketing: true },
@@ -52,11 +55,6 @@ export default defineConfig({
 	// 		analytics: { lawfulBasis: LegalBases.Consent },         // consent-gated
 	// 		marketing: { lawfulBasis: LegalBases.Consent },         // consent-gated
 	// 	},
-	// },
-	// consentMechanism: {
-	// 	hasBanner: true,
-	// 	hasPreferencePanel: true,
-	// 	canWithdraw: true,
 	// },
 });
 `;

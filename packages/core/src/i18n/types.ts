@@ -20,6 +20,7 @@ export type Dictionary = {
 			legalName: () => string;
 			address: () => string;
 			email: () => string;
+			url: () => string;
 			phone: () => string;
 			dpo: () => string;
 		};

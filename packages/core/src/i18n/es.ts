@@ -7,6 +7,7 @@ export const es: Dictionary = {
 			legalName: () => "Razón social:",
 			address: () => "Dirección:",
 			email: () => "Correo electrónico:",
+			url: () => "Sitio web:",
 			phone: () => "Teléfono:",
 			dpo: () => "Delegado de Protección de Datos:",
 		},

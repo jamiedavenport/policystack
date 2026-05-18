@@ -1,5 +1,20 @@
 # @openpolicy/core
 
+## Unreleased (1.0 / PolicyStack — PS-30)
+
+- **Breaking.** `consentMechanism` is now **derived** from the cookie posture
+  rather than authored: any enabled consent-gated `cookies.used` category
+  yields `{ hasBanner, hasPreferencePanel, canWithdraw }` all true, otherwise it
+  is absent. `validate()` and `compileCookiePolicy()` derive it at entry, so a
+  hand-written value on a raw `OpenPolicyConfig` is ignored — it can no longer
+  contradict the wired runtime. The field stays optional on the type for
+  downstream consumers; the 4 `consent-*` issue codes are retained (the
+  cross-check ones are now a dead-safe net for raw-core callers).
+- `company.url?: string` added; rendered in the contact section of both
+  policies (new `shared.contactLabels.url` i18n key in all five locales).
+- New `normalizeOpenPolicyConfig` / `deriveConsentMechanism` / `seedCompany`
+  exports (the shared derive+seed seam).
+
 ## 0.0.34
 
 ### Patch Changes

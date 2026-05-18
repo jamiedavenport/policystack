@@ -44,16 +44,17 @@ test("getStubContents contains required defineConfig fields", () => {
 	expect(out).toContain("collected: {}");
 });
 
-test("getStubContents ships a commented cookies + consent skeleton", () => {
+test("getStubContents ships a commented cookies skeleton; no consentMechanism", () => {
 	const out = getStubContents("2026-04-22");
 	expect(out).toContain("Cookies & consent");
 	expect(out).toContain("// cookies: {");
-	expect(out).toContain("// consentMechanism: {");
 	expect(out).toContain("PolicyStackProvider");
+	// consentMechanism is derived from the cookie posture — never authored,
+	// so it appears nowhere in the stub (not even commented).
+	expect(out).not.toContain("consentMechanism");
 	// The skeleton stays commented so the stub type-checks exactly as written —
-	// no uncommented top-level cookies/consentMechanism keys.
+	// no uncommented top-level cookies key.
 	expect(out).not.toContain("\n\tcookies:");
-	expect(out).not.toContain("\n\tconsentMechanism:");
 });
 
 test("writeStub writes a new file", async () => {

@@ -103,6 +103,7 @@ export { Contractual, ContractPrerequisite, Statutory, Voluntary } from "./provi
 export { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 export { deriveUserRights } from "./user-rights";
 export { validate } from "./validate";
+export { deriveConsentMechanism, normalizeOpenPolicyConfig, seedCompany } from "./normalize";
 export { ISSUE_CATALOG } from "./issue-catalog";
 export type { IssueExplanation } from "./issue-catalog";
 export { createT, isLocale, LOCALES } from "./i18n";
@@ -118,6 +119,7 @@ import type {
 	PolicyCategory,
 	PolicyInput,
 } from "./types";
+import { deriveConsentMechanism } from "./normalize";
 import { deriveUserRights } from "./user-rights";
 
 const PRIVACY_FIELDS = ["data", "children"] as const;
@@ -173,7 +175,10 @@ function buildCookieInput(config: OpenPolicyConfig): CookieInput | null {
 		cookies: config.cookies ?? EMPTY_COOKIES,
 		thirdParties: config.thirdParties ?? [],
 		trackingTechnologies: config.trackingTechnologies,
-		consentMechanism: config.consentMechanism,
+		// Always derived — never the author's hand-written value. This is the
+		// single choke point feeding the cookie renderer, so raw compile()
+		// callers that bypass defineConfig/validate still get the truth.
+		consentMechanism: deriveConsentMechanism(config),
 		version: config.cookieVersion,
 	};
 }

@@ -90,6 +90,9 @@ export type CompanyConfig = {
 	name: string;
 	legalName: string;
 	address: string;
+	// Public website. Optional; seeded from package.json `homepage` when
+	// omitted. Rendered in the contact section of both policies.
+	url?: string;
 	contact: Contact;
 	dpo?: Dpo;
 	euRepresentative?: EuRepresentative;

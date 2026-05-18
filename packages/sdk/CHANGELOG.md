@@ -1,5 +1,22 @@
 # @openpolicy/sdk
 
+## Unreleased (1.0 / PolicyStack — PS-30)
+
+- **Breaking.** `defineConfig(config, scanned?)` takes the generated module as
+  an optional second argument: `import * as scanned from "./openpolicy.gen"`
+  then `defineConfig({ … }, scanned)`. The scanned data categories, cookies
+  and third parties are merged in, so the `...dataCollected` / `used: cookies`
+  / `thirdParties` spreads are gone. The static import keeps the gen module's
+  type augmentation reachable, so scanned categories are still required in
+  `data.context`.
+- **Breaking.** `consentMechanism` is removed from the `defineConfig` input
+  type — it is derived from the cookie posture. `cookies.used` is now optional
+  on input (merged from the scanned module).
+- `company.{name,url,contact.email}` are seeded from the host `package.json`
+  (`name` / `homepage` / `author.email`) when omitted; an explicit value
+  always wins. `company.url` is a new field. `legalName`/`address` stay
+  required.
+
 ## 0.0.34
 
 ## 0.0.33

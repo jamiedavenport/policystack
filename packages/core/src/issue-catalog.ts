@@ -159,8 +159,8 @@ export const ISSUE_CATALOG: Record<IssueCode, IssueExplanation> = {
 	},
 	"consent-mechanism-undeclared": {
 		level: "warning",
-		summary: "consentMechanism is absent.",
-		fix: "Add a `consentMechanism` describing how users manage cookie consent.",
+		summary: "No enabled cookie category is consent-gated.",
+		fix: 'Correct for strictly-necessary cookies only. Set a category\'s `lawfulBasis` to "consent" if it requires opt-in — the consent mechanism is then derived automatically.',
 	},
 	"consent-withdrawal-required": {
 		level: "warning",

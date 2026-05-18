@@ -156,7 +156,8 @@ export const ISSUE_CODES = [
 	{
 		code: "consent-mechanism-undeclared",
 		level: "warning",
-		summary: "`consentMechanism` is absent — describe how users manage cookie consent.",
+		summary:
+			"No enabled cookie category is consent-gated, so no consent mechanism is generated (correct for strictly-necessary cookies only).",
 	},
 	{
 		code: "consent-withdrawal-required",

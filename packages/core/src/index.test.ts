@@ -258,3 +258,21 @@ test("expandOpenPolicyConfig threads cookieVersion onto cookie input", () => {
 	if (cookie?.type !== "cookie") throw new Error("expected cookie input");
 	expect(cookie.version).toBe("cook1234");
 });
+
+test("company.url renders the Website label in both contact sections (en)", () => {
+	const withUrl: OpenPolicyConfig = {
+		...fullConfig,
+		company: { ...company, url: "https://acme.example" },
+	};
+	for (const doc of [compilePrivacyPolicy(withUrl), compileCookiePolicy(withUrl)]) {
+		const json = JSON.stringify(doc);
+		expect(json).toContain("Website:");
+		expect(json).toContain("https://acme.example");
+	}
+});
+
+test("company.url is omitted from the contact section when unset", () => {
+	for (const doc of [compilePrivacyPolicy(fullConfig), compileCookiePolicy(fullConfig)]) {
+		expect(JSON.stringify(doc)).not.toContain("Website:");
+	}
+});

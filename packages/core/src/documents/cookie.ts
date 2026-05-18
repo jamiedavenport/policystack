@@ -143,6 +143,9 @@ function buildContact(config: CookiePolicyConfig, t: T): DocumentSection {
 		li([bold(`${t.shared.contactLabels.address()} `), config.company.address]),
 		li([bold(`${t.shared.contactLabels.email()} `), config.company.contact.email]),
 	];
+	if (config.company.url) {
+		items.push(li([bold(`${t.shared.contactLabels.url()} `), config.company.url]));
+	}
 	if (config.company.contact.phone) {
 		items.push(li([bold(`${t.shared.contactLabels.phone()} `), config.company.contact.phone]));
 	}

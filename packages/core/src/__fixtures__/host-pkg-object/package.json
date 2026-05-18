@@ -1,0 +1,5 @@
+{
+	"name": "acme-app",
+	"homepage": "https://acme.example",
+	"author": { "name": "Acme", "email": "dev@acme.example" }
+}

@@ -6,7 +6,7 @@ product: openpolicy
 
 See the [Quick Start](/docs/openpolicy/policies/quick-start) to add a cookie policy page to your app.
 
-Add cookie fields to your config — the cookie policy is auto-detected from the presence of fields like `cookies`, `consentMechanism`, and `trackingTechnologies`:
+Add cookie fields to your config — the cookie policy is auto-detected from the presence of the `cookies` (or `trackingTechnologies`) field:
 
 ```ts
 // openpolicy.ts
@@ -35,12 +35,9 @@ thirdParties: [
     policyUrl: "https://policies.google.com/privacy",
   },
 ],
-consentMechanism: {
-  hasBanner: true,
-  hasPreferencePanel: true,
-  canWithdraw: true,
-},
 ```
+
+The consent mechanism (banner / preference panel / withdrawal) is **derived** from this cookie posture — any consent-gated category yields all three — so it is no longer authored. It surfaces in the cookie policy's consent section automatically.
 
 `cookies.used` always requires `essential: true`; other keys are `boolean` and act as additional categories. Every key in `cookies.used` must have a matching Article 6 basis in `cookies.context[key].lawfulBasis` — `defineConfig` enforces this at type-check time, and the rendered "Cookies and Tracking" section appends the basis to each enabled category.
 

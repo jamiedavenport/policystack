@@ -48,7 +48,7 @@ its durable meaning (the frozen 1.0 diagnostic surface — §6):
 - `company-legal-name-required` — *error* — `company.legalName` is required.
 - `company-name-required` — *error* — `company.name` is required.
 - `consent-banner-required` — *warning* — A cookie category is consent-gated but `consentMechanism.hasBanner` is false — a banner is needed to collect affirmative consent.
-- `consent-mechanism-undeclared` — *warning* — `consentMechanism` is absent — describe how users manage cookie consent.
+- `consent-mechanism-undeclared` — *warning* — No enabled cookie category is consent-gated, so no consent mechanism is generated (correct for strictly-necessary cookies only).
 - `consent-preference-panel-required` — *warning* — `consentMechanism.canWithdraw` is true but `hasPreferencePanel` is false — withdrawal has no preference panel in the wired runtime.
 - `consent-withdrawal-required` — *warning* — Under GDPR/UK-GDPR users must be able to withdraw cookie consent — set `consentMechanism.canWithdraw`.
 - `cookie-lawful-basis-missing` — *error* — An enabled cookie category is missing its Article 6 `lawfulBasis` in `cookies.context`.

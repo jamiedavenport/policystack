@@ -1,18 +1,29 @@
 import { isLocale, LOCALES } from "./i18n";
 import { shouldEmit } from "./index";
 import { JURISDICTION_IDS, JURISDICTION_TABLE, resolveJurisdiction } from "./jurisdiction-id";
+import { deriveConsentMechanism } from "./normalize";
 import type { Issue, OpenPolicyConfig } from "./types";
 import { isConsentGated } from "./types";
 
 /**
- * The single validator. Pure `(config) => Issue[]` over the flat, public
- * {@link OpenPolicyConfig} — the shape users write via `defineConfig()` and the
- * shape PolicyCloud (§9) receives. Privacy and cookie checks are gated by
+ * The single validator over the flat, public {@link OpenPolicyConfig} — the
+ * shape users write via `defineConfig()` and the shape PolicyCloud (§9)
+ * receives. `consentMechanism` is {@link deriveConsentMechanism | derived}
+ * from the cookie posture at entry so the consent checks always see the
+ * effective value, never an author's hand-written one. Seeding (`company.*`
+ * from package.json) is deliberately NOT applied here — it is a defineConfig
+ * concern; keeping validate() free of filesystem reads keeps it pure and
+ * deterministic, and in the real pipeline validate() runs on the
+ * already-seeded defineConfig output. Privacy and cookie checks are gated by
  * {@link shouldEmit} so a policy is only validated when it will actually be
  * emitted; nothing here depends on the expanded `PolicyInput` shape, so there
  * is no `EMPTY_*`-default false-positive class and no need to dedupe.
  */
-export function validate(config: OpenPolicyConfig): Issue[] {
+export function validate(rawConfig: OpenPolicyConfig): Issue[] {
+	const config: OpenPolicyConfig = {
+		...rawConfig,
+		consentMechanism: deriveConsentMechanism(rawConfig),
+	};
 	const issues: Issue[] = [];
 
 	// Required fields
@@ -262,12 +273,21 @@ export function validate(config: OpenPolicyConfig): Issue[] {
 			}
 		}
 
+		// `consentMechanism` is DERIVED (normalize-at-entry), never authored.
+		// Inside this `wantCookie && config.cookies` block, an absent mechanism
+		// means deriveConsentMechanism() found no enabled consent-gated
+		// category — an honest "strictly-necessary cookies only" signal, not
+		// "you forgot to write it". The `consent-withdrawal-required` branch
+		// can no longer fire (a present mechanism is all-true, so canWithdraw
+		// is true) but its `code:` literal is retained so the frozen
+		// registry⟺validate bidirectional scan (issue-codes.test.ts) stays
+		// green and it remains a net for raw-core callers.
 		if (!config.consentMechanism) {
 			issues.push({
 				code: "consent-mechanism-undeclared",
 				level: "warning",
 				message:
-					"consentMechanism is not provided — consider describing how users can manage cookie consent",
+					'No enabled cookie category is consent-gated, so no consent mechanism (banner/preference panel/withdrawal) is generated — correct for strictly-necessary cookies only. Set a category\'s lawfulBasis to "consent" if it requires opt-in.',
 			});
 		} else if (gdprScope && !config.consentMechanism.canWithdraw) {
 			issues.push({
@@ -278,11 +298,12 @@ export function validate(config: OpenPolicyConfig): Issue[] {
 			});
 		}
 
-		// Cross-check the declared consentMechanism against the runtime the
-		// §4.1 bridge will wire: consent-gated categories need a banner to
-		// collect affirmative consent, and withdrawal needs a panel to do it
-		// in. Warnings — the bridge still derives a runtime, but the declared
-		// mechanism contradicts it.
+		// Provably-unreachable from a normalized config (a derived mechanism is
+		// all-true, so `hasBanner` is never false and `hasPreferencePanel ===
+		// false && canWithdraw === true` can never hold), but retained
+		// verbatim: the `code:` literals keep the 4 consent codes reachable for
+		// the bidirectional registry scan, and this stays a dead-safe net for
+		// raw-core callers that construct a hand-written mechanism directly.
 		if (config.consentMechanism) {
 			const hasGatedCategory = enabledKeys.some((key) =>
 				isConsentGated(config.cookies?.context?.[key]?.lawfulBasis),

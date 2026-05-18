@@ -40,12 +40,15 @@ const baseConfig: OpenPolicyConfig = {
 	},
 };
 
-test("validate: a well-formed config emits only the honesty warning, no errors", () => {
+test("validate: a well-formed config emits only honesty/info warnings, no errors", () => {
 	const issues = validate(baseConfig);
-	expect(issues).toHaveLength(1);
-	expect(issues[0]?.code).toBe("jurisdiction-generic-policy-text");
-	expect(issues[0]?.level).toBe("warning");
+	// baseConfig is essential-only (legal_obligation) so the derived consent
+	// mechanism is absent — that is now an honest informational warning, not
+	// "you forgot to write it". Still zero errors.
 	expect(issues.some((i) => i.level === "error")).toBe(false);
+	expect(issues.map((i) => i.code).sort()).toEqual(
+		["consent-mechanism-undeclared", "jurisdiction-generic-policy-text"].sort(),
+	);
 });
 
 // --- jurisdiction guard + codes ---
@@ -547,94 +550,66 @@ test("validate: errors when an enabled cookie category lacks a lawful basis", ()
 	).toBe(true);
 });
 
-test("validate: warns when consentMechanism is not provided", () => {
-	const { consentMechanism: _omit, ...withoutConsent } = baseConfig;
-	const issues = validate(withoutConsent);
-	expect(
-		issues.some((i) => i.code === "consent-mechanism-undeclared" && i.level === "warning"),
-	).toBe(true);
+// --- consent mechanism: DERIVED from the cookie posture, never authored ---
+
+const gatedCookies = {
+	used: { essential: true, analytics: true },
+	context: {
+		essential: { lawfulBasis: "legal_obligation" },
+		analytics: { lawfulBasis: "consent" },
+	},
+} as const;
+
+test("validate: essential-only cookies → reworded informational consent-mechanism-undeclared", () => {
+	// baseConfig's only cookie is essential/legal_obligation → not gated, so
+	// no consent mechanism is derived.
+	const m = validate(baseConfig).find((i) => i.code === "consent-mechanism-undeclared");
+	expect(m?.level).toBe("warning");
+	expect(m?.message).toContain("strictly-necessary");
 });
 
-test("validate: EU/UK + canWithdraw:false warns; canWithdraw:true does not", () => {
-	for (const jx of [["eea"], ["uk"]] as const) {
-		const cannot = validate({
-			...baseConfig,
-			jurisdictions: [...jx],
-			consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: false },
-		});
-		expect(
-			cannot.some((i) => i.code === "consent-withdrawal-required" && i.level === "warning"),
-		).toBe(true);
+test("validate: a consent-gated category derives a full mechanism — no consent warnings", () => {
+	const issues = validate({ ...baseConfig, cookies: { ...gatedCookies } });
+	for (const code of [
+		"consent-mechanism-undeclared",
+		"consent-withdrawal-required",
+		"consent-banner-required",
+		"consent-preference-panel-required",
+	]) {
+		expect(issues.some((i) => i.code === code)).toBe(false);
 	}
+});
 
-	const can = validate({
+test("validate: a hand-written consentMechanism cannot be a lie — the cookie posture wins", () => {
+	// Author claims a full mechanism while every cookie is non-consent. The
+	// derived value is `undefined`, so the honest "undeclared" warning still
+	// fires and the cross-check codes (retained in source as a raw-core net
+	// and for the frozen registry⟺validate scan) never fire from validate().
+	const issues = validate({
 		...baseConfig,
 		jurisdictions: ["eea"],
 		consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
 	});
-	expect(can.some((i) => i.code === "consent-withdrawal-required")).toBe(false);
+	expect(issues.some((i) => i.code === "consent-mechanism-undeclared")).toBe(true);
+	for (const code of [
+		"consent-withdrawal-required",
+		"consent-banner-required",
+		"consent-preference-panel-required",
+	]) {
+		expect(issues.some((i) => i.code === code)).toBe(false);
+	}
 });
 
-test("validate: hasBanner:false with a consent-gated category warns", () => {
-	const gated = validate({
-		...baseConfig,
-		cookies: {
-			used: { essential: true, analytics: true },
-			context: {
-				essential: { lawfulBasis: "legal_obligation" },
-				analytics: { lawfulBasis: "consent" },
-			},
-		},
-		consentMechanism: { hasBanner: false, hasPreferencePanel: true, canWithdraw: true },
-	});
-	expect(gated.some((i) => i.code === "consent-banner-required" && i.level === "warning")).toBe(
-		true,
-	);
-});
-
-test("validate: hasBanner:false with no consent-gated category does not warn", () => {
-	const notGated = validate({
-		...baseConfig,
-		cookies: {
-			used: { essential: true },
-			context: { essential: { lawfulBasis: "legal_obligation" } },
-		},
-		consentMechanism: { hasBanner: false, hasPreferencePanel: true, canWithdraw: true },
-	});
-	expect(notGated.some((i) => i.code === "consent-banner-required")).toBe(false);
-});
-
-test("validate: a wired banner does not warn even with gated categories", () => {
-	const wired = validate({
-		...baseConfig,
-		cookies: {
-			used: { essential: true, analytics: true },
-			context: {
-				essential: { lawfulBasis: "legal_obligation" },
-				analytics: { lawfulBasis: "consent" },
-			},
-		},
-		consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
-	});
-	expect(wired.some((i) => i.code === "consent-banner-required")).toBe(false);
-});
-
-test("validate: canWithdraw:true with hasPreferencePanel:false warns", () => {
-	const issues = validate({
-		...baseConfig,
-		consentMechanism: { hasBanner: true, hasPreferencePanel: false, canWithdraw: true },
-	});
-	expect(
-		issues.some((i) => i.code === "consent-preference-panel-required" && i.level === "warning"),
-	).toBe(true);
-});
-
-test("validate: canWithdraw:false does not require a preference panel", () => {
-	const issues = validate({
-		...baseConfig,
-		consentMechanism: { hasBanner: true, hasPreferencePanel: false, canWithdraw: false },
-	});
-	expect(issues.some((i) => i.code === "consent-preference-panel-required")).toBe(false);
+test("validate: gated cookies under EU/UK derive canWithdraw — no withdrawal warning", () => {
+	for (const jx of [["eea"], ["uk"]] as const) {
+		const issues = validate({
+			...baseConfig,
+			jurisdictions: [...jx],
+			cookies: { ...gatedCookies },
+		});
+		expect(issues.some((i) => i.code === "consent-withdrawal-required")).toBe(false);
+		expect(issues.some((i) => i.code === "consent-mechanism-undeclared")).toBe(false);
+	}
 });
 
 // --- emission gating ---
