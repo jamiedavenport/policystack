@@ -133,3 +133,23 @@ test("normalizePolicyStackConfig is idempotent", () => {
 		canWithdraw: true,
 	});
 });
+
+test("normalizePolicyStackConfig fills stable privacy/cookie version hashes", () => {
+	const a = normalizePolicyStackConfig(base);
+	const b = normalizePolicyStackConfig({
+		jurisdictions: base.jurisdictions,
+		effectiveDate: base.effectiveDate,
+		data: base.data,
+		company: base.company,
+	});
+	expect(a.privacyVersion).toMatch(/^[0-9a-f]{8}$/);
+	expect(a.privacyVersion).toBe(b.privacyVersion);
+	// No cookies block → cookie document not emitted → no cookieVersion.
+	expect(a.cookieVersion).toBeUndefined();
+});
+
+test("normalizePolicyStackConfig keeps an explicit version override", () => {
+	expect(normalizePolicyStackConfig({ ...base, privacyVersion: "pinned" }).privacyVersion).toBe(
+		"pinned",
+	);
+});

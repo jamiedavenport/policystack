@@ -17,8 +17,10 @@ export type { PolicyStackConsentOptions } from "@policystack/core/consent";
 // power users — but it is OFF the documented happy path. The single-config flow
 // is: author `PolicyStackConfig.consent` and pass the whole config to
 // `<PolicyStackProvider>`, which calls `toPolicyStackConsentConfig(config, config.consent)`
-// internally. `PolicyStackConsentOptions` is exactly assignable to the `options`
-// type here (both are `PolicyStackConsentConfig` minus `categories`).
+// internally. `PolicyStackConsentOptions` (the authored knobs — a `Pick` of
+// `PolicyStackConsentConfig`) is a strict subset of `ToConsentConfigOptions`
+// (everything bar `categories`, which is always derived), so passing
+// `config.consent` here type-checks with no cast.
 export function toPolicyStackConsentConfig(
 	policy: PolicyStackConfig,
 	options?: ToConsentConfigOptions,

@@ -1,13 +1,7 @@
-import {
-	type JurisdictionId,
-	JURISDICTION_TABLE,
-	LAWFUL_BASIS_CONSENT_GATED,
-	type LegalBasis,
-	LOCALES,
-} from "@policystack/core";
+import { LAWFUL_BASIS_CONSENT_GATED, type LegalBasis, LOCALES } from "@policystack/core";
 import { Compliance } from "./compliance";
 import { DataCategories, LegalBases, Retention } from "./data";
-import { describeJurisdiction, describeLawfulBasis } from "./describe";
+import { describeLawfulBasis, jurisdictionSummaryLines } from "./describe";
 import { Providers } from "./providers";
 
 /**
@@ -28,10 +22,9 @@ import { Providers } from "./providers";
  */
 export function renderLlmsTxt(): string {
 	// Both row sets are derived from the shared `describe*` helpers — the same
-	// source the `policystack mcp` tools use, so the prose cannot drift (PS-29).
-	const jurisdictionRows = Object.keys(JURISDICTION_TABLE)
-		.sort((a, b) => a.localeCompare(b))
-		.map((id) => `- ${describeJurisdiction(id as JurisdictionId).summary}`);
+	// source the `policystack mcp` tools and the skill pack use, so the prose
+	// cannot drift (PS-27/PS-29).
+	const jurisdictionRows = jurisdictionSummaryLines();
 
 	const lawfulBasisRows = Object.keys(LAWFUL_BASIS_CONSENT_GATED)
 		.sort((a, b) => a.localeCompare(b))

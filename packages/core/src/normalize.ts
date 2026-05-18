@@ -1,4 +1,5 @@
 import { type HostPackageMeta, readHostPackageMeta } from "./host-package";
+import { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 import type { CompanyConfig, ConsentMechanism, PolicyStackConfig } from "./types";
 import { isConsentGated } from "./types";
 
@@ -39,15 +40,24 @@ export function seedCompany(
 	};
 }
 
-// The single normalization seam. Applied at the boundary of BOTH defineConfig
-// (sdk) and validate() (core) so every consumer — the §4.1 bridge,
-// buildConsent(), the React parity copy, validate's required-field checks —
-// observes one internally-consistent config regardless of entry path.
-// Idempotent: normalize∘normalize == normalize.
+// The single normalization seam, applied at the defineConfig (sdk) boundary so
+// every downstream consumer — the §4.1 bridge, buildConsent(), the policy
+// renderers — observes one internally-consistent config. It (1) seeds
+// `company` from package.json, (2) derives `consentMechanism` from the cookie
+// posture, then (3) fills `privacyVersion`/`cookieVersion` with stable content
+// hashes unless set explicitly. Versions are computed last, after
+// `consentMechanism` is derived, because the cookie hash slice covers it.
+// Idempotent: the hash slices exclude the version fields, so
+// normalize∘normalize == normalize.
 export function normalizePolicyStackConfig(config: PolicyStackConfig): PolicyStackConfig {
-	return {
+	const seeded: PolicyStackConfig = {
 		...config,
 		company: seedCompany(config.company),
 		consentMechanism: deriveConsentMechanism(config),
+	};
+	return {
+		...seeded,
+		privacyVersion: seeded.privacyVersion ?? computePrivacyVersion(seeded),
+		cookieVersion: seeded.cookieVersion ?? computeCookieVersion(seeded),
 	};
 }

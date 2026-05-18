@@ -39,6 +39,20 @@ export function describeJurisdiction(id: JurisdictionId): JurisdictionDescriptio
 	};
 }
 
+/** Every jurisdiction id, ascending — the shared sort order for both artifacts. */
+export function jurisdictionIds(): JurisdictionId[] {
+	return (Object.keys(JURISDICTION_TABLE) as JurisdictionId[]).sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * `- <summary>` lines for every jurisdiction. The single rendering of the
+ * jurisdiction table — `renderLlmsTxt()` and the skill pack both consume this
+ * so the prose provably cannot fork (PS-27/PS-29).
+ */
+export function jurisdictionSummaryLines(): string[] {
+	return jurisdictionIds().map((id) => `- ${describeJurisdiction(id).summary}`);
+}
+
 export type LawfulBasisDescription = {
 	basis: LegalBasis;
 	consentGated: boolean;
