@@ -106,8 +106,4 @@ function keyForUngated(u: Ungated): string {
 	return `${h.file}:${h.line}:${h.column}:${tag}`;
 }
 
-export function firstUngated(result: ScanResult): Ungated | undefined {
-	return result.ungated[0];
-}
-
 export type { Cookie, VendorHit };

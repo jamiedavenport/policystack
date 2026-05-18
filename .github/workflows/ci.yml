@@ -25,8 +25,7 @@ jobs:
       # @sveltejs/vite-plugin-svelte) so solid renders SSR-only and svelte SFCs
       # fail to transform. Recursive run fixes both; no exclusions needed.
       - run: vp run -r test
-      # Non-blocking for now: knip surfaces dead deps/exports but still has
-      # per-workspace entry-config noise. Tracked as a follow-up to retune
-      # knip.json then drop continue-on-error.
+      # Required gate: knip.json is tuned to the src-in-dev / dist-on-publish
+      # layout (per-workspace source entry points), so dead deps/exports/files
+      # fail CI like any other check.
       - run: vp run knip
-        continue-on-error: true

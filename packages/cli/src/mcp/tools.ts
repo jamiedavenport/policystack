@@ -35,8 +35,6 @@ export const TOOL_NAMES = [
 	"scan_ungated",
 ] as const;
 
-export type ToolName = (typeof TOOL_NAMES)[number];
-
 // Runtime-derived enums — the no-drift seam. `JURISDICTION_IDS` and
 // `Object.keys(ISSUE_CATALOG)` ARE the frozen unions at runtime.
 const jurisdictionIds = [...JURISDICTION_IDS] as [JurisdictionId, ...JurisdictionId[]];
