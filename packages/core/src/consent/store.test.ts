@@ -116,7 +116,7 @@ describe("createConsentStore", () => {
 
 		it("opt-out jurisdiction: non-essential defaults ON, consentModel opt-out", () => {
 			const s = createConsentStore(
-				makeConfig({ jurisdictionResolver: manualResolver("US") }),
+				makeConfig({ jurisdictionResolver: manualResolver("us") }),
 			).getState();
 			expect(s.decisions).toEqual({ essential: true, analytics: true, marketing: true });
 			expect(s.consentModel).toBe("opt-out");
@@ -124,7 +124,7 @@ describe("createConsentStore", () => {
 
 		it("opt-in jurisdiction: non-essential defaults OFF, consentModel opt-in", () => {
 			const s = createConsentStore(
-				makeConfig({ jurisdictionResolver: manualResolver("EEA") }),
+				makeConfig({ jurisdictionResolver: manualResolver("eea") }),
 			).getState();
 			expect(s.decisions).toEqual({ essential: true, analytics: false, marketing: false });
 			expect(s.consentModel).toBe("opt-in");
@@ -138,7 +138,7 @@ describe("createConsentStore", () => {
 
 		it("async resolver: opt-in until resolved, opt-out after (footgun gone for async)", async () => {
 			const store = createConsentStore(
-				makeConfig({ jurisdictionResolver: { resolve: () => Promise.resolve("US") } }),
+				makeConfig({ jurisdictionResolver: { resolve: () => Promise.resolve("us") } }),
 			);
 			expect(store.getState().decisions).toEqual({
 				essential: true,
@@ -157,7 +157,7 @@ describe("createConsentStore", () => {
 
 		it("GPC is the opt-out: opt-out posture set ON, GPC flips it back OFF", () => {
 			const s = createConsentStore(
-				makeConfig({ jurisdictionResolver: manualResolver("US"), gpc: { signal: true } }),
+				makeConfig({ jurisdictionResolver: manualResolver("us"), gpc: { signal: true } }),
 			).getState();
 			expect(s.decisions).toEqual({ essential: true, analytics: false, marketing: false });
 			expect(s.source).toBe("gpc");
@@ -165,7 +165,7 @@ describe("createConsentStore", () => {
 		});
 
 		it("a prior user decision is never overridden by a later jurisdiction change", async () => {
-			let where: "EEA" | "US" = "EEA";
+			let where: "eea" | "us" = "eea";
 			const store = createConsentStore(
 				makeConfig({ jurisdictionResolver: { resolve: () => where } }),
 			);
@@ -175,9 +175,9 @@ describe("createConsentStore", () => {
 				analytics: false,
 				marketing: false,
 			});
-			where = "US";
+			where = "us";
 			await store.refreshJurisdiction();
-			expect(store.getState().jurisdiction).toBe("US");
+			expect(store.getState().jurisdiction).toBe("us");
 			// decisions stay the user's; only the UI hint tracks the new jurisdiction.
 			expect(store.getState().decisions).toEqual({
 				essential: true,
@@ -194,7 +194,7 @@ describe("createConsentStore", () => {
 					decisions: { essential: true, analytics: false, marketing: false },
 					policyVersion: "",
 					decidedAt: "2026-01-01T00:00:00.000Z",
-					jurisdiction: "EEA",
+					jurisdiction: "eea",
 					locale: "en",
 					source: "banner",
 				}),
@@ -203,7 +203,7 @@ describe("createConsentStore", () => {
 			};
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: { resolve: () => Promise.resolve("US") },
+					jurisdictionResolver: { resolve: () => Promise.resolve("us") },
 					triggers: { jurisdictionChanged: true },
 					adapter,
 				}),
@@ -225,25 +225,25 @@ describe("createConsentStore", () => {
 		});
 
 		it("populates jurisdiction synchronously when resolver is sync", () => {
-			const store = createConsentStore(makeConfig({ jurisdictionResolver: manualResolver("EEA") }));
-			expect(store.getState().jurisdiction).toBe("EEA");
+			const store = createConsentStore(makeConfig({ jurisdictionResolver: manualResolver("eea") }));
+			expect(store.getState().jurisdiction).toBe("eea");
 		});
 
 		it("starts null and notifies subscribers when resolver is async", async () => {
 			const resolver: JurisdictionResolver = {
-				resolve: () => Promise.resolve("UK"),
+				resolve: () => Promise.resolve("uk"),
 			};
 			const store = createConsentStore(makeConfig({ jurisdictionResolver: resolver }));
 			expect(store.getState().jurisdiction).toBeNull();
 			const listener = vi.fn();
 			store.subscribe(listener);
 			await flushMicrotasks();
-			expect(store.getState().jurisdiction).toBe("UK");
+			expect(store.getState().jurisdiction).toBe("uk");
 			expect(listener).toHaveBeenCalledWith(store.getState());
 		});
 
 		it("forwards config.request to the resolver", () => {
-			const resolve = vi.fn().mockReturnValue("US");
+			const resolve = vi.fn().mockReturnValue("us");
 			const req = { headers: new Headers({ "cf-ipcountry": "US" }) };
 			createConsentStore(makeConfig({ jurisdictionResolver: { resolve }, request: req }));
 			expect(resolve).toHaveBeenCalledWith(req);
@@ -273,17 +273,17 @@ describe("createConsentStore", () => {
 		});
 
 		it("preserves jurisdiction across decision mutations", () => {
-			const store = createConsentStore(makeConfig({ jurisdictionResolver: manualResolver("EEA") }));
+			const store = createConsentStore(makeConfig({ jurisdictionResolver: manualResolver("eea") }));
 			store.acceptAll();
-			expect(store.getState().jurisdiction).toBe("EEA");
+			expect(store.getState().jurisdiction).toBe("eea");
 			store.acceptNecessary();
-			expect(store.getState().jurisdiction).toBe("EEA");
+			expect(store.getState().jurisdiction).toBe("eea");
 			store.reject();
-			expect(store.getState().jurisdiction).toBe("EEA");
+			expect(store.getState().jurisdiction).toBe("eea");
 			store.toggle("analytics");
-			expect(store.getState().jurisdiction).toBe("EEA");
+			expect(store.getState().jurisdiction).toBe("eea");
 			store.save();
-			expect(store.getState().jurisdiction).toBe("EEA");
+			expect(store.getState().jurisdiction).toBe("eea");
 		});
 	});
 
@@ -293,29 +293,29 @@ describe("createConsentStore", () => {
 		});
 
 		it("re-invokes the resolver and commits the new value", async () => {
-			let next: "EEA" | "US" = "EEA";
+			let next: "eea" | "us" = "eea";
 			const resolver: JurisdictionResolver = {
 				resolve: () => next,
 			};
 			const store = createConsentStore(makeConfig({ jurisdictionResolver: resolver }));
-			expect(store.getState().jurisdiction).toBe("EEA");
-			next = "US";
+			expect(store.getState().jurisdiction).toBe("eea");
+			next = "us";
 			const result = await store.refreshJurisdiction();
-			expect(result).toBe("US");
-			expect(store.getState().jurisdiction).toBe("US");
+			expect(result).toBe("us");
+			expect(store.getState().jurisdiction).toBe("us");
 		});
 
 		it("notifies subscribers on refresh", async () => {
-			let next: "EEA" | "UK" = "EEA";
+			let next: "eea" | "uk" = "eea";
 			const store = createConsentStore(
 				makeConfig({ jurisdictionResolver: { resolve: () => next } }),
 			);
 			const listener = vi.fn();
 			store.subscribe(listener);
-			next = "UK";
+			next = "uk";
 			await store.refreshJurisdiction();
 			expect(listener).toHaveBeenCalledTimes(1);
-			expect(listener.mock.calls[0]?.[0].jurisdiction).toBe("UK");
+			expect(listener.mock.calls[0]?.[0].jurisdiction).toBe("uk");
 		});
 
 		it("returns the current jurisdiction when no resolver is configured", async () => {
@@ -325,7 +325,7 @@ describe("createConsentStore", () => {
 		});
 
 		it("forwards an explicit request override to the resolver", async () => {
-			const resolve = vi.fn().mockReturnValue("EEA");
+			const resolve = vi.fn().mockReturnValue("eea");
 			const store = createConsentStore(makeConfig({ jurisdictionResolver: { resolve } }));
 			resolve.mockClear();
 			const req = { headers: new Headers({ "cf-ipcountry": "DE" }) };
@@ -339,14 +339,14 @@ describe("createConsentStore", () => {
 			const resolver: JurisdictionResolver = {
 				resolve: () => {
 					if (mode === "boom") throw new Error("nope");
-					return "EEA";
+					return "eea";
 				},
 			};
 			const store = createConsentStore(makeConfig({ jurisdictionResolver: resolver }));
 			mode = "boom";
 			const result = await store.refreshJurisdiction();
-			expect(result).toBe("EEA");
-			expect(store.getState().jurisdiction).toBe("EEA");
+			expect(result).toBe("eea");
+			expect(store.getState().jurisdiction).toBe("eea");
 		});
 
 		it("leaves jurisdiction unchanged when the resolver rejects", async () => {
@@ -354,15 +354,15 @@ describe("createConsentStore", () => {
 			let mode: "ok" | "boom" = "ok";
 			const resolver: JurisdictionResolver = {
 				resolve: () =>
-					mode === "boom" ? Promise.reject(new Error("nope")) : Promise.resolve("UK"),
+					mode === "boom" ? Promise.reject(new Error("nope")) : Promise.resolve("uk"),
 			};
 			const store = createConsentStore(makeConfig({ jurisdictionResolver: resolver }));
 			await flushMicrotasks();
-			expect(store.getState().jurisdiction).toBe("UK");
+			expect(store.getState().jurisdiction).toBe("uk");
 			mode = "boom";
 			const result = await store.refreshJurisdiction();
-			expect(result).toBe("UK");
-			expect(store.getState().jurisdiction).toBe("UK");
+			expect(result).toBe("uk");
+			expect(store.getState().jurisdiction).toBe("uk");
 		});
 	});
 
@@ -579,7 +579,7 @@ describe("createConsentStore", () => {
 		it("applies on init when signal is true (privacy-positive default scope)", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("EEA"),
+					jurisdictionResolver: manualResolver("eea"),
 					gpc: { signal: true },
 				}),
 			);
@@ -592,7 +592,7 @@ describe("createConsentStore", () => {
 		it("does not apply when signal is false", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: { signal: false },
 				}),
 			);
@@ -603,7 +603,7 @@ describe("createConsentStore", () => {
 		it("applies in a legally-required US state", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: {
 						signal: true,
 						applicableJurisdictions: GPC_LEGALLY_REQUIRED_JURISDICTIONS,
@@ -616,7 +616,7 @@ describe("createConsentStore", () => {
 		it("does not apply in EEA when scope is restricted to the four US states", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("EEA"),
+					jurisdictionResolver: manualResolver("eea"),
 					gpc: {
 						signal: true,
 						applicableJurisdictions: GPC_LEGALLY_REQUIRED_JURISDICTIONS,
@@ -629,7 +629,7 @@ describe("createConsentStore", () => {
 
 		it("re-evaluates after async jurisdiction resolves", async () => {
 			const resolver: JurisdictionResolver = {
-				resolve: () => Promise.resolve("US-CA"),
+				resolve: () => Promise.resolve("us-ca"),
 			};
 			const store = createConsentStore(
 				makeConfig({
@@ -643,7 +643,7 @@ describe("createConsentStore", () => {
 			expect(store.getState().source).toBe("default");
 			await flushMicrotasks();
 			expect(store.getState().source).toBe("gpc");
-			expect(store.getState().jurisdiction).toBe("US-CA");
+			expect(store.getState().jurisdiction).toBe("us-ca");
 		});
 
 		it("respects per-category respectGPC: false", () => {
@@ -654,7 +654,7 @@ describe("createConsentStore", () => {
 			];
 			const store = createConsentStore({
 				categories,
-				jurisdictionResolver: manualResolver("US-CA"),
+				jurisdictionResolver: manualResolver("us-ca"),
 				gpc: { signal: true },
 			});
 			const decisions = { ...store.getState().decisions };
@@ -665,7 +665,7 @@ describe("createConsentStore", () => {
 		it("user mutation after GPC flips source back to 'user'", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: { signal: true },
 				}),
 			);
@@ -678,7 +678,7 @@ describe("createConsentStore", () => {
 		it("is fully bypassed when gpc.enabled is false (even with signal: true)", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: { enabled: false, signal: true },
 				}),
 			);
@@ -689,7 +689,7 @@ describe("createConsentStore", () => {
 		it("reads navigator.globalPrivacyControl when no signal override (Brave parity)", () => {
 			vi.stubGlobal("navigator", { globalPrivacyControl: true });
 			const store = createConsentStore(
-				makeConfig({ jurisdictionResolver: manualResolver("US-CA") }),
+				makeConfig({ jurisdictionResolver: manualResolver("us-ca") }),
 			);
 			expect(store.getState().source).toBe("gpc");
 		});
@@ -697,7 +697,7 @@ describe("createConsentStore", () => {
 		it("does not apply when navigator omits globalPrivacyControl (Chrome parity)", () => {
 			vi.stubGlobal("navigator", {});
 			const store = createConsentStore(
-				makeConfig({ jurisdictionResolver: manualResolver("US-CA") }),
+				makeConfig({ jurisdictionResolver: manualResolver("us-ca") }),
 			);
 			expect(store.getState().source).toBe("default");
 			expect(store.getState().route).toBe("cookie");
@@ -737,7 +737,7 @@ describe("createConsentStore", () => {
 			return {
 				schemaVersion: 1,
 				decisions: { essential: true, analytics: true, marketing: false },
-				jurisdiction: "EEA",
+				jurisdiction: "eea",
 				policyVersion: "v2",
 				decidedAt: "2026-04-01T00:00:00.000Z",
 				locale: "en-GB",
@@ -751,7 +751,7 @@ describe("createConsentStore", () => {
 			const store = createConsentStore(makeConfig({ adapter }));
 			const s = store.getState();
 			expect(s.decisions).toEqual({ essential: true, analytics: true, marketing: false });
-			expect(s.jurisdiction).toBe("EEA");
+			expect(s.jurisdiction).toBe("eea");
 			expect(s.decidedAt).toBe("2026-04-01T00:00:00.000Z");
 			expect(s.source).toBe("user");
 		});
@@ -782,7 +782,7 @@ describe("createConsentStore", () => {
 
 		it("hydrates state from an async adapter and notifies subscribers", async () => {
 			const adapter: StorageAdapter = {
-				read: () => Promise.resolve(v1Record({ jurisdiction: "UK", policyVersion: "" })),
+				read: () => Promise.resolve(v1Record({ jurisdiction: "uk", policyVersion: "" })),
 				write: () => {},
 				clear: () => {},
 			};
@@ -792,7 +792,7 @@ describe("createConsentStore", () => {
 			store.subscribe(listener);
 			await flushMicrotasks();
 			expect(store.getState().decisions.analytics).toBe(true);
-			expect(store.getState().jurisdiction).toBe("UK");
+			expect(store.getState().jurisdiction).toBe("uk");
 			expect(listener).toHaveBeenCalled();
 		});
 
@@ -907,7 +907,7 @@ describe("createConsentStore", () => {
 		it("migrates a legacy record on hydration ('user' source -> banner-shaped record)", () => {
 			const legacyRaw = {
 				decisions: { essential: true, analytics: true, marketing: false },
-				jurisdiction: "EEA",
+				jurisdiction: "eea",
 				policyVersion: "v1",
 				decidedAt: "2026-04-01T00:00:00.000Z",
 				source: "user",
@@ -976,7 +976,7 @@ describe("createConsentStore", () => {
 		it("does not surface a record for GPC-only state (no decision)", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: { signal: true },
 				}),
 			);
@@ -995,7 +995,7 @@ describe("createConsentStore", () => {
 			};
 			createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: { signal: true },
 					adapter,
 				}),
@@ -1006,7 +1006,7 @@ describe("createConsentStore", () => {
 		it("falls back to 'banner' source after GPC + a user decision", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("US-CA"),
+					jurisdictionResolver: manualResolver("us-ca"),
 					gpc: { signal: true },
 				}),
 			);
@@ -1068,7 +1068,7 @@ describe("createConsentStore", () => {
 			return {
 				schemaVersion: 1,
 				decisions: { essential: true, analytics: true, marketing: true },
-				jurisdiction: "EEA",
+				jurisdiction: "eea",
 				policyVersion: "v1",
 				decidedAt: "2026-04-01T00:00:00.000Z",
 				locale: "en-GB",
@@ -1097,7 +1097,7 @@ describe("createConsentStore", () => {
 		function listenForReprompt(): { events: { reason: string }[]; off: () => void } {
 			const events: { reason: string }[] = [];
 			const dispatchEvent = vi.fn((event: Event) => {
-				if (event.type === "oncookies:reprompt") {
+				if (event.type === "policystack:reprompt") {
 					const detail = (event as CustomEvent).detail as { reason: string };
 					events.push(detail);
 				}
@@ -1217,23 +1217,23 @@ describe("createConsentStore", () => {
 
 		describe("jurisdictionChanged", () => {
 			it("invalidates when the visitor crosses a jurisdiction boundary (sync resolver)", () => {
-				const { adapter } = adapterFor(v1Record({ jurisdiction: "EEA", policyVersion: "v1" }));
+				const { adapter } = adapterFor(v1Record({ jurisdiction: "eea", policyVersion: "v1" }));
 				const store = createConsentStore(
 					makeConfig({
 						adapter,
 						policyVersion: "v1",
-						jurisdictionResolver: manualResolver("US"),
+						jurisdictionResolver: manualResolver("us"),
 						triggers: { jurisdictionChanged: true },
 					}),
 				);
 				expect(store.getState().repromptReason).toBe("jurisdiction");
-				expect(store.getState().jurisdiction).toBe("US");
+				expect(store.getState().jurisdiction).toBe("us");
 			});
 
 			it("invalidates after async jurisdiction resolution", async () => {
-				const { adapter } = adapterFor(v1Record({ jurisdiction: "EEA", policyVersion: "v1" }));
+				const { adapter } = adapterFor(v1Record({ jurisdiction: "eea", policyVersion: "v1" }));
 				const resolver: JurisdictionResolver = {
-					resolve: () => Promise.resolve("US"),
+					resolve: () => Promise.resolve("us"),
 				};
 				const store = createConsentStore(
 					makeConfig({
@@ -1246,12 +1246,12 @@ describe("createConsentStore", () => {
 				expect(store.getState().repromptReason).toBeNull();
 				await flushMicrotasks();
 				expect(store.getState().repromptReason).toBe("jurisdiction");
-				expect(store.getPreviousRecord()?.jurisdiction).toBe("EEA");
+				expect(store.getPreviousRecord()?.jurisdiction).toBe("eea");
 			});
 		});
 
 		describe("event dispatch", () => {
-			it("emits oncookies:reprompt on globalThis when a trigger fires", async () => {
+			it("emits policystack:reprompt on globalThis when a trigger fires", async () => {
 				const { events, off } = listenForReprompt();
 				try {
 					const { adapter } = adapterFor(v1Record({ policyVersion: "v1" }));

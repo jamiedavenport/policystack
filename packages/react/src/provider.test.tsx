@@ -145,10 +145,10 @@ describe("PolicyStackProvider — consent store derived from the one config", ()
 		const { result } = renderHook(() => useConsent(), {
 			wrapper: wrapper({
 				...withCookies,
-				consent: { jurisdictionResolver: { resolve: () => "EEA" } },
+				consent: { jurisdictionResolver: { resolve: () => "eea" } },
 			}),
 		});
-		expect(result.current.jurisdiction).toBe("EEA");
+		expect(result.current.jurisdiction).toBe("eea");
 	});
 
 	it("isolates the store per provider instance (no cross-request leak)", () => {
@@ -169,7 +169,7 @@ describe("deriveConsentConfig parity with @policystack/sdk toPolicyStackConsentC
 			...withCookies,
 			consent: {
 				adapter: { read: () => null, write: () => {}, clear: () => {} },
-				jurisdictionResolver: { resolve: () => "EEA" },
+				jurisdictionResolver: { resolve: () => "eea" },
 				initialRoute: "preferences",
 				triggers: { policyVersionChanged: false, jurisdictionChanged: true },
 			},

@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { CookiePolicyConfig, PolicyStackConfig } from "@policystack/core";
+import type { PolicyStackConfig } from "@policystack/core";
 import { visit } from "@policystack/core";
 import { setOverridesContext } from "./context.svelte";
 import DefaultRoot from "./defaults/DefaultRoot.svelte";
@@ -9,7 +9,7 @@ import type { PolicyComponents } from "./types";
 import { resolveDocument } from "./usePolicyDocument.svelte";
 
 type Props = {
-	config?: PolicyStackConfig | CookiePolicyConfig;
+	config?: PolicyStackConfig;
 	style?: string;
 } & PolicyComponents;
 

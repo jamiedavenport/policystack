@@ -20,7 +20,7 @@ import {
 	type ConsentRecordSource,
 	type ConsentState,
 	type ConsentStore,
-	type Jurisdiction,
+	type JurisdictionId,
 	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
@@ -90,7 +90,7 @@ export type UseConsentResult = {
 	route: ComputedRef<Route>;
 	categories: ComputedRef<Category[]>;
 	decisions: ComputedRef<Record<string, boolean>>;
-	jurisdiction: ComputedRef<Jurisdiction | null>;
+	jurisdiction: ComputedRef<JurisdictionId | null>;
 	policyVersion: ComputedRef<string>;
 	decidedAt: ComputedRef<string | null>;
 	repromptReason: ComputedRef<RepromptReason | null>;
@@ -172,7 +172,7 @@ export type {
 	ConsentRecordSource,
 	ConsentState,
 	ConsentStore,
-	Jurisdiction,
+	JurisdictionId,
 	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,

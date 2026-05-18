@@ -9,12 +9,8 @@ export {
 	manualResolver,
 	timezoneResolver,
 } from "./jurisdiction";
-export {
-	type ConsentModel,
-	jurisdictionPosture,
-	postureDecisions,
-	toJurisdictionId,
-} from "./posture";
+export type { JurisdictionId } from "../jurisdiction-id";
+export { type ConsentModel, jurisdictionPosture, postureDecisions } from "./posture";
 export { defineScript, gateScript, gateScripts } from "./scripts";
 export { createConsentStore } from "./store";
 export type {
@@ -29,7 +25,6 @@ export type {
 	EvaluateOptions,
 	GateOptions,
 	GPCConfig,
-	Jurisdiction,
 	JurisdictionResolver,
 	PolicyStackConsentConfig,
 	PolicyStackConsentOptions,

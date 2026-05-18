@@ -9,7 +9,7 @@ const baseState: ConsentState = {
 		{ key: "analytics", label: "Analytics" },
 	],
 	decisions: { essential: true, analytics: true },
-	jurisdiction: "EEA",
+	jurisdiction: "eea",
 	policyVersion: "v2",
 	decidedAt: "2026-04-29T00:00:00.000Z",
 	source: "user",
@@ -26,7 +26,7 @@ const v1: ConsentRecord = {
 	decisions: { essential: true, analytics: true },
 	policyVersion: "v2",
 	decidedAt: "2026-04-29T00:00:00.000Z",
-	jurisdiction: "EEA",
+	jurisdiction: "eea",
 	locale: "en-GB",
 	source: "banner",
 };
@@ -59,7 +59,7 @@ describe("recordEquals", () => {
 		expect(recordEquals(v1, { ...v1, source: "preferences" })).toBe(false);
 		expect(recordEquals(v1, { ...v1, policyVersion: "v3" })).toBe(false);
 		expect(recordEquals(v1, { ...v1, decidedAt: "2026-05-01T00:00:00.000Z" })).toBe(false);
-		expect(recordEquals(v1, { ...v1, jurisdiction: "UK" })).toBe(false);
+		expect(recordEquals(v1, { ...v1, jurisdiction: "uk" })).toBe(false);
 		expect(recordEquals(v1, { ...v1, decisions: { essential: true, analytics: false } })).toBe(
 			false,
 		);
@@ -92,7 +92,7 @@ describe("fromUnknown", () => {
 	it("migrates a legacy OP-297 record (source 'user' -> 'banner')", () => {
 		const legacy = {
 			decisions: { essential: true, analytics: false },
-			jurisdiction: "EEA",
+			jurisdiction: "eea",
 			policyVersion: "v1",
 			decidedAt: "2026-04-01T00:00:00.000Z",
 			source: "user",
@@ -102,10 +102,23 @@ describe("fromUnknown", () => {
 			decisions: { essential: true, analytics: false },
 			policyVersion: "v1",
 			decidedAt: "2026-04-01T00:00:00.000Z",
-			jurisdiction: "EEA",
+			jurisdiction: "eea",
 			locale: "en-GB",
 			source: "banner",
 		});
+	});
+
+	it("reads a pre-canonical uppercase jurisdiction back as null (format break, decisions kept)", () => {
+		const legacy = {
+			decisions: { essential: true, analytics: false },
+			jurisdiction: "US-CA",
+			policyVersion: "v1",
+			decidedAt: "2026-04-01T00:00:00.000Z",
+			source: "banner",
+		};
+		const out = fromUnknown(legacy, "en");
+		expect(out?.jurisdiction).toBeNull();
+		expect(out?.decisions).toEqual({ essential: true, analytics: false });
 	});
 
 	it("maps unknown legacy sources to 'import'", () => {

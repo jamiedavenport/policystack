@@ -156,6 +156,14 @@ export type CookiePolicyCookies = {
 	context: CookieContext;
 };
 
+// The strictly-necessary-only fallback used when a privacy/cookie policy is
+// compiled from a config that declared no `cookies` block. One definition,
+// shared by both document builders.
+export const ESSENTIAL_ONLY_COOKIES: CookiePolicyCookies = {
+	used: { essential: true },
+	context: {},
+};
+
 export type TrackingTechnology = string;
 
 export type ConsentMechanism = {
@@ -163,40 +171,6 @@ export type ConsentMechanism = {
 	hasPreferencePanel: boolean;
 	canWithdraw: boolean;
 };
-
-// Internal type consumed by section builders via PolicyInput.
-// Produced by expandPolicyStackConfig() — not part of the public API.
-export type PrivacyPolicyConfig = {
-	effectiveDate: EffectiveDate;
-	locale: Locale;
-	company: CompanyConfig;
-	data: DataConfig;
-	cookies: CookiePolicyCookies;
-	thirdParties: ThirdParty[];
-	userRights: UserRight[];
-	jurisdictions: JurisdictionId[];
-	children?: ChildrenConfig;
-	automatedDecisionMaking?: AutomatedDecisionMaking;
-	version?: string;
-};
-
-// Internal type consumed by section builders via PolicyInput.
-// Produced by expandPolicyStackConfig() — not part of the public API.
-export type CookiePolicyConfig = {
-	effectiveDate: EffectiveDate;
-	locale: Locale;
-	company: CompanyConfig;
-	cookies: CookiePolicyCookies;
-	thirdParties: ThirdParty[];
-	trackingTechnologies?: TrackingTechnology[];
-	consentMechanism?: ConsentMechanism;
-	jurisdictions: JurisdictionId[];
-	version?: string;
-};
-
-export type PolicyInput =
-	| ({ type: "privacy" } & PrivacyPolicyConfig)
-	| ({ type: "cookie" } & CookiePolicyConfig);
 
 // Public config passed to defineConfig(). All fields live at the top level.
 export type PolicyStackConfig = {

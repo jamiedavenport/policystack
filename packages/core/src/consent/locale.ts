@@ -1,24 +1,19 @@
+import { isLocale, LOCALES } from "../locale";
 import type { Locale } from "../types";
 import type { PolicyStackConsentConfig } from "./types";
 
-// Canonical locale codes, kept dependency-free on purpose: importing the i18n
-// locale registry would drag the policy dictionaries into the lean consent
-// runtime. `satisfies` ties this list to the frozen `Locale` union (../types)
-// — the single source of truth — so a stray code here is a compile error.
-const CANONICAL_LOCALES = ["en", "fr", "de", "nl", "es"] as const satisfies readonly Locale[];
-
-function isCanonicalLocale(value: string): value is Locale {
-	return (CANONICAL_LOCALES as readonly string[]).includes(value);
-}
+// `LOCALES`/`isLocale` come from ../locale — the single runtime mirror of the
+// frozen `Locale` union, kept dependency-free so importing it here does NOT
+// drag the i18n policy dictionaries into the lean consent runtime.
 
 // Silent best-effort mapping for environmental input (navigator.language).
 // That is not a deprecated *configuration* — it is the runtime default and is
 // almost always region-tagged (e.g. "en-US") — so it must not warn. Outlives
 // the freeze (navigator.language stays a free string after PS-36).
 function coerceLocale(input: string): Locale {
-	if (isCanonicalLocale(input)) return input;
+	if (isLocale(input)) return input;
 	const primary = input.toLowerCase().split(/[-_]/)[0] ?? "";
-	return isCanonicalLocale(primary) ? primary : "en";
+	return isLocale(primary) ? primary : "en";
 }
 
 // ─── PS-26 warn-and-map migration shim — remove pre-freeze, PS-36 ───
@@ -29,20 +24,20 @@ function coerceLocale(input: string): Locale {
 // integrators migrate. PS-36 deletes this shim and tightens the surface to
 // `Locale`; the silent `coerceLocale` (navigator fallback) survives.
 export function normalizeLocale(input: string): Locale {
-	if (isCanonicalLocale(input)) return input;
+	if (isLocale(input)) return input;
 	const primary = input.toLowerCase().split(/[-_]/)[0] ?? "";
-	if (isCanonicalLocale(primary)) {
+	if (isLocale(primary)) {
 		console.warn(
 			`[policystack] locale "${input}" is not a supported PolicyStack locale; ` +
 				`mapping to "${primary}". Free-string locales are deprecated and will ` +
-				`be rejected when Locale is frozen (PS-36). Use one of: ${CANONICAL_LOCALES.join(", ")}.`,
+				`be rejected when Locale is frozen (PS-36). Use one of: ${LOCALES.join(", ")}.`,
 		);
 		return primary;
 	}
 	console.warn(
 		`[policystack] locale "${input}" is not a supported PolicyStack locale; ` +
 			`falling back to "en". Free-string locales are deprecated and will be ` +
-			`rejected when Locale is frozen (PS-36). Use one of: ${CANONICAL_LOCALES.join(", ")}.`,
+			`rejected when Locale is frozen (PS-36). Use one of: ${LOCALES.join(", ")}.`,
 	);
 	return "en";
 }

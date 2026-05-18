@@ -6,7 +6,7 @@ import { cookieAdapter } from "./cookie";
 const sample: ConsentRecord = {
 	schemaVersion: 1,
 	decisions: { essential: true, analytics: false },
-	jurisdiction: "EEA",
+	jurisdiction: "eea",
 	policyVersion: "v1",
 	decidedAt: "2026-04-29T00:00:00.000Z",
 	locale: "en-GB",

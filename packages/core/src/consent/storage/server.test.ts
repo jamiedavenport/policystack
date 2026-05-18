@@ -5,7 +5,7 @@ import { serverAdapter } from "./server";
 const sample: ConsentRecord = {
 	schemaVersion: 1,
 	decisions: { essential: true, analytics: false },
-	jurisdiction: "US",
+	jurisdiction: "us",
 	policyVersion: "v1",
 	decidedAt: "2026-04-29T00:00:00.000Z",
 	locale: "en-GB",

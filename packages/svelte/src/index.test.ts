@@ -1,4 +1,4 @@
-import type { PolicyStackConfig, PrivacyPolicyConfig, SlotName } from "@policystack/core";
+import type { PolicyStackConfig, SlotName } from "@policystack/core";
 import { render } from "svelte/server";
 import { expect, test } from "vite-plus/test";
 import CookiePolicy from "./lib/CookiePolicy.svelte";
@@ -13,7 +13,7 @@ const company = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const privacyConfig: PrivacyPolicyConfig = {
+const privacyConfig: PolicyStackConfig = {
 	effectiveDate: "2026-01-01",
 	locale: "en",
 	company,
@@ -40,7 +40,6 @@ const privacyConfig: PrivacyPolicyConfig = {
 		},
 	},
 	thirdParties: [],
-	userRights: ["access", "erasure"],
 	jurisdictions: ["ca"],
 };
 

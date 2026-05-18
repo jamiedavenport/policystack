@@ -6,7 +6,7 @@ import {
 	type ConsentRecord,
 	type ConsentState,
 	type ConsentStore,
-	type Jurisdiction,
+	type JurisdictionId,
 	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
@@ -49,7 +49,7 @@ export class ConsentRune {
 		return this.#state.decisions;
 	}
 
-	get jurisdiction(): Jurisdiction | null {
+	get jurisdiction(): JurisdictionId | null {
 		return this.#state.jurisdiction;
 	}
 

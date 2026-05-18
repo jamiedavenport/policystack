@@ -6,7 +6,7 @@ export type {
 	ConsentRecordSource,
 	ConsentState,
 	ConsentStore,
-	Jurisdiction,
+	JurisdictionId,
 	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,

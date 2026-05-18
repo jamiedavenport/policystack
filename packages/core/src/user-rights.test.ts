@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
-import { compile } from "./documents";
-import type { PolicyStackConfig, PolicyInput, UserRight } from "./types";
+import { compilePrivacyPolicy } from "./index";
+import type { PolicyStackConfig, UserRight } from "./types";
 import { deriveUserRights } from "./user-rights";
 import { validate } from "./validate";
 
@@ -55,8 +55,7 @@ test("deriveUserRights: a reserved jurisdiction with no shipped content returns 
 });
 
 test("buildUserRights: privacy policy omits 'Your Rights' section when derivation is empty", () => {
-	const input: PolicyInput = {
-		type: "privacy",
+	const config: PolicyStackConfig = {
 		effectiveDate: "2026-01-01",
 		locale: "en",
 		company: {
@@ -88,11 +87,11 @@ test("buildUserRights: privacy policy omits 'Your Rights' section when derivatio
 			},
 		},
 		thirdParties: [],
-		userRights: [],
 		jurisdictions: ["ca"],
 	};
-	const document = compile(input);
-	const hasRightsSection = document.sections.some((s) => s.id === "user-rights");
+	const document = compilePrivacyPolicy(config);
+	expect(document).not.toBeNull();
+	const hasRightsSection = document?.sections.some((s) => s.id === "user-rights");
 	expect(hasRightsSection).toBe(false);
 });
 

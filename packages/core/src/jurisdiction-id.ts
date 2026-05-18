@@ -81,8 +81,10 @@ export const JURISDICTION_TABLE: JurisdictionTable = {
 
 const JURISDICTION_IDS = Object.keys(JURISDICTION_TABLE) as readonly JurisdictionId[];
 
-export function isJurisdictionId(value: string): value is JurisdictionId {
-	return Object.hasOwn(JURISDICTION_TABLE, value);
+// Accepts `unknown` (symmetric with `isLocale`) so callers validating raw
+// input — e.g. a persisted consent record — can guard in one call.
+export function isJurisdictionId(value: unknown): value is JurisdictionId {
+	return typeof value === "string" && Object.hasOwn(JURISDICTION_TABLE, value);
 }
 
 /**

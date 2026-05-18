@@ -40,9 +40,9 @@ export function seedCompany(
 }
 
 // The single normalization seam. Applied at the boundary of BOTH defineConfig
-// (sdk) and validate()/buildCookieInput (core) so every consumer — the §4.1
-// bridge, buildConsent(), the React parity copy, validate's required-field
-// checks — observes one internally-consistent config regardless of entry path.
+// (sdk) and validate() (core) so every consumer — the §4.1 bridge,
+// buildConsent(), the React parity copy, validate's required-field checks —
+// observes one internally-consistent config regardless of entry path.
 // Idempotent: normalize∘normalize == normalize.
 export function normalizePolicyStackConfig(config: PolicyStackConfig): PolicyStackConfig {
 	return {

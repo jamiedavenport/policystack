@@ -12,7 +12,7 @@ const baseRecord: ConsentRecord = {
 	decisions: { essential: true, analytics: true },
 	policyVersion: "v1",
 	decidedAt: "2026-04-01T00:00:00.000Z",
-	jurisdiction: "EEA",
+	jurisdiction: "eea",
 	locale: "en-GB",
 	source: "banner",
 };
@@ -25,7 +25,7 @@ function input(overrides: Partial<TriggerInput> = {}): TriggerInput {
 		triggers: undefined,
 		policyVersion: "v1",
 		categories: baseCategories,
-		jurisdiction: "EEA",
+		jurisdiction: "eea",
 		now: NOW,
 		...overrides,
 	};
@@ -104,7 +104,7 @@ describe("evaluateTriggers", () => {
 	describe("jurisdictionChanged", () => {
 		it("fires when the visitor crosses a jurisdiction boundary", () => {
 			expect(
-				evaluateTriggers(input({ triggers: { jurisdictionChanged: true }, jurisdiction: "US" })),
+				evaluateTriggers(input({ triggers: { jurisdictionChanged: true }, jurisdiction: "us" })),
 			).toBe("jurisdiction");
 		});
 
@@ -122,7 +122,7 @@ describe("evaluateTriggers", () => {
 			const r = { ...baseRecord, jurisdiction: null };
 			expect(
 				evaluateTriggers(
-					input({ triggers: { jurisdictionChanged: true }, record: r, jurisdiction: "EEA" }),
+					input({ triggers: { jurisdictionChanged: true }, record: r, jurisdiction: "eea" }),
 				),
 			).toBeNull();
 		});
@@ -142,7 +142,7 @@ describe("evaluateTriggers", () => {
 						},
 						policyVersion: "v2",
 						categories: cats,
-						jurisdiction: "US",
+						jurisdiction: "us",
 					}),
 				),
 			).toBe("policyVersion");
@@ -159,7 +159,7 @@ describe("evaluateTriggers", () => {
 							jurisdictionChanged: true,
 						},
 						categories: cats,
-						jurisdiction: "US",
+						jurisdiction: "us",
 					}),
 				),
 			).toBe("categoriesAdded");
@@ -170,7 +170,7 @@ describe("evaluateTriggers", () => {
 				evaluateTriggers(
 					input({
 						triggers: { expiresAfter: 1, jurisdictionChanged: true },
-						jurisdiction: "US",
+						jurisdiction: "us",
 					}),
 				),
 			).toBe("expired");

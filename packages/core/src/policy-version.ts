@@ -1,3 +1,4 @@
+import { shouldEmit } from "./emit";
 import type { PolicyStackConfig } from "./types";
 
 function stableSerialize(value: unknown): string {
@@ -63,26 +64,14 @@ function hashSlice(
 	return fnv1a32(stableSerialize(slice));
 }
 
-function hasAnyPrivacyField(config: PolicyStackConfig): boolean {
-	return config.data !== undefined || config.children !== undefined;
-}
-
-function shouldHashPrivacy(config: PolicyStackConfig): boolean {
-	if (config.policies) return config.policies.includes("privacy");
-	return hasAnyPrivacyField(config);
-}
-
-function shouldHashCookie(config: PolicyStackConfig): boolean {
-	if (config.policies) return config.policies.includes("cookie");
-	return config.cookies !== undefined;
-}
-
+// Hash a document's slice only when that document is actually emitted — the
+// same gate the compiler and validator use (one shared `shouldEmit`).
 export function computePrivacyVersion(config: PolicyStackConfig): string | undefined {
-	if (!shouldHashPrivacy(config)) return undefined;
+	if (!shouldEmit("privacy", config)) return undefined;
 	return hashSlice(config, PRIVACY_HASH_FIELDS);
 }
 
 export function computeCookieVersion(config: PolicyStackConfig): string | undefined {
-	if (!shouldHashCookie(config)) return undefined;
+	if (!shouldEmit("cookie", config)) return undefined;
 	return hashSlice(config, COOKIE_HASH_FIELDS);
 }

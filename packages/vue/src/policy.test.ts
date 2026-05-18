@@ -1,7 +1,8 @@
 import {
-	compile,
+	compilePrivacyPolicy,
+	type Document,
 	type HeadingNode,
-	type PrivacyPolicyConfig,
+	type PolicyStackConfig,
 	type SlotName,
 } from "@policystack/core";
 import { expect, test } from "vite-plus/test";
@@ -15,7 +16,7 @@ const company = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const privacyConfig: PrivacyPolicyConfig = {
+const privacyConfig: PolicyStackConfig = {
 	effectiveDate: "2026-01-01",
 	locale: "en",
 	company,
@@ -42,12 +43,17 @@ const privacyConfig: PrivacyPolicyConfig = {
 		},
 	},
 	thirdParties: [],
-	userRights: ["access", "erasure"],
 	jurisdictions: ["ca"],
 };
 
+function privacyDoc(): Document {
+	const doc = compilePrivacyPolicy(privacyConfig);
+	if (!doc) throw new Error("expected a privacy document");
+	return doc;
+}
+
 test("renderDocument returns Vue VNodes", () => {
-	const doc = compile({ type: "privacy", ...privacyConfig });
+	const doc = privacyDoc();
 	const result = renderDocument(doc);
 	expect(Array.isArray(result)).toBe(true);
 	if (!Array.isArray(result)) throw new Error("Expected array result");
@@ -56,7 +62,7 @@ test("renderDocument returns Vue VNodes", () => {
 });
 
 test("renderDocument works with PolicyStackConfig via compile", () => {
-	const doc = compile({ type: "privacy", ...privacyConfig });
+	const doc = privacyDoc();
 	const result = renderDocument(doc);
 	expect(result).toBeTruthy();
 });
@@ -76,7 +82,7 @@ test("custom components in PolicyComponents override defaults", () => {
 	});
 
 	const components: PolicyComponents = { Heading: CustomHeading };
-	const doc = compile({ type: "privacy", ...privacyConfig });
+	const doc = privacyDoc();
 	const result = renderDocument(doc, components);
 
 	const containsCustomHeading = (value: unknown): boolean => {

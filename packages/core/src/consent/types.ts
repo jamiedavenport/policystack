@@ -1,4 +1,4 @@
-import type { ConsentModel } from "../jurisdiction-id";
+import type { ConsentModel, JurisdictionId } from "../jurisdiction-id";
 import type { LegalBasis } from "../types";
 
 export type Route = "cookie" | "preferences" | "closed";
@@ -18,16 +18,14 @@ export type ConsentSource = "default" | "user" | "gpc";
 
 export type GPCConfig = {
 	enabled?: boolean;
-	applicableJurisdictions?: Jurisdiction[] | "all";
+	applicableJurisdictions?: JurisdictionId[] | "all";
 	signal?: boolean;
 };
-
-export type Jurisdiction = "EEA" | "UK" | "CH" | "US" | `US-${string}` | "BR" | "CA" | "AU" | "ROW";
 
 export type ResolverContext = Request | { headers: Headers };
 
 export type JurisdictionResolver = {
-	resolve(req?: ResolverContext): Promise<Jurisdiction | null> | Jurisdiction | null;
+	resolve(req?: ResolverContext): Promise<JurisdictionId | null> | JurisdictionId | null;
 };
 
 export type ConsentExpr =
@@ -46,7 +44,7 @@ export type ConsentState = {
 	route: Route;
 	categories: Category[];
 	decisions: Record<string, boolean>;
-	jurisdiction: Jurisdiction | null;
+	jurisdiction: JurisdictionId | null;
 	policyVersion: string;
 	decidedAt: string | null;
 	source: ConsentSource;
@@ -81,7 +79,7 @@ export type ConsentRecord = {
 	decisions: Record<string, boolean>;
 	policyVersion: string;
 	decidedAt: string;
-	jurisdiction: Jurisdiction | null;
+	jurisdiction: JurisdictionId | null;
 	locale: string;
 	source: ConsentRecordSource;
 };
@@ -140,7 +138,7 @@ export type ConsentStore = {
 	save(opts?: ActionOptions): void;
 	setRoute(route: Route): void;
 	has(expr: ConsentExpr): boolean;
-	refreshJurisdiction(req?: ResolverContext): Promise<Jurisdiction | null>;
+	refreshJurisdiction(req?: ResolverContext): Promise<JurisdictionId | null>;
 };
 
 export type ScriptDefinition = {

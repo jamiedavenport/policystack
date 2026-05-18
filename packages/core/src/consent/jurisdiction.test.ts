@@ -8,27 +8,29 @@ import {
 } from "./jurisdiction";
 
 describe("countryToJurisdiction", () => {
-	it("maps EEA member states to EEA", () => {
+	it("maps EEA member states to eea", () => {
 		for (const code of ["DE", "FR", "IT", "ES", "SE", "IS", "LI", "NO"]) {
-			expect(countryToJurisdiction(code)).toBe("EEA");
+			expect(countryToJurisdiction(code)).toBe("eea");
 		}
 	});
 
-	it("maps GB to UK and CH to CH", () => {
-		expect(countryToJurisdiction("GB")).toBe("UK");
-		expect(countryToJurisdiction("CH")).toBe("CH");
+	it("maps GB to uk and CH to ch", () => {
+		expect(countryToJurisdiction("GB")).toBe("uk");
+		expect(countryToJurisdiction("CH")).toBe("ch");
 	});
 
-	it("maps named jurisdictions to themselves", () => {
-		expect(countryToJurisdiction("US")).toBe("US");
-		expect(countryToJurisdiction("BR")).toBe("BR");
-		expect(countryToJurisdiction("CA")).toBe("CA");
-		expect(countryToJurisdiction("AU")).toBe("AU");
+	it("maps US/BR/CA country codes to their canonical id; AU has no canonical id → row", () => {
+		expect(countryToJurisdiction("US")).toBe("us");
+		expect(countryToJurisdiction("BR")).toBe("br");
+		expect(countryToJurisdiction("CA")).toBe("ca");
+		// Australia has no canonical `au` member — folds to `row` (the same
+		// conservative opt-in posture the pre-canonical bridge gave "AU").
+		expect(countryToJurisdiction("AU")).toBe("row");
 	});
 
-	it("falls back to ROW for unknown countries", () => {
-		expect(countryToJurisdiction("ZZ")).toBe("ROW");
-		expect(countryToJurisdiction("JP")).toBe("ROW");
+	it("falls back to row for unknown countries", () => {
+		expect(countryToJurisdiction("ZZ")).toBe("row");
+		expect(countryToJurisdiction("JP")).toBe("row");
 	});
 
 	it("returns null for empty / nullish input", () => {
@@ -39,8 +41,8 @@ describe("countryToJurisdiction", () => {
 	});
 
 	it("normalises case and whitespace", () => {
-		expect(countryToJurisdiction("de")).toBe("EEA");
-		expect(countryToJurisdiction(" gb ")).toBe("UK");
+		expect(countryToJurisdiction("de")).toBe("eea");
+		expect(countryToJurisdiction(" gb ")).toBe("uk");
 	});
 });
 
@@ -51,17 +53,17 @@ describe("headerResolver", () => {
 
 	it("reads cf-ipcountry (Cloudflare)", () => {
 		const r = headerResolver();
-		expect(r.resolve(ctx({ "cf-ipcountry": "DE" }))).toBe("EEA");
+		expect(r.resolve(ctx({ "cf-ipcountry": "DE" }))).toBe("eea");
 	});
 
 	it("reads x-vercel-ip-country (Vercel)", () => {
 		const r = headerResolver();
-		expect(r.resolve(ctx({ "x-vercel-ip-country": "GB" }))).toBe("UK");
+		expect(r.resolve(ctx({ "x-vercel-ip-country": "GB" }))).toBe("uk");
 	});
 
 	it("reads x-country fallback (Netlify / custom)", () => {
 		const r = headerResolver();
-		expect(r.resolve(ctx({ "x-country": "BR" }))).toBe("BR");
+		expect(r.resolve(ctx({ "x-country": "BR" }))).toBe("br");
 	});
 
 	it("prefers cf-ipcountry over Vercel and x-country", () => {
@@ -73,7 +75,7 @@ describe("headerResolver", () => {
 				"x-country": "BR",
 			}),
 		);
-		expect(result).toBe("EEA");
+		expect(result).toBe("eea");
 	});
 
 	it("falls through to Vercel when Cloudflare header is absent", () => {
@@ -84,7 +86,7 @@ describe("headerResolver", () => {
 				"x-country": "BR",
 			}),
 		);
-		expect(result).toBe("US");
+		expect(result).toBe("us");
 	});
 
 	it("returns null when no recognised header present", () => {
@@ -103,28 +105,28 @@ describe("headerResolver", () => {
 		const req = new Request("https://example.com", {
 			headers: { "cf-ipcountry": "FR" },
 		});
-		expect(r.resolve(req)).toBe("EEA");
+		expect(r.resolve(req)).toBe("eea");
 	});
 
-	it("maps unknown country to ROW", () => {
+	it("maps unknown country to row", () => {
 		const r = headerResolver();
-		expect(r.resolve(ctx({ "cf-ipcountry": "ZZ" }))).toBe("ROW");
+		expect(r.resolve(ctx({ "cf-ipcountry": "ZZ" }))).toBe("row");
 	});
 });
 
 describe("manualResolver", () => {
 	it("returns the configured jurisdiction", () => {
-		expect(manualResolver("EEA").resolve()).toBe("EEA");
-		expect(manualResolver("US-CA").resolve()).toBe("US-CA");
+		expect(manualResolver("eea").resolve()).toBe("eea");
+		expect(manualResolver("us-ca").resolve()).toBe("us-ca");
 		expect(manualResolver(null).resolve()).toBeNull();
 	});
 
 	it("ignores the request argument", () => {
-		const r = manualResolver("UK");
+		const r = manualResolver("uk");
 		const req = new Request("https://example.com", {
 			headers: { "cf-ipcountry": "US" },
 		});
-		expect(r.resolve(req)).toBe("UK");
+		expect(r.resolve(req)).toBe("uk");
 	});
 });
 
@@ -143,31 +145,31 @@ describe("timezoneResolver", () => {
 		Intl.DateTimeFormat = realDateTimeFormat;
 	});
 
-	it("maps an EEA zone to EEA", () => {
+	it("maps an EEA zone to eea", () => {
 		stubZone("Europe/Berlin");
-		expect(timezoneResolver().resolve()).toBe("EEA");
+		expect(timezoneResolver().resolve()).toBe("eea");
 	});
 
-	it("maps Europe/London to UK", () => {
+	it("maps Europe/London to uk", () => {
 		stubZone("Europe/London");
-		expect(timezoneResolver().resolve()).toBe("UK");
+		expect(timezoneResolver().resolve()).toBe("uk");
 	});
 
-	it("maps Europe/Zurich to CH", () => {
+	it("maps Europe/Zurich to ch", () => {
 		stubZone("Europe/Zurich");
-		expect(timezoneResolver().resolve()).toBe("CH");
+		expect(timezoneResolver().resolve()).toBe("ch");
 	});
 
-	it("maps US zones to US (state-level not derivable from IANA zone)", () => {
+	it("maps US zones to us (state-level not derivable from IANA zone)", () => {
 		stubZone("America/Los_Angeles");
-		expect(timezoneResolver().resolve()).toBe("US");
+		expect(timezoneResolver().resolve()).toBe("us");
 		stubZone("America/New_York");
-		expect(timezoneResolver().resolve()).toBe("US");
+		expect(timezoneResolver().resolve()).toBe("us");
 	});
 
-	it("maps a non-special-cased country zone to ROW", () => {
+	it("maps a non-special-cased country zone to row", () => {
 		stubZone("Asia/Tokyo");
-		expect(timezoneResolver().resolve()).toBe("ROW");
+		expect(timezoneResolver().resolve()).toBe("row");
 	});
 
 	it("returns null for an unknown zone", () => {
@@ -192,7 +194,7 @@ describe("timezoneResolver", () => {
 		const req = new Request("https://example.com", {
 			headers: { "cf-ipcountry": "US" },
 		});
-		expect(timezoneResolver().resolve(req)).toBe("EEA");
+		expect(timezoneResolver().resolve(req)).toBe("eea");
 	});
 });
 
@@ -207,20 +209,26 @@ describe("clientGeoResolver", () => {
 	it("normalises country to jurisdiction", async () => {
 		const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ country: "DE" }));
 		const r = clientGeoResolver({ endpoint: "/geo", fetch: fetchImpl });
-		expect(await r.resolve()).toBe("EEA");
+		expect(await r.resolve()).toBe("eea");
 		expect(fetchImpl).toHaveBeenCalledWith("/geo");
 	});
 
-	it("combines US country with region into US-XX", async () => {
+	it("combines US country + a canonical state region into a us-XX id", async () => {
 		const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ country: "US", region: "CA" }));
 		const r = clientGeoResolver({ endpoint: "/geo", fetch: fetchImpl });
-		expect(await r.resolve()).toBe("US-CA");
+		expect(await r.resolve()).toBe("us-ca");
+	});
+
+	it("folds a US region with no canonical state id down to `us`", async () => {
+		const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ country: "US", region: "TX" }));
+		const r = clientGeoResolver({ endpoint: "/geo", fetch: fetchImpl });
+		expect(await r.resolve()).toBe("us");
 	});
 
 	it("ignores region for non-US countries", async () => {
 		const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ country: "DE", region: "BY" }));
 		const r = clientGeoResolver({ endpoint: "/geo", fetch: fetchImpl });
-		expect(await r.resolve()).toBe("EEA");
+		expect(await r.resolve()).toBe("eea");
 	});
 
 	it("returns null on non-OK response", async () => {

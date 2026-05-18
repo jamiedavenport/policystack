@@ -1,9 +1,6 @@
 import {
-	compile,
 	compileCookiePolicy,
-	type CookiePolicyConfig,
 	type Dictionary,
-	isPolicyStackConfig,
 	type Locale,
 	type PolicyStackConfig,
 } from "@policystack/core";
@@ -14,7 +11,7 @@ import type { PolicyComponents } from "../types";
 import { DefaultRoot } from "./defaults";
 
 type CookiePolicyProps = {
-	config?: PolicyStackConfig | CookiePolicyConfig;
+	config?: PolicyStackConfig;
 	locale?: Locale;
 	dictionary?: Dictionary;
 	components?: PolicyComponents;
@@ -32,9 +29,7 @@ export function CookiePolicy({
 	const baseConfig = configProp ?? contextConfig ?? undefined;
 	if (!baseConfig) return null;
 	const config = locale ? { ...baseConfig, locale } : baseConfig;
-	const doc = isPolicyStackConfig(config)
-		? compileCookiePolicy(config, dictionary)
-		: compile({ type: "cookie", ...config }, dictionary);
+	const doc = compileCookiePolicy(config, dictionary);
 	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
 	return (

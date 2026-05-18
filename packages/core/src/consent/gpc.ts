@@ -1,10 +1,11 @@
-import type { ConsentState, GPCConfig, Jurisdiction, PolicyStackConsentConfig } from "./types";
+import type { JurisdictionId } from "../jurisdiction-id";
+import type { ConsentState, GPCConfig, PolicyStackConsentConfig } from "./types";
 
-export const GPC_LEGALLY_REQUIRED_JURISDICTIONS: Jurisdiction[] = [
-	"US-CA",
-	"US-CO",
-	"US-CT",
-	"US-VA",
+export const GPC_LEGALLY_REQUIRED_JURISDICTIONS: JurisdictionId[] = [
+	"us-ca",
+	"us-co",
+	"us-ct",
+	"us-va",
 ];
 
 export function readGPCSignal(config: GPCConfig | undefined): boolean {
@@ -15,7 +16,7 @@ export function readGPCSignal(config: GPCConfig | undefined): boolean {
 }
 
 export function gpcApplies(
-	jurisdiction: Jurisdiction | null,
+	jurisdiction: JurisdictionId | null,
 	config: GPCConfig | undefined,
 ): boolean {
 	if (config?.enabled === false) return false;

@@ -1,18 +1,14 @@
 import {
-	compile,
 	compileCookiePolicy,
 	compilePrivacyPolicy,
-	type CookiePolicyConfig,
 	type Document,
-	isPolicyStackConfig,
 	type PolicyStackConfig,
 	type PolicyType,
-	type PrivacyPolicyConfig,
 } from "@policystack/core";
 import { computed, type ComputedRef, inject, type MaybeRefOrGetter, toValue } from "vue";
 import { PolicyStackContextKey } from "../context";
 
-type ConfigInput = PolicyStackConfig | PrivacyPolicyConfig | CookiePolicyConfig | undefined;
+type ConfigInput = PolicyStackConfig | undefined;
 
 export function usePolicyDocument(
 	type: PolicyType,
@@ -23,11 +19,6 @@ export function usePolicyDocument(
 	return computed(() => {
 		const config = toValue(configProp) ?? context?.config.value;
 		if (!config) return null;
-
-		if (isPolicyStackConfig(config)) {
-			return type === "privacy" ? compilePrivacyPolicy(config) : compileCookiePolicy(config);
-		}
-
-		return compile({ type, ...config } as Parameters<typeof compile>[0]);
+		return type === "privacy" ? compilePrivacyPolicy(config) : compileCookiePolicy(config);
 	});
 }

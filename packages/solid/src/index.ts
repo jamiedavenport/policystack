@@ -16,7 +16,7 @@ import {
 	type ConsentRecordSource,
 	type ConsentState,
 	type ConsentStore,
-	type Jurisdiction,
+	type JurisdictionId,
 	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
@@ -60,7 +60,7 @@ export type UseConsentResult = {
 	route: Accessor<Route>;
 	categories: Accessor<Category[]>;
 	decisions: Accessor<Record<string, boolean>>;
-	jurisdiction: Accessor<Jurisdiction | null>;
+	jurisdiction: Accessor<JurisdictionId | null>;
 	policyVersion: Accessor<string>;
 	decidedAt: Accessor<string | null>;
 	repromptReason: Accessor<RepromptReason | null>;
@@ -156,7 +156,7 @@ export type {
 	ConsentRecordSource,
 	ConsentState,
 	ConsentStore,
-	Jurisdiction,
+	JurisdictionId,
 	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,

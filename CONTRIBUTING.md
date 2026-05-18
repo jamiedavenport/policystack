@@ -60,18 +60,19 @@ pnpm --filter @policystack/cli exec tsx src/cli.ts --help
 ### Core compilation pipeline
 
 ```
-PolicyInput → compilePolicy() → section builders → PolicySection[] → renderer → string
+PolicyStackConfig → compilePrivacyPolicy()/compileCookiePolicy() → section builders → DocumentSection[] → renderer → string
 ```
 
-- **Section builders** are functions `(config) => PolicySection | null`. Returning `null` omits the section.
-- **`PolicyInput`** is a discriminated union: `{ type: "privacy" } & PrivacyPolicyConfig | { type: "cookie" } & CookiePolicyConfig`.
-- **Renderers** in `packages/core/src/renderers/` produce Markdown or HTML output.
+- **`PolicyStackConfig`** is the single, flat public config. There is no intermediate per-document projection — the section builders read it directly and derive values (`userRights`, `consentMechanism`, the per-document `version`) at their point of use.
+- **Section builders** are functions `(config: PolicyStackConfig, t) => DocumentSection | null`. Returning `null` omits the section.
+- **`compilePrivacyPolicy` / `compileCookiePolicy`** gate emission via `shouldEmit()` and return `Document | null`.
+- **Renderers** (`@policystack/renderers`) turn the `Document` tree into Markdown, HTML, or PDF.
 
 ### Adding a new section
 
 1. Add a builder function in `packages/core/src/documents/privacy.ts` or `documents/cookie.ts`.
-2. Register it in the relevant `compile*Document()` function.
-3. Add fields to `PrivacyPolicyConfig` or `CookiePolicyConfig` in `types.ts`.
+2. Register it in the relevant `compile*Document()` `SECTION_BUILDERS` array.
+3. Add any new fields to `PolicyStackConfig` in `types.ts`.
 4. Write tests in `packages/core/src/*.test.ts`.
 
 ## Testing

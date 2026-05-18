@@ -1,5 +1,5 @@
 import { isLocale, LOCALES } from "./i18n";
-import { shouldEmit } from "./index";
+import { shouldEmit } from "./emit";
 import { JURISDICTION_IDS, JURISDICTION_TABLE, resolveJurisdiction } from "./jurisdiction-id";
 import { deriveConsentMechanism } from "./normalize";
 import type { Issue, PolicyStackConfig } from "./types";
@@ -16,8 +16,9 @@ import { isConsentGated } from "./types";
  * deterministic, and in the real pipeline validate() runs on the
  * already-seeded defineConfig output. Privacy and cookie checks are gated by
  * {@link shouldEmit} so a policy is only validated when it will actually be
- * emitted; nothing here depends on the expanded `PolicyInput` shape, so there
- * is no `EMPTY_*`-default false-positive class and no need to dedupe.
+ * emitted; this runs directly on the flat config (there is no intermediate
+ * per-document projection), so there is no default-fill false-positive class
+ * and no need to dedupe.
  */
 export function validate(rawConfig: PolicyStackConfig): Issue[] {
 	const config: PolicyStackConfig = {

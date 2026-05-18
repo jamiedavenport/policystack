@@ -2,13 +2,28 @@ import type { JurisdictionId } from "../jurisdiction-id";
 import type { LegalBasis } from "../types";
 
 /**
- * A stable validator/compliance issue code.
- *
- * Placeholder: narrowed to the validator `IssueCode` union by the §2.1
- * validator-consolidation ticket. Narrowing a `string` alias to a union is a
- * non-breaking change for *producers* of the AST (see ADR 0001).
+ * The closed set of provenance codes a section builder stamps onto a node's
+ * {@link ComplianceReason} — *why* that node was emitted. This is a distinct
+ * axis from the validator's diagnostic `IssueCode` (issue-codes.ts): a
+ * provenance code traces emitted document structure, a diagnostic code flags a
+ * config problem. Module-local frozen list: it exists only to derive the
+ * `ProvenanceCode` union so a builder typo is a compile error — nothing
+ * enumerates it at runtime (unlike `ISSUE_CODES`), so it stays internal.
  */
-export type IssueCode = string;
+const PROVENANCE_CODES = [
+	"automated-decision-making",
+	"ccpa-supplement",
+	"children-privacy",
+	"consent-withdrawal",
+	"cookie-jurisdiction-eu-uk",
+	"data-collected",
+	"gdpr-supplement",
+	"provision-requirement",
+	"uk-gdpr-supplement",
+] as const;
+
+/** A stable, machine-keyable reason a node exists. Derived from {@link PROVENANCE_CODES}. */
+export type ProvenanceCode = (typeof PROVENANCE_CODES)[number];
 
 /**
  * A typed, machine-readable trace of *why* a node exists — the compliance
@@ -17,7 +32,7 @@ export type IssueCode = string;
  * `citation` carries the verbatim legal article text for render/audit display.
  */
 export type ComplianceReason = {
-	code: IssueCode;
+	code: ProvenanceCode;
 	jurisdiction?: JurisdictionId | readonly JurisdictionId[];
 	lawfulBasis?: LegalBasis;
 	citation?: string; // verbatim legal article text — display only

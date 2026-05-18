@@ -4,7 +4,7 @@ import type { Category, ConsentState, PolicyStackConsentConfig } from "./types";
 
 describe("GPC_LEGALLY_REQUIRED_JURISDICTIONS", () => {
 	it("contains exactly the four legally-required US states", () => {
-		expect(GPC_LEGALLY_REQUIRED_JURISDICTIONS).toEqual(["US-CA", "US-CO", "US-CT", "US-VA"]);
+		expect(GPC_LEGALLY_REQUIRED_JURISDICTIONS).toEqual(["us-ca", "us-co", "us-ct", "us-va"]);
 	});
 });
 
@@ -50,30 +50,30 @@ describe("readGPCSignal", () => {
 
 describe("gpcApplies", () => {
 	it("defaults to applying in all jurisdictions", () => {
-		expect(gpcApplies("EEA", undefined)).toBe(true);
-		expect(gpcApplies("US", undefined)).toBe(true);
-		expect(gpcApplies("ROW", undefined)).toBe(true);
+		expect(gpcApplies("eea", undefined)).toBe(true);
+		expect(gpcApplies("us", undefined)).toBe(true);
+		expect(gpcApplies("row", undefined)).toBe(true);
 		expect(gpcApplies(null, undefined)).toBe(true);
 	});
 
 	it("does not apply when explicitly disabled", () => {
-		expect(gpcApplies("US-CA", { enabled: false })).toBe(false);
+		expect(gpcApplies("us-ca", { enabled: false })).toBe(false);
 	});
 
 	it("matches an explicit jurisdiction list", () => {
 		const config = { applicableJurisdictions: GPC_LEGALLY_REQUIRED_JURISDICTIONS };
-		expect(gpcApplies("US-CA", config)).toBe(true);
-		expect(gpcApplies("US-VA", config)).toBe(true);
-		expect(gpcApplies("EEA", config)).toBe(false);
-		expect(gpcApplies("US", config)).toBe(false);
+		expect(gpcApplies("us-ca", config)).toBe(true);
+		expect(gpcApplies("us-va", config)).toBe(true);
+		expect(gpcApplies("eea", config)).toBe(false);
+		expect(gpcApplies("us", config)).toBe(false);
 	});
 
 	it("returns false for null jurisdiction when scope is an explicit list", () => {
-		expect(gpcApplies(null, { applicableJurisdictions: ["US-CA"] })).toBe(false);
+		expect(gpcApplies(null, { applicableJurisdictions: ["us-ca"] })).toBe(false);
 	});
 
 	it('treats explicit "all" the same as default', () => {
-		expect(gpcApplies("EEA", { applicableJurisdictions: "all" })).toBe(true);
+		expect(gpcApplies("eea", { applicableJurisdictions: "all" })).toBe(true);
 		expect(gpcApplies(null, { applicableJurisdictions: "all" })).toBe(true);
 	});
 });
@@ -90,7 +90,7 @@ describe("applyGPC", () => {
 			route: "cookie",
 			categories: baseCategories,
 			decisions: { essential: true, analytics: true, marketing: true },
-			jurisdiction: "US-CA",
+			jurisdiction: "us-ca",
 			policyVersion: "",
 			decidedAt: null,
 			source: "default",
@@ -158,7 +158,7 @@ describe("applyGPC", () => {
 	});
 
 	it("is a no-op when jurisdiction is not in the explicit applicable list", () => {
-		const state = makeState({ jurisdiction: "EEA" });
+		const state = makeState({ jurisdiction: "eea" });
 		const next = applyGPC(
 			state,
 			makeConfig({
@@ -169,7 +169,7 @@ describe("applyGPC", () => {
 	});
 
 	it("applies in EEA under the privacy-positive default scope", () => {
-		const state = makeState({ jurisdiction: "EEA" });
+		const state = makeState({ jurisdiction: "eea" });
 		const next = applyGPC(state, makeConfig());
 		expect(next.source).toBe("gpc");
 		expect(next.decisions.marketing).toBe(false);

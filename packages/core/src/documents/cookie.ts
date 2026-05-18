@@ -1,20 +1,21 @@
 import type { T } from "../i18n";
 import { formatDate } from "../i18n";
-import type { CookiePolicyConfig } from "../types";
+import { deriveConsentMechanism } from "../normalize";
+import { ESSENTIAL_ONLY_COOKIES, type PolicyStackConfig } from "../types";
 import { bold, cell, heading, li, link, p, row, section, table, ul } from "./helpers";
 import type { ComplianceReason, DocumentSection, TableRowNode } from "./types";
 
-function versionSuffix(config: CookiePolicyConfig, t: T): string {
-	return config.version ? t.shared.versionSuffix({ version: config.version }) : "";
+function versionSuffix(config: PolicyStackConfig, t: T): string {
+	return config.cookieVersion ? t.shared.versionSuffix({ version: config.cookieVersion }) : "";
 }
 
-function buildIntroduction(config: CookiePolicyConfig, t: T): DocumentSection {
+function buildIntroduction(config: PolicyStackConfig, t: T): DocumentSection {
 	return section("cookie-introduction", [
 		heading(t.cookie.introduction.heading()),
 		p([
 			t.cookie.introduction.body({
 				companyName: config.company.name,
-				effectiveDate: formatDate(config.effectiveDate, config.locale),
+				effectiveDate: formatDate(config.effectiveDate, config.locale ?? "en"),
 				versionSuffix: versionSuffix(config, t),
 			}),
 		]),
@@ -39,9 +40,10 @@ function cookieTypeMeta(key: string, t: T): { label: string; description: string
 	return t.cookie.types.fallback({ key });
 }
 
-function buildTypes(config: CookiePolicyConfig, t: T): DocumentSection {
+function buildTypes(config: PolicyStackConfig, t: T): DocumentSection {
+	const cookies = config.cookies ?? ESSENTIAL_ONLY_COOKIES;
 	const types: { label: string; description: string }[] = [];
-	for (const [key, enabled] of Object.entries(config.cookies.used)) {
+	for (const [key, enabled] of Object.entries(cookies.used)) {
 		if (!enabled) continue;
 		types.push(cookieTypeMeta(key, t));
 	}
@@ -62,7 +64,7 @@ function buildTypes(config: CookiePolicyConfig, t: T): DocumentSection {
 	]);
 }
 
-function buildTrackingTechnologies(config: CookiePolicyConfig, t: T): DocumentSection | null {
+function buildTrackingTechnologies(config: PolicyStackConfig, t: T): DocumentSection | null {
 	if (!config.trackingTechnologies || config.trackingTechnologies.length === 0) return null;
 	return section("cookie-tracking-technologies", [
 		heading(t.cookie.trackingTechnologies.heading()),
@@ -71,7 +73,7 @@ function buildTrackingTechnologies(config: CookiePolicyConfig, t: T): DocumentSe
 	]);
 }
 
-function buildThirdParties(config: CookiePolicyConfig, t: T): DocumentSection | null {
+function buildThirdParties(config: PolicyStackConfig, t: T): DocumentSection | null {
 	if (!config.thirdParties || config.thirdParties.length === 0) return null;
 	const rows: TableRowNode[] = config.thirdParties.map((tp) =>
 		row([
@@ -87,9 +89,10 @@ function buildThirdParties(config: CookiePolicyConfig, t: T): DocumentSection | 
 	]);
 }
 
-function buildConsent(config: CookiePolicyConfig, t: T): DocumentSection | null {
-	if (!config.consentMechanism) return null;
-	const { hasBanner, hasPreferencePanel, canWithdraw } = config.consentMechanism;
+function buildConsent(config: PolicyStackConfig, t: T): DocumentSection | null {
+	const mechanism = deriveConsentMechanism(config);
+	if (!mechanism) return null;
+	const { hasBanner, hasPreferencePanel, canWithdraw } = mechanism;
 	const items: string[] = [];
 	if (hasBanner) items.push(t.cookie.consent.banner());
 	if (hasPreferencePanel) items.push(t.cookie.consent.panel());
@@ -114,7 +117,7 @@ function buildManaging(t: T): DocumentSection {
 	]);
 }
 
-function buildJurisdictionEuUk(config: CookiePolicyConfig, t: T): DocumentSection | null {
+function buildJurisdictionEuUk(config: PolicyStackConfig, t: T): DocumentSection | null {
 	const hasEu = config.jurisdictions.includes("eea");
 	const hasUk = config.jurisdictions.includes("uk");
 	if (!hasEu && !hasUk) return null;
@@ -137,7 +140,7 @@ function buildJurisdictionEuUk(config: CookiePolicyConfig, t: T): DocumentSectio
 	]);
 }
 
-function buildContact(config: CookiePolicyConfig, t: T): DocumentSection {
+function buildContact(config: PolicyStackConfig, t: T): DocumentSection {
 	const items = [
 		li([bold(`${t.shared.contactLabels.legalName()} `), config.company.legalName]),
 		li([bold(`${t.shared.contactLabels.address()} `), config.company.address]),
@@ -156,7 +159,7 @@ function buildContact(config: CookiePolicyConfig, t: T): DocumentSection {
 	]);
 }
 
-const SECTION_BUILDERS: ((config: CookiePolicyConfig, t: T) => DocumentSection | null)[] = [
+const SECTION_BUILDERS: ((config: PolicyStackConfig, t: T) => DocumentSection | null)[] = [
 	buildIntroduction,
 	(_, t) => buildWhatAreCookies(t),
 	buildTypes,
@@ -168,7 +171,7 @@ const SECTION_BUILDERS: ((config: CookiePolicyConfig, t: T) => DocumentSection |
 	buildContact,
 ];
 
-export function compileCookieDocument(config: CookiePolicyConfig, t: T): DocumentSection[] {
+export function compileCookieDocument(config: PolicyStackConfig, t: T): DocumentSection[] {
 	return SECTION_BUILDERS.map((builder) => builder(config, t)).filter(
 		(s): s is DocumentSection => s !== null,
 	);

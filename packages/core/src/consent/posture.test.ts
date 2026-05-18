@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
-import { consentModelFor, JURISDICTION_IDS } from "../jurisdiction-id";
-import { jurisdictionPosture, postureDecisions, toJurisdictionId } from "./posture";
-import type { Category, Jurisdiction } from "./types";
+import { consentModelFor, type JurisdictionId, JURISDICTION_IDS } from "../jurisdiction-id";
+import { jurisdictionPosture, postureDecisions } from "./posture";
+import type { Category } from "./types";
 
 describe("consentModelFor — all 11 canonical jurisdictions", () => {
 	const OPT_OUT = ["us", "us-ca", "us-co", "us-ct", "us-va"];
@@ -17,40 +17,15 @@ describe("consentModelFor — all 11 canonical jurisdictions", () => {
 	});
 });
 
-describe("toJurisdictionId — runtime Jurisdiction → canonical id", () => {
-	it("maps the recognised uppercase runtime codes", () => {
-		expect(toJurisdictionId("EEA")).toBe("eea");
-		expect(toJurisdictionId("UK")).toBe("uk");
-		expect(toJurisdictionId("CH")).toBe("ch");
-		expect(toJurisdictionId("BR")).toBe("br");
-		expect(toJurisdictionId("CA")).toBe("ca");
-		expect(toJurisdictionId("US")).toBe("us");
-		expect(toJurisdictionId("US-CA")).toBe("us-ca");
-		expect(toJurisdictionId("ROW")).toBe("row");
-	});
-
-	it("folds the unlisted US-state tail to `us`", () => {
-		expect(toJurisdictionId("US-FL")).toBe("us");
-		expect(toJurisdictionId("US-TX")).toBe("us");
-	});
-
-	it("falls back to `row` for null, AU, and anything unrecognised", () => {
-		expect(toJurisdictionId(null)).toBe("row");
-		// "AU" exists in the runtime union but has no canonical `au` member.
-		expect(toJurisdictionId("AU")).toBe("row");
-		expect(toJurisdictionId("XX" as Jurisdiction)).toBe("row");
-	});
-});
-
 describe("jurisdictionPosture — resolved visitor → posture", () => {
-	it("opt-in for EEA/UK/CH/BR/CA/AU/null/ROW (conservative)", () => {
-		for (const j of ["EEA", "UK", "CH", "BR", "CA", "AU", "ROW", null] as (Jurisdiction | null)[]) {
+	it("opt-in for eea/uk/ch/br/ca/row and a null resolve (conservative)", () => {
+		for (const j of ["eea", "uk", "ch", "br", "ca", "row", null] as (JurisdictionId | null)[]) {
 			expect(jurisdictionPosture(j)).toBe("opt-in");
 		}
 	});
 
-	it("opt-out for US and US states (listed + unlisted tail)", () => {
-		for (const j of ["US", "US-CA", "US-CO", "US-CT", "US-VA", "US-FL"] as Jurisdiction[]) {
+	it("opt-out for us and the canonical US states", () => {
+		for (const j of ["us", "us-ca", "us-co", "us-ct", "us-va"] as JurisdictionId[]) {
 			expect(jurisdictionPosture(j)).toBe("opt-out");
 		}
 	});

@@ -1,5 +1,6 @@
+import { type JurisdictionId, resolveJurisdiction } from "../jurisdiction-id";
 import { TZ_COUNTRY } from "./tz-country";
-import type { Jurisdiction, JurisdictionResolver, ResolverContext } from "./types";
+import type { JurisdictionResolver, ResolverContext } from "./types";
 
 const EEA_COUNTRIES = new Set([
 	"AT",
@@ -34,18 +35,21 @@ const EEA_COUNTRIES = new Set([
 	"NO",
 ]);
 
-export function countryToJurisdiction(code: string | null | undefined): Jurisdiction | null {
+// Country (ISO-3166 alpha-2) → canonical JurisdictionId. Country granularity
+// only, so this never yields a US sub-state id (see clientGeoResolver for that).
+// Australia has no canonical id — it folds to `row` (conservative opt-in), the
+// same posture the pre-canonical bridge already gave "AU".
+export function countryToJurisdiction(code: string | null | undefined): JurisdictionId | null {
 	if (!code) return null;
 	const c = code.trim().toUpperCase();
 	if (c.length === 0) return null;
-	if (EEA_COUNTRIES.has(c)) return "EEA";
-	if (c === "GB") return "UK";
-	if (c === "CH") return "CH";
-	if (c === "US") return "US";
-	if (c === "BR") return "BR";
-	if (c === "CA") return "CA";
-	if (c === "AU") return "AU";
-	return "ROW";
+	if (EEA_COUNTRIES.has(c)) return "eea";
+	if (c === "GB") return "uk";
+	if (c === "CH") return "ch";
+	if (c === "US") return "us";
+	if (c === "BR") return "br";
+	if (c === "CA") return "ca";
+	return "row";
 }
 
 const HEADER_NAMES = ["cf-ipcountry", "x-vercel-ip-country", "x-country"] as const;
@@ -88,7 +92,7 @@ export function timezoneResolver(): JurisdictionResolver {
 	};
 }
 
-export function manualResolver(jurisdiction: Jurisdiction | null): JurisdictionResolver {
+export function manualResolver(jurisdiction: JurisdictionId | null): JurisdictionResolver {
 	return {
 		resolve() {
 			return jurisdiction;
@@ -110,8 +114,9 @@ export function clientGeoResolver(opts: {
 				if (!res.ok) return null;
 				const body = (await res.json()) as GeoResponse;
 				const base = countryToJurisdiction(body.country);
-				if (base === "US" && body.region) {
-					return `US-${body.region.trim().toUpperCase()}` as Jurisdiction;
+				if (base === "us" && body.region) {
+					// us-ca/co/ct/va stay; any other US state folds to `us`.
+					return resolveJurisdiction(`us-${body.region.trim().toLowerCase()}`) ?? "us";
 				}
 				return base;
 			} catch {

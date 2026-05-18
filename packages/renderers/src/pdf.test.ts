@@ -1,9 +1,8 @@
 import { expect, test } from "vite-plus/test";
-import { compile, type PolicyInput } from "@policystack/core";
+import { compilePrivacyPolicy, type Document, type PolicyStackConfig } from "@policystack/core";
 import { renderPDF } from "./pdf";
 
-const input: PolicyInput = {
-	type: "privacy",
+const config: PolicyStackConfig = {
 	effectiveDate: "2026-01-01",
 	locale: "en",
 	company: {
@@ -17,10 +16,10 @@ const input: PolicyInput = {
 		context: {
 			"Account Information": {
 				purpose: "To authenticate users",
-				lawfulBasis: "contract" as const,
+				lawfulBasis: "contract",
 				retention: "Until deletion",
 				provision: {
-					basis: "contract-prerequisite" as const,
+					basis: "contract-prerequisite",
 					consequences: "We cannot create or operate your account.",
 				},
 			},
@@ -29,25 +28,28 @@ const input: PolicyInput = {
 	cookies: {
 		used: { essential: true, analytics: false, marketing: false },
 		context: {
-			essential: { lawfulBasis: "legal_obligation" as const },
-			analytics: { lawfulBasis: "consent" as const },
-			marketing: { lawfulBasis: "consent" as const },
+			essential: { lawfulBasis: "legal_obligation" },
+			analytics: { lawfulBasis: "consent" },
+			marketing: { lawfulBasis: "consent" },
 		},
 	},
 	thirdParties: [],
-	userRights: ["access" as const],
-	jurisdictions: ["ca" as const],
+	jurisdictions: ["ca"],
 };
 
+function privacyDoc(): Document {
+	const doc = compilePrivacyPolicy(config);
+	if (!doc) throw new Error("expected a privacy document");
+	return doc;
+}
+
 test("renderPDF returns a Buffer", async () => {
-	const doc = compile(input);
-	const result = await renderPDF(doc);
+	const result = await renderPDF(privacyDoc());
 	expect(result).toBeInstanceOf(Buffer);
 	expect(result.length).toBeGreaterThan(100);
 });
 
 test("renderPDF output begins with PDF magic bytes", async () => {
-	const doc = compile(input);
-	const result = await renderPDF(doc);
+	const result = await renderPDF(privacyDoc());
 	expect(result.slice(0, 5).toString("ascii")).toBe("%PDF-");
 });

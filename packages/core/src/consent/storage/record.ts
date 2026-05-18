@@ -1,5 +1,6 @@
+import { isJurisdictionId } from "../../jurisdiction-id";
 import type { Locale } from "../../types";
-import type { ConsentRecord, ConsentRecordSource, ConsentState, Jurisdiction } from "../types";
+import type { ConsentRecord, ConsentRecordSource, ConsentState } from "../types";
 
 const RECORD_SOURCES: ReadonlySet<ConsentRecordSource> = new Set([
 	"banner",
@@ -60,7 +61,12 @@ export function fromUnknown(raw: unknown, fallbackLocale: string): ConsentRecord
 
 	const decisions = isDecisions(obj.decisions) ? obj.decisions : {};
 	const policyVersion = typeof obj.policyVersion === "string" ? obj.policyVersion : "";
-	const jurisdiction = isJurisdiction(obj.jurisdiction) ? obj.jurisdiction : null;
+	// Validate against the canonical closed union. A legacy record written in
+	// the pre-canonical uppercase form ("EEA", "US-CA") no longer matches, so
+	// its jurisdiction reads back as null — informational only; the
+	// `jurisdictionChanged` reprompt needs both sides non-null, so an upgrading
+	// visitor is not spuriously re-prompted (decisions are preserved).
+	const jurisdiction = isJurisdictionId(obj.jurisdiction) ? obj.jurisdiction : null;
 	const locale =
 		typeof obj.locale === "string" && obj.locale.length > 0 ? obj.locale : fallbackLocale;
 	const source = isRecordSource(obj.source) ? obj.source : mapLegacySource(obj.source);
@@ -82,10 +88,6 @@ function isDecisions(value: unknown): value is Record<string, boolean> {
 		if (typeof v !== "boolean") return false;
 	}
 	return true;
-}
-
-function isJurisdiction(value: unknown): value is Jurisdiction {
-	return typeof value === "string" && value.length > 0;
 }
 
 function isRecordSource(value: unknown): value is ConsentRecordSource {

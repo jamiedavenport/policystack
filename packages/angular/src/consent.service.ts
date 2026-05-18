@@ -6,7 +6,7 @@ import type {
 	ConsentRecord,
 	ConsentState,
 	ConsentStore,
-	Jurisdiction,
+	JurisdictionId,
 	RepromptReason,
 	Route,
 } from "@policystack/core/consent";
@@ -21,7 +21,7 @@ export class ConsentService {
 	readonly route: Signal<Route> = computed(() => this._state().route);
 	readonly categories: Signal<Category[]> = computed(() => this._state().categories);
 	readonly decisions: Signal<Record<string, boolean>> = computed(() => this._state().decisions);
-	readonly jurisdiction: Signal<Jurisdiction | null> = computed(() => this._state().jurisdiction);
+	readonly jurisdiction: Signal<JurisdictionId | null> = computed(() => this._state().jurisdiction);
 	readonly policyVersion: Signal<string> = computed(() => this._state().policyVersion);
 	readonly decidedAt: Signal<string | null> = computed(() => this._state().decidedAt);
 	readonly repromptReason: Signal<RepromptReason | null> = computed(

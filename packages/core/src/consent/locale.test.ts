@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { LOCALES } from "../i18n/locales";
+import { LOCALES } from "../locale";
 import { normalizeLocale, resolveLocale } from "./locale";
 
 afterEach(() => {

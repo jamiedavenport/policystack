@@ -1,31 +1,16 @@
-import {
-	type ConsentModel,
-	consentModelFor,
-	type JurisdictionId,
-	resolveJurisdiction,
-} from "../jurisdiction-id";
-import type { Category, Jurisdiction } from "./types";
+import { type ConsentModel, consentModelFor, type JurisdictionId } from "../jurisdiction-id";
+import type { Category } from "./types";
 
 export type { ConsentModel };
 
 /**
- * Bridge the runtime uppercase `Jurisdiction` onto a canonical `JurisdictionId`.
- * Lowercasing maps `"US-CA"`→`us-ca`, `"EEA"`→`eea`, `"ROW"`→`row`;
- * `resolveJurisdiction` folds the long US-state tail (`"US-FL"`) → `us`. A
- * `null` resolve, `"AU"` (runtime-only — no canonical `au`), or anything
- * unrecognised falls back to `row` (conservative opt-in, per §4.2).
- */
-export function toJurisdictionId(j: Jurisdiction | null): JurisdictionId {
-	if (j === null) return "row";
-	return resolveJurisdiction(j.toLowerCase()) ?? "row";
-}
-
-/**
  * The §4.2 flagship: the resolved visitor's jurisdiction → its default consent
- * posture, read from the same `JURISDICTION_TABLE` as the policy text.
+ * posture, read from the same `JURISDICTION_TABLE` as the policy text. A `null`
+ * resolve (no resolver configured, or the resolver returned null) defaults to
+ * `row` — conservative opt-in.
  */
-export function jurisdictionPosture(j: Jurisdiction | null): ConsentModel {
-	return consentModelFor(toJurisdictionId(j));
+export function jurisdictionPosture(j: JurisdictionId | null): ConsentModel {
+	return consentModelFor(j ?? "row");
 }
 
 /**

@@ -24,13 +24,14 @@ export type {
 	Visitor,
 	// `IssueCode` is re-exported once from "./types" (PS-11 froze it there
 	// alongside `Issue`); the duplicate "./documents" re-export was a latent
-	// TS2300 inherited from the v1 base and is dropped here.
+	// TS2300 inherited from the v1 base and is dropped here. The AST's
+	// `ProvenanceCode` (a different axis: why-a-node-exists, not diagnostics)
+	// stays internal to ./documents — nothing outside core consumes it.
 } from "./documents";
 export {
 	AST_VERSION,
 	bold,
 	cell,
-	compile,
 	headerCell,
 	headerRow,
 	heading,
@@ -73,7 +74,6 @@ export type {
 	Contact,
 	CookieContext,
 	CookieContextEntry,
-	CookiePolicyConfig,
 	CookiePolicyCookies,
 	CookieUsage,
 	DataCollection,
@@ -90,8 +90,6 @@ export type {
 	PolicyStackConfig,
 	OutputFormat,
 	PolicyCategory,
-	PolicyInput,
-	PrivacyPolicyConfig,
 	ProvisionBasis,
 	ProvisionRequirement,
 	ThirdParty,
@@ -108,102 +106,44 @@ export { ISSUE_CATALOG } from "./issue-catalog";
 export type { IssueExplanation } from "./issue-catalog";
 export { createT, isLocale, LOCALES } from "./i18n";
 export type { Dictionary, T } from "./i18n";
+export { shouldEmit } from "./emit";
 
-import { compile } from "./documents";
+import { AST_VERSION, compileCookieDocument, compilePrivacyDocument } from "./documents";
 import type { Document } from "./documents";
+import { shouldEmit } from "./emit";
+import { createT } from "./i18n";
 import type { Dictionary } from "./i18n";
-import type {
-	CookiePolicyCookies,
-	DataConfig,
-	PolicyStackConfig,
-	PolicyCategory,
-	PolicyInput,
-} from "./types";
-import { deriveConsentMechanism } from "./normalize";
-import { deriveUserRights } from "./user-rights";
+import type { PolicyStackConfig } from "./types";
 
-const PRIVACY_FIELDS = ["data", "children"] as const;
-
-function hasAnyPrivacyField(config: PolicyStackConfig): boolean {
-	return PRIVACY_FIELDS.some((field) => config[field] !== undefined);
-}
-
-function hasCookieField(config: PolicyStackConfig): boolean {
-	return config.cookies !== undefined;
-}
-
-export function shouldEmit(category: PolicyCategory, config: PolicyStackConfig): boolean {
-	if (config.policies) return config.policies.includes(category);
-	return category === "privacy" ? hasAnyPrivacyField(config) : hasCookieField(config);
-}
-
-const EMPTY_DATA: DataConfig = {
-	collected: {},
-	context: {},
-};
-const EMPTY_COOKIES: CookiePolicyCookies = { used: { essential: true }, context: {} };
-
-type PrivacyInput = Extract<PolicyInput, { type: "privacy" }>;
-type CookieInput = Extract<PolicyInput, { type: "cookie" }>;
-
-function buildPrivacyInput(config: PolicyStackConfig): PrivacyInput | null {
-	if (!shouldEmit("privacy", config)) return null;
-	return {
-		type: "privacy",
-		company: config.company,
-		effectiveDate: config.effectiveDate,
-		locale: config.locale ?? "en",
-		jurisdictions: config.jurisdictions,
-		data: config.data ?? EMPTY_DATA,
-		cookies: config.cookies ?? EMPTY_COOKIES,
-		thirdParties: config.thirdParties ?? [],
-		userRights: deriveUserRights(config.jurisdictions),
-		children: config.children,
-		automatedDecisionMaking: config.automatedDecisionMaking,
-		version: config.privacyVersion,
-	};
-}
-
-function buildCookieInput(config: PolicyStackConfig): CookieInput | null {
-	if (!shouldEmit("cookie", config)) return null;
-	return {
-		type: "cookie",
-		company: config.company,
-		effectiveDate: config.effectiveDate,
-		locale: config.locale ?? "en",
-		jurisdictions: config.jurisdictions,
-		cookies: config.cookies ?? EMPTY_COOKIES,
-		thirdParties: config.thirdParties ?? [],
-		trackingTechnologies: config.trackingTechnologies,
-		// Always derived — never the author's hand-written value. This is the
-		// single choke point feeding the cookie renderer, so raw compile()
-		// callers that bypass defineConfig/validate still get the truth.
-		consentMechanism: deriveConsentMechanism(config),
-		version: config.cookieVersion,
-	};
-}
-
-export function expandPolicyStackConfig(config: PolicyStackConfig): PolicyInput[] {
-	const inputs: PolicyInput[] = [];
-	const privacy = buildPrivacyInput(config);
-	if (privacy) inputs.push(privacy);
-	const cookie = buildCookieInput(config);
-	if (cookie) inputs.push(cookie);
-	return inputs;
-}
-
+// The two public compile entry points. Each takes the flat, public
+// PolicyStackConfig directly — there is no intermediate per-document
+// projection. shouldEmit() gates emission; the section builders derive
+// userRights / consentMechanism and read privacyVersion / cookieVersion
+// straight off the config (the derivations live at their single point of use).
 export function compilePrivacyPolicy(
 	config: PolicyStackConfig,
 	dictionary?: Dictionary,
 ): Document | null {
-	const input = buildPrivacyInput(config);
-	return input ? compile(input, dictionary) : null;
+	if (!shouldEmit("privacy", config)) return null;
+	const t = createT(config.locale ?? "en", dictionary);
+	return {
+		type: "document",
+		astVersion: AST_VERSION,
+		policyType: "privacy",
+		sections: compilePrivacyDocument(config, t),
+	};
 }
 
 export function compileCookiePolicy(
 	config: PolicyStackConfig,
 	dictionary?: Dictionary,
 ): Document | null {
-	const input = buildCookieInput(config);
-	return input ? compile(input, dictionary) : null;
+	if (!shouldEmit("cookie", config)) return null;
+	const t = createT(config.locale ?? "en", dictionary);
+	return {
+		type: "document",
+		astVersion: AST_VERSION,
+		policyType: "cookie",
+		sections: compileCookieDocument(config, t),
+	};
 }

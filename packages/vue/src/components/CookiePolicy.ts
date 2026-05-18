@@ -1,4 +1,4 @@
-import type { CookiePolicyConfig, PolicyStackConfig } from "@policystack/core";
+import type { PolicyStackConfig } from "@policystack/core";
 import { type CSSProperties, defineComponent, h, type PropType } from "vue";
 import { usePolicyDocument } from "../composables/usePolicyDocument";
 import { DefaultRoot } from "../defaults";
@@ -9,7 +9,7 @@ export const CookiePolicy = defineComponent({
 	name: "CookiePolicy",
 	props: {
 		config: {
-			type: Object as PropType<PolicyStackConfig | CookiePolicyConfig>,
+			type: Object as PropType<PolicyStackConfig>,
 			required: false,
 		},
 		components: {

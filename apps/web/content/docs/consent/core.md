@@ -224,10 +224,10 @@ if (repromptReason !== null) {
 
 `repromptReason` is one of `"policyVersion" | "categoriesAdded" | "expired" | "jurisdiction"`, in priority order — the first trigger to fire wins. Once the visitor makes a new decision (`acceptAll`, `acceptNecessary`, `reject`, or `save`), `repromptReason` clears, `getPreviousRecord()` returns `null`, and a fresh record is written via the adapter.
 
-For analytics, the store emits an `oncookies:reprompt` event on `globalThis` whenever a trigger fires, with `event.detail.reason` containing the trigger name:
+For analytics, the store emits a `policystack:reprompt` event on `globalThis` whenever a trigger fires, with `event.detail.reason` containing the trigger name:
 
 ```ts
-globalThis.addEventListener("oncookies:reprompt", (event) => {
+globalThis.addEventListener("policystack:reprompt", (event) => {
 	analytics.track("consent_reprompt", { reason: event.detail.reason });
 });
 ```

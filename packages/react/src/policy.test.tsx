@@ -1,5 +1,5 @@
-import type { PrivacyPolicyConfig, SlotName } from "@policystack/core";
-import { compile } from "@policystack/core";
+import type { Document, PolicyStackConfig, SlotName } from "@policystack/core";
+import { compilePrivacyPolicy } from "@policystack/core";
 import { isValidElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vite-plus/test";
@@ -13,7 +13,7 @@ const company = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const privacyConfig: PrivacyPolicyConfig = {
+const privacyConfig: PolicyStackConfig = {
 	effectiveDate: "2026-01-01",
 	locale: "en",
 	company,
@@ -40,18 +40,23 @@ const privacyConfig: PrivacyPolicyConfig = {
 		},
 	},
 	thirdParties: [],
-	userRights: ["access", "erasure"],
 	jurisdictions: ["ca"],
 };
 
+function privacyDoc(): Document {
+	const doc = compilePrivacyPolicy(privacyConfig);
+	if (!doc) throw new Error("expected a privacy document");
+	return doc;
+}
+
 test("renderDocument returns a React element", () => {
-	const doc = compile({ type: "privacy", ...privacyConfig });
+	const doc = privacyDoc();
 	const result = renderDocument(doc);
 	expect(isValidElement(result)).toBe(true);
 });
 
 test("renderDocument works with PolicyStackConfig via compile", () => {
-	const doc = compile({ type: "privacy", ...privacyConfig });
+	const doc = privacyDoc();
 	const result = renderDocument(doc);
 	expect(result).toBeTruthy();
 });
@@ -107,7 +112,7 @@ test("PrivacyPolicy with full overrides emits no host DOM tags", () => {
 });
 
 test("renderDocument with full overrides emits no host DOM tags", () => {
-	const doc = compile({ type: "privacy", ...privacyConfig });
+	const doc = privacyDoc();
 	const html = renderToStaticMarkup(<>{renderDocument(doc, rnLikeComponents)}</>);
 	expect(html).not.toMatch(forbiddenTagPattern);
 });

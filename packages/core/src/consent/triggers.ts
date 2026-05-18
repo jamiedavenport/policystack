@@ -1,18 +1,13 @@
+import type { JurisdictionId } from "../jurisdiction-id";
 import { parseDuration } from "./duration";
-import type {
-	Category,
-	ConsentRecord,
-	Jurisdiction,
-	RepromptReason,
-	RepromptTriggers,
-} from "./types";
+import type { Category, ConsentRecord, RepromptReason, RepromptTriggers } from "./types";
 
 export type TriggerInput = {
 	record: ConsentRecord;
 	triggers: RepromptTriggers | undefined;
 	policyVersion: string;
 	categories: Category[];
-	jurisdiction: Jurisdiction | null;
+	jurisdiction: JurisdictionId | null;
 	now: number;
 };
 

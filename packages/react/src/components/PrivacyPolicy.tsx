@@ -1,11 +1,8 @@
 import {
-	compile,
 	compilePrivacyPolicy,
 	type Dictionary,
-	isPolicyStackConfig,
 	type Locale,
 	type PolicyStackConfig,
-	type PrivacyPolicyConfig,
 } from "@policystack/core";
 import { useContext } from "react";
 import { PolicyStackContext } from "../context";
@@ -14,7 +11,7 @@ import type { PolicyComponents } from "../types";
 import { DefaultRoot } from "./defaults";
 
 type PrivacyPolicyProps = {
-	config?: PolicyStackConfig | PrivacyPolicyConfig;
+	config?: PolicyStackConfig;
 	locale?: Locale;
 	dictionary?: Dictionary;
 	components?: PolicyComponents;
@@ -32,9 +29,7 @@ export function PrivacyPolicy({
 	const baseConfig = configProp ?? contextConfig ?? undefined;
 	if (!baseConfig) return null;
 	const config = locale ? { ...baseConfig, locale } : baseConfig;
-	const doc = isPolicyStackConfig(config)
-		? compilePrivacyPolicy(config, dictionary)
-		: compile({ type: "privacy", ...config }, dictionary);
+	const doc = compilePrivacyPolicy(config, dictionary);
 	if (!doc) return null;
 	const Root = components?.Root ?? DefaultRoot;
 	return (

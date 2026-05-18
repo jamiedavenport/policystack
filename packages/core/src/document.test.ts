@@ -1,9 +1,18 @@
 import { expect, test } from "vite-plus/test";
-import type { ParagraphNode, TableNode } from "./documents";
-import { compile } from "./documents";
-import type { PrivacyPolicyConfig } from "./types";
+import type { Document, ParagraphNode, TableNode } from "./documents";
+import { compilePrivacyPolicy } from "./index";
+import type { PolicyStackConfig } from "./types";
 
-const minimalPrivacyConfig: PrivacyPolicyConfig = {
+// compilePrivacyPolicy returns Document | null (null = privacy not emitted).
+// Every fixture below has data.collected populated, so a Document is expected;
+// unwrap once here rather than asserting non-null at 40 call sites.
+function privacy(config: PolicyStackConfig): Document {
+	const doc = compilePrivacyPolicy(config);
+	if (!doc) throw new Error("expected a privacy document");
+	return doc;
+}
+
+const minimalPrivacyConfig: PolicyStackConfig = {
 	effectiveDate: "2026-01-01",
 	locale: "en",
 	company: {
@@ -35,40 +44,52 @@ const minimalPrivacyConfig: PrivacyPolicyConfig = {
 		},
 	},
 	thirdParties: [],
-	userRights: ["access"],
 	jurisdictions: ["ca"],
 };
 
 test("compile returns a Document with correct type", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	expect(doc.policyType).toBe("privacy");
 	expect(Array.isArray(doc.sections)).toBe(true);
 });
 
 test("privacy compile returns non-empty sections", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	expect(doc.sections.length).toBeGreaterThan(0);
 });
 
 test("Reserved-region config has expected section IDs (no EU/UK/CA-only sections)", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	const ids = doc.sections.map((s) => s.id);
 	expect(ids).toContain("introduction");
 	expect(ids).toContain("data-collected");
 	expect(ids).toContain("data-retention");
 	expect(ids).toContain("cookies");
 	expect(ids).toContain("third-parties");
-	expect(ids).toContain("user-rights");
 	expect(ids).toContain("contact");
 	expect(ids).not.toContain("legal-basis");
 	expect(ids).not.toContain("gdpr-supplement");
 	expect(ids).not.toContain("uk-gdpr-supplement");
 	expect(ids).not.toContain("ccpa-supplement");
+	// user-rights is jurisdiction-derived now (deriveUserRights). Canada-only
+	// declares no statutory rights, so the section is correctly absent here.
+	expect(ids).not.toContain("user-rights");
+});
+
+test("user-rights section is derived from jurisdiction (present under EEA, absent for Canada-only)", () => {
+	const caOnly = privacy({ ...minimalPrivacyConfig });
+	expect(caOnly.sections.map((s) => s.id)).not.toContain("user-rights");
+
+	const eea = privacy({ ...minimalPrivacyConfig, jurisdictions: ["eea"] });
+	const ur = eea.sections.find((s) => s.id === "user-rights");
+	expect(ur).toBeDefined();
+	const blob = JSON.stringify(ur);
+	expect(blob).toContain("Your Rights");
+	expect(blob).toContain("Right to access your personal data");
 });
 
 test("EU config includes lawful-basis column in data-collected and gdpr-supplement", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 	});
@@ -81,8 +102,7 @@ test("EU config includes lawful-basis column in data-collected and gdpr-suppleme
 });
 
 test("UK config includes lawful-basis column in data-collected and uk-gdpr-supplement (not gdpr-supplement)", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["uk"],
 	});
@@ -99,8 +119,7 @@ test("UK config includes lawful-basis column in data-collected and uk-gdpr-suppl
 });
 
 test("US-CA config includes ccpa-supplement", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["us-ca"],
 	});
@@ -109,8 +128,7 @@ test("US-CA config includes ccpa-supplement", () => {
 });
 
 test("CA (Canada) alone does not include ccpa-supplement or gdpr-supplement", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["ca"],
 	});
@@ -121,14 +139,13 @@ test("CA (Canada) alone does not include ccpa-supplement or gdpr-supplement", ()
 });
 
 test("children-privacy section absent when children not set", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	const ids = doc.sections.map((s) => s.id);
 	expect(ids).not.toContain("children-privacy");
 });
 
 test("children-privacy section present when children is set", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		children: { underAge: 13 },
 	});
@@ -137,8 +154,7 @@ test("children-privacy section present when children is set", () => {
 });
 
 test("children-privacy has noticeUrl link when provided", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		children: { underAge: 13, noticeUrl: "https://acme.com/children" },
 	});
@@ -153,8 +169,7 @@ test("children-privacy has noticeUrl link when provided", () => {
 
 test("compile throws when data.collected is empty", () => {
 	expect(() =>
-		compile({
-			type: "privacy",
+		privacy({
 			...minimalPrivacyConfig,
 			data: {
 				collected: {},
@@ -165,7 +180,7 @@ test("compile throws when data.collected is empty", () => {
 });
 
 test("data-collected section has a table with at least one row", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	const s = doc.sections.find((x) => x.id === "data-collected")!;
 	const tbl = s.content.find((n) => n.type === "table") as TableNode;
 	expect(tbl.rows.length).toBeGreaterThan(0);
@@ -173,8 +188,7 @@ test("data-collected section has a table with at least one row", () => {
 });
 
 test("data-collected table includes the purpose for each category", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		data: {
 			collected: {
@@ -211,8 +225,7 @@ test("data-collected table includes the purpose for each category", () => {
 });
 
 test("gdpr-supplement mentions DPO when one is configured", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		company: {
@@ -229,8 +242,7 @@ test("gdpr-supplement mentions DPO when one is configured", () => {
 });
 
 test("gdpr-supplement states no DPO when company.dpo.required === false", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		company: {
@@ -246,8 +258,7 @@ test("gdpr-supplement states no DPO when company.dpo.required === false", () => 
 });
 
 test("gdpr-supplement falls back to no-DPO disclosure when unset", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 	});
@@ -258,8 +269,7 @@ test("gdpr-supplement falls back to no-DPO disclosure when unset", () => {
 });
 
 test("uk-gdpr-supplement includes DPO contact when configured", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["uk"],
 		company: {
@@ -274,8 +284,7 @@ test("uk-gdpr-supplement includes DPO contact when configured", () => {
 });
 
 test("contact section lists DPO when configured", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		company: {
 			...minimalPrivacyConfig.company,
@@ -289,7 +298,7 @@ test("contact section lists DPO when configured", () => {
 });
 
 test("introduction section has ParagraphNode children", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	const intro = doc.sections.find((s) => s.id === "introduction")!;
 	expect(intro.content.length).toBeGreaterThan(0);
 	const firstNode = intro.content[0];
@@ -300,20 +309,19 @@ test("introduction section has ParagraphNode children", () => {
 });
 
 test("privacy introduction renders version when set", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig, version: "abc12345" });
+	const doc = privacy({ ...minimalPrivacyConfig, privacyVersion: "abc12345" });
 	const intro = doc.sections.find((s) => s.id === "introduction")!;
 	expect(JSON.stringify(intro)).toContain("Version: abc12345");
 });
 
 test("privacy introduction omits version line when version is unset", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	const intro = doc.sections.find((s) => s.id === "introduction")!;
 	expect(JSON.stringify(intro)).not.toContain("Version:");
 });
 
 test("data-collected table includes lawful-basis labels with Article 6 sub-clause under EU jurisdiction", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		data: {
@@ -352,8 +360,7 @@ test("data-collected table includes lawful-basis labels with Article 6 sub-claus
 });
 
 test("consent-withdrawal section is rendered when any data category uses consent (EU)", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		data: {
@@ -393,8 +400,7 @@ test("consent-withdrawal section is rendered when any data category uses consent
 });
 
 test("consent-withdrawal section is rendered when only cookies use consent (EU)", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		cookies: {
@@ -412,8 +418,7 @@ test("consent-withdrawal section is rendered when only cookies use consent (EU)"
 });
 
 test("consent-withdrawal section is omitted when no data or cookie basis is consent (EU)", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		data: {
@@ -451,8 +456,7 @@ test("consent-withdrawal section is omitted when no data or cookie basis is cons
 });
 
 test("consent-withdrawal section is omitted under non-EU/UK jurisdictions even when consent is used", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["us-ca"],
 		cookies: {
@@ -467,8 +471,7 @@ test("consent-withdrawal section is omitted under non-EU/UK jurisdictions even w
 });
 
 test("data-collected section does not carry the consent-withdrawal paragraph (it's its own section now)", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		data: {
@@ -492,8 +495,7 @@ test("data-collected section does not carry the consent-withdrawal paragraph (it
 });
 
 test("data-collected table omits the lawful-basis column under non-GDPR jurisdictions", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["ca"],
 	});
@@ -504,8 +506,7 @@ test("data-collected table omits the lawful-basis column under non-GDPR jurisdic
 });
 
 test("automated-decision-making section is omitted under non-EU/UK jurisdictions even when set", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["us-ca"],
 		automatedDecisionMaking: [],
@@ -514,8 +515,7 @@ test("automated-decision-making section is omitted under non-EU/UK jurisdictions
 });
 
 test("automated-decision-making section is omitted when field is undefined under EU", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 	});
@@ -523,8 +523,7 @@ test("automated-decision-making section is omitted when field is undefined under
 });
 
 test("automated-decision-making section emits explicit-none paragraph when [] under EU", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		automatedDecisionMaking: [],
@@ -538,8 +537,7 @@ test("automated-decision-making section emits explicit-none paragraph when [] un
 });
 
 test("gdpr-supplement complaint paragraph links to EDPB members directory", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 	});
@@ -551,8 +549,7 @@ test("gdpr-supplement complaint paragraph links to EDPB members directory", () =
 });
 
 test("gdpr-supplement does not mention Article 27 representative when unset", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 	});
@@ -563,8 +560,7 @@ test("gdpr-supplement does not mention Article 27 representative when unset", ()
 });
 
 test("gdpr-supplement renders Article 27 representative paragraph when configured", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		company: {
@@ -585,8 +581,7 @@ test("gdpr-supplement renders Article 27 representative paragraph when configure
 });
 
 test("gdpr-supplement names specific Article 46 transfer safeguards and links the adequacy registry", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 	});
@@ -604,8 +599,7 @@ test("gdpr-supplement names specific Article 46 transfer safeguards and links th
 });
 
 test("uk-gdpr-supplement still names the ICO with its complaint URL", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["uk"],
 	});
@@ -616,8 +610,7 @@ test("uk-gdpr-supplement still names the ICO with its complaint URL", () => {
 });
 
 test("provision-requirement section renders one paragraph per category covering each basis (EU)", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		data: {
@@ -682,8 +675,7 @@ test("provision-requirement section renders one paragraph per category covering 
 });
 
 test("provision-requirement section is omitted under non-EU/UK jurisdictions", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["us-ca"],
 	});
@@ -691,8 +683,7 @@ test("provision-requirement section is omitted under non-EU/UK jurisdictions", (
 });
 
 test("provision-requirement section is rendered under UK jurisdiction", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["uk"],
 	});
@@ -700,8 +691,7 @@ test("provision-requirement section is rendered under UK jurisdiction", () => {
 });
 
 test("automated-decision-making section enumerates each activity and appends Art. 22 right-to-human-review", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["eea"],
 		automatedDecisionMaking: [
@@ -725,8 +715,7 @@ test("automated-decision-making section enumerates each activity and appends Art
 });
 
 test("Contact section renders phone when company.contact.phone is set", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		company: {
 			...minimalPrivacyConfig.company,
@@ -741,15 +730,14 @@ test("Contact section renders phone when company.contact.phone is set", () => {
 });
 
 test("Contact section omits phone when company.contact.phone is unset", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	const contact = doc.sections.find((s) => s.id === "contact")!;
 	const blob = JSON.stringify(contact);
 	expect(blob).not.toContain("Phone:");
 });
 
 test("CCPA supplement renders Submitting Requests with email and phone when us-ca", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["us-ca"],
 		company: {
@@ -766,8 +754,7 @@ test("CCPA supplement renders Submitting Requests with email and phone when us-c
 });
 
 test("CCPA supplement Submitting Requests lists email even when phone is unset", () => {
-	const doc = compile({
-		type: "privacy",
+	const doc = privacy({
 		...minimalPrivacyConfig,
 		jurisdictions: ["us-ca"],
 	});
@@ -778,6 +765,6 @@ test("CCPA supplement Submitting Requests lists email even when phone is unset",
 });
 
 test("CCPA supplement is omitted when us-ca is not in jurisdictions", () => {
-	const doc = compile({ type: "privacy", ...minimalPrivacyConfig });
+	const doc = privacy({ ...minimalPrivacyConfig });
 	expect(doc.sections.find((s) => s.id === "ccpa-supplement")).toBeUndefined();
 });

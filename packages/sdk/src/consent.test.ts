@@ -47,7 +47,7 @@ test("returns no categories when policy has no cookies block", () => {
 });
 
 test("passes through overrides without mutating categories", () => {
-	const resolver: JurisdictionResolver = { resolve: () => "EEA" };
+	const resolver: JurisdictionResolver = { resolve: () => "eea" };
 	const config = toPolicyStackConsentConfig(policy, {
 		policyVersion: "v3",
 		jurisdictionResolver: resolver,
@@ -203,7 +203,7 @@ test("locale is omitted when neither policy nor options provide one", () => {
 });
 
 test("PolicyStackConfig.consent is the canonical options object (single-config flow)", () => {
-	const resolver: JurisdictionResolver = { resolve: () => "EEA" };
+	const resolver: JurisdictionResolver = { resolve: () => "eea" };
 	const consent: PolicyStackConsentOptions = {
 		adapter: { read: () => null, write: () => {}, clear: () => {} },
 		jurisdictionResolver: resolver,

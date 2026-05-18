@@ -7,7 +7,7 @@ import {
 	type ConsentRecord,
 	type ConsentRecordSource,
 	type ConsentStore,
-	type Jurisdiction,
+	type JurisdictionId,
 	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
@@ -49,7 +49,7 @@ export type UseConsentResult = {
 	route: Route;
 	categories: Category[];
 	decisions: Record<string, boolean>;
-	jurisdiction: Jurisdiction | null;
+	jurisdiction: JurisdictionId | null;
 	policyVersion: string;
 	decidedAt: string | null;
 	repromptReason: RepromptReason | null;

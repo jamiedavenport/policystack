@@ -1,9 +1,8 @@
 import { expect, test } from "vite-plus/test";
-import type { PolicyInput } from "@policystack/core";
+import type { PolicyStackConfig } from "@policystack/core";
 import { compilePolicy } from "./index";
 
-const input: PolicyInput = {
-	type: "privacy",
+const config: PolicyStackConfig = {
 	effectiveDate: "2026-01-01",
 	locale: "en",
 	company: {
@@ -35,13 +34,24 @@ const input: PolicyInput = {
 		},
 	},
 	thirdParties: [],
-	userRights: ["access"],
 	jurisdictions: ["ca"],
 };
 
-test("compilePolicy routes privacy input to markdown", async () => {
-	const results = await compilePolicy(input);
+test("compilePolicy routes a privacy config to markdown", async () => {
+	const results = await compilePolicy(config, "privacy");
 	expect(Array.isArray(results)).toBe(true);
 	expect(results[0]?.format).toBe("markdown");
 	expect(results[0]?.content).toContain("Acme Inc.");
+	expect(results[0]?.filename).toBe("privacy-policy.md");
+});
+
+test("compilePolicy routes a cookie config to markdown", async () => {
+	const results = await compilePolicy(config, "cookie");
+	expect(results[0]?.filename).toBe("cookie-policy.md");
+});
+
+test("compilePolicy throws when the requested policy is not emitted", async () => {
+	await expect(compilePolicy({ ...config, policies: ["cookie"] }, "privacy")).rejects.toThrow(
+		/does not emit a privacy policy/,
+	);
 });

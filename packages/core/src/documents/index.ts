@@ -1,30 +1,5 @@
-import { createT } from "../i18n";
-import type { Dictionary } from "../i18n";
-import type { PolicyInput } from "../types";
-import { compileCookieDocument } from "./cookie";
-import { compilePrivacyDocument } from "./privacy";
-import { AST_VERSION, type Document } from "./types";
-
-export function compile(input: PolicyInput, dictionary?: Dictionary): Document {
-	const t = createT(input.locale, dictionary);
-	if (input.type === "privacy") {
-		const { type: _, ...config } = input;
-		return {
-			type: "document",
-			astVersion: AST_VERSION,
-			policyType: "privacy",
-			sections: compilePrivacyDocument(config, t),
-		};
-	}
-	const { type: _, ...config } = input;
-	return {
-		type: "document",
-		astVersion: AST_VERSION,
-		policyType: "cookie",
-		sections: compileCookieDocument(config, t),
-	};
-}
-
+export { compileCookieDocument } from "./cookie";
+export { compilePrivacyDocument } from "./privacy";
 export {
 	bold,
 	cell,
@@ -51,7 +26,6 @@ export type {
 	DocumentSection,
 	HeadingNode,
 	InlineNode,
-	IssueCode,
 	ItalicNode,
 	LinkNode,
 	ListItemNode,

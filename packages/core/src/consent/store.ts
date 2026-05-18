@@ -4,6 +4,7 @@ import { resolveLocale } from "./locale";
 import { jurisdictionPosture, postureDecisions } from "./posture";
 import { fromUnknown, recordEquals, toRecord } from "./storage/record";
 import { evaluateTriggers } from "./triggers";
+import type { JurisdictionId } from "../jurisdiction-id";
 import type {
 	ActionOptions,
 	ConsentExpr,
@@ -11,7 +12,6 @@ import type {
 	ConsentRecordSource,
 	ConsentState,
 	ConsentStore,
-	Jurisdiction,
 	PolicyStackConsentConfig,
 	RepromptReason,
 	ResolverContext,
@@ -102,7 +102,7 @@ export function createConsentStore(config: PolicyStackConsentConfig): ConsentSto
 		suspendWrite = false;
 	}
 
-	function handleJurisdictionChange(value: Jurisdiction | null): void {
+	function handleJurisdictionChange(value: JurisdictionId | null): void {
 		const model = jurisdictionPosture(value);
 		let next: ConsentState = { ...state, jurisdiction: value, consentModel: model };
 		// While pristine (no user decision, no stored record, no pending
@@ -133,7 +133,7 @@ export function createConsentStore(config: PolicyStackConsentConfig): ConsentSto
 
 	function checkTriggers(
 		record: ConsentRecord,
-		jurisdiction: Jurisdiction | null,
+		jurisdiction: JurisdictionId | null,
 	): RepromptReason | null {
 		return evaluateTriggers({
 			record,
@@ -297,7 +297,7 @@ export function createConsentStore(config: PolicyStackConsentConfig): ConsentSto
 		async refreshJurisdiction(req?: ResolverContext) {
 			const resolver = config.jurisdictionResolver;
 			if (!resolver) return state.jurisdiction;
-			let raw: Promise<Jurisdiction | null> | Jurisdiction | null;
+			let raw: Promise<JurisdictionId | null> | JurisdictionId | null;
 			try {
 				raw = resolver.resolve(req ?? config.request);
 			} catch (err) {
@@ -316,7 +316,7 @@ function dispatchRepromptEvent(reason: RepromptReason): void {
 		try {
 			const target = globalThis as { dispatchEvent?: (e: Event) => boolean };
 			if (typeof CustomEvent !== "undefined" && typeof target.dispatchEvent === "function") {
-				target.dispatchEvent(new CustomEvent("oncookies:reprompt", { detail: { reason } }));
+				target.dispatchEvent(new CustomEvent("policystack:reprompt", { detail: { reason } }));
 			}
 		} catch {
 			// Best-effort: ignore environments without CustomEvent/dispatchEvent.
@@ -325,8 +325,8 @@ function dispatchRepromptEvent(reason: RepromptReason): void {
 }
 
 type InitialJurisdiction = {
-	value: Jurisdiction | null;
-	pending: Promise<Jurisdiction | null> | null;
+	value: JurisdictionId | null;
+	pending: Promise<JurisdictionId | null> | null;
 };
 
 function resolveSync(
@@ -336,7 +336,7 @@ function resolveSync(
 	const resolver = config.jurisdictionResolver;
 	if (!resolver) return { value: null, pending: null };
 
-	let result: Promise<Jurisdiction | null> | Jurisdiction | null;
+	let result: Promise<JurisdictionId | null> | JurisdictionId | null;
 	try {
 		result = resolver.resolve(req);
 	} catch (err) {
@@ -351,10 +351,10 @@ function resolveSync(
 	return { value: result, pending: null };
 }
 
-type ResolveOutcome = { ok: true; value: Jurisdiction | null } | { ok: false };
+type ResolveOutcome = { ok: true; value: JurisdictionId | null } | { ok: false };
 
 async function safeResolve(
-	result: Promise<Jurisdiction | null> | Jurisdiction | null,
+	result: Promise<JurisdictionId | null> | JurisdictionId | null,
 ): Promise<ResolveOutcome> {
 	try {
 		const value = await result;

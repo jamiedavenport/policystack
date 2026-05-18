@@ -6,10 +6,9 @@ import { fr } from "./fr";
 import { nl } from "./nl";
 import type { Dictionary } from "./types";
 
-export const LOCALES: readonly Locale[] = ["en", "fr", "de", "nl", "es"] as const;
+// `LOCALES`/`isLocale` live in ../locale (dependency-free) so the consent
+// runtime can share them without pulling these dictionaries in. Re-exported
+// here to keep the historical `@policystack/core` import path unchanged.
+export { isLocale, LOCALES } from "../locale";
 
 export const dictionaries: Record<Locale, Dictionary> = { en, fr, de, nl, es };
-
-export function isLocale(value: unknown): value is Locale {
-	return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
-}
