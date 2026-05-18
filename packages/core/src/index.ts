@@ -87,7 +87,7 @@ export type {
 	IssueCode,
 	LegalBasis,
 	Locale,
-	OpenPolicyConfig,
+	PolicyStackConfig,
 	OutputFormat,
 	PolicyCategory,
 	PolicyInput,
@@ -98,12 +98,12 @@ export type {
 	TrackingTechnology,
 	UserRight,
 } from "./types";
-export { isOpenPolicyConfig, LAWFUL_BASIS_CONSENT_GATED, isConsentGated } from "./types";
+export { isPolicyStackConfig, LAWFUL_BASIS_CONSENT_GATED, isConsentGated } from "./types";
 export { Contractual, ContractPrerequisite, Statutory, Voluntary } from "./provision";
 export { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 export { deriveUserRights } from "./user-rights";
 export { validate } from "./validate";
-export { deriveConsentMechanism, normalizeOpenPolicyConfig, seedCompany } from "./normalize";
+export { deriveConsentMechanism, normalizePolicyStackConfig, seedCompany } from "./normalize";
 export { ISSUE_CATALOG } from "./issue-catalog";
 export type { IssueExplanation } from "./issue-catalog";
 export { createT, isLocale, LOCALES } from "./i18n";
@@ -115,7 +115,7 @@ import type { Dictionary } from "./i18n";
 import type {
 	CookiePolicyCookies,
 	DataConfig,
-	OpenPolicyConfig,
+	PolicyStackConfig,
 	PolicyCategory,
 	PolicyInput,
 } from "./types";
@@ -124,15 +124,15 @@ import { deriveUserRights } from "./user-rights";
 
 const PRIVACY_FIELDS = ["data", "children"] as const;
 
-function hasAnyPrivacyField(config: OpenPolicyConfig): boolean {
+function hasAnyPrivacyField(config: PolicyStackConfig): boolean {
 	return PRIVACY_FIELDS.some((field) => config[field] !== undefined);
 }
 
-function hasCookieField(config: OpenPolicyConfig): boolean {
+function hasCookieField(config: PolicyStackConfig): boolean {
 	return config.cookies !== undefined;
 }
 
-export function shouldEmit(category: PolicyCategory, config: OpenPolicyConfig): boolean {
+export function shouldEmit(category: PolicyCategory, config: PolicyStackConfig): boolean {
 	if (config.policies) return config.policies.includes(category);
 	return category === "privacy" ? hasAnyPrivacyField(config) : hasCookieField(config);
 }
@@ -146,7 +146,7 @@ const EMPTY_COOKIES: CookiePolicyCookies = { used: { essential: true }, context:
 type PrivacyInput = Extract<PolicyInput, { type: "privacy" }>;
 type CookieInput = Extract<PolicyInput, { type: "cookie" }>;
 
-function buildPrivacyInput(config: OpenPolicyConfig): PrivacyInput | null {
+function buildPrivacyInput(config: PolicyStackConfig): PrivacyInput | null {
 	if (!shouldEmit("privacy", config)) return null;
 	return {
 		type: "privacy",
@@ -164,7 +164,7 @@ function buildPrivacyInput(config: OpenPolicyConfig): PrivacyInput | null {
 	};
 }
 
-function buildCookieInput(config: OpenPolicyConfig): CookieInput | null {
+function buildCookieInput(config: PolicyStackConfig): CookieInput | null {
 	if (!shouldEmit("cookie", config)) return null;
 	return {
 		type: "cookie",
@@ -183,7 +183,7 @@ function buildCookieInput(config: OpenPolicyConfig): CookieInput | null {
 	};
 }
 
-export function expandOpenPolicyConfig(config: OpenPolicyConfig): PolicyInput[] {
+export function expandPolicyStackConfig(config: PolicyStackConfig): PolicyInput[] {
 	const inputs: PolicyInput[] = [];
 	const privacy = buildPrivacyInput(config);
 	if (privacy) inputs.push(privacy);
@@ -193,7 +193,7 @@ export function expandOpenPolicyConfig(config: OpenPolicyConfig): PolicyInput[] 
 }
 
 export function compilePrivacyPolicy(
-	config: OpenPolicyConfig,
+	config: PolicyStackConfig,
 	dictionary?: Dictionary,
 ): Document | null {
 	const input = buildPrivacyInput(config);
@@ -201,7 +201,7 @@ export function compilePrivacyPolicy(
 }
 
 export function compileCookiePolicy(
-	config: OpenPolicyConfig,
+	config: PolicyStackConfig,
 	dictionary?: Dictionary,
 ): Document | null {
 	const input = buildCookieInput(config);

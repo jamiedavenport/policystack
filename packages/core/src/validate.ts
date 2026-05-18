@@ -2,12 +2,12 @@ import { isLocale, LOCALES } from "./i18n";
 import { shouldEmit } from "./index";
 import { JURISDICTION_IDS, JURISDICTION_TABLE, resolveJurisdiction } from "./jurisdiction-id";
 import { deriveConsentMechanism } from "./normalize";
-import type { Issue, OpenPolicyConfig } from "./types";
+import type { Issue, PolicyStackConfig } from "./types";
 import { isConsentGated } from "./types";
 
 /**
- * The single validator over the flat, public {@link OpenPolicyConfig} — the
- * shape users write via `defineConfig()` and the shape PolicyCloud (§9)
+ * The single validator over the flat, public {@link PolicyStackConfig} — the
+ * shape users write via `defineConfig()` and the shape PolicyStack Cloud (§9)
  * receives. `consentMechanism` is {@link deriveConsentMechanism | derived}
  * from the cookie posture at entry so the consent checks always see the
  * effective value, never an author's hand-written one. Seeding (`company.*`
@@ -19,8 +19,8 @@ import { isConsentGated } from "./types";
  * emitted; nothing here depends on the expanded `PolicyInput` shape, so there
  * is no `EMPTY_*`-default false-positive class and no need to dedupe.
  */
-export function validate(rawConfig: OpenPolicyConfig): Issue[] {
-	const config: OpenPolicyConfig = {
+export function validate(rawConfig: PolicyStackConfig): Issue[] {
+	const config: PolicyStackConfig = {
 		...rawConfig,
 		consentMechanism: deriveConsentMechanism(rawConfig),
 	};

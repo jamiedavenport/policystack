@@ -1,4 +1,4 @@
-import type { ConsentState, GPCConfig, Jurisdiction, OpenCookiesConfig } from "./types";
+import type { ConsentState, GPCConfig, Jurisdiction, PolicyStackConsentConfig } from "./types";
 
 export const GPC_LEGALLY_REQUIRED_JURISDICTIONS: Jurisdiction[] = [
 	"US-CA",
@@ -25,7 +25,7 @@ export function gpcApplies(
 	return scope.includes(jurisdiction);
 }
 
-export function applyGPC(state: ConsentState, config: OpenCookiesConfig): ConsentState {
+export function applyGPC(state: ConsentState, config: PolicyStackConsentConfig): ConsentState {
 	if (!readGPCSignal(config.gpc)) return state;
 	if (!gpcApplies(state.jurisdiction, config.gpc)) return state;
 	// An explicit user decision (W3C GPC §"affirmative consent") overrides the signal.

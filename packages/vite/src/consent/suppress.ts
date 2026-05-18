@@ -1,7 +1,7 @@
 import type { Hit, ParsedComment } from "./types";
 
-const NEXT_LINE_RE = /opencookies-ignore-next-line/;
-const FILE_RE = /opencookies-ignore-file/;
+const NEXT_LINE_RE = /policystack-ignore-next-line/;
+const FILE_RE = /policystack-ignore-file/;
 
 export function applySuppressions(hits: Hit[], comments: ParsedComment[]): Hit[] {
 	if (hits.length === 0) return hits;

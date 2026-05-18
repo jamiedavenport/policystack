@@ -4,19 +4,19 @@ import {
 	compilePrivacyPolicy,
 	type CookiePolicyConfig,
 	type Document,
-	isOpenPolicyConfig,
-	type OpenPolicyConfig,
+	isPolicyStackConfig,
+	type PolicyStackConfig,
 	type PolicyType,
 	type PrivacyPolicyConfig,
-} from "@openpolicy/core";
+} from "@policystack/core";
 import { getConfigContext } from "./context.svelte";
 
-type ConfigInput = OpenPolicyConfig | PrivacyPolicyConfig | CookiePolicyConfig | undefined;
+type ConfigInput = PolicyStackConfig | PrivacyPolicyConfig | CookiePolicyConfig | undefined;
 
 export function compileDocument(type: PolicyType, config: ConfigInput): Document | null {
 	if (!config) return null;
 
-	if (isOpenPolicyConfig(config)) {
+	if (isPolicyStackConfig(config)) {
 		return type === "privacy" ? compilePrivacyPolicy(config) : compileCookiePolicy(config);
 	}
 

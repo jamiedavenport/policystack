@@ -1,5 +1,5 @@
-import type { Document, InlineNode, ListNode, Visitor } from "@openpolicy/core";
-import { visit } from "@openpolicy/core";
+import type { Document, InlineNode, ListNode, Visitor } from "@policystack/core";
+import { visit } from "@policystack/core";
 
 // One visitor map consumed by the shared core `visit()` — no hand-rolled walk.
 // The `list` arm owns its whole subtree because ordered numbering and nested

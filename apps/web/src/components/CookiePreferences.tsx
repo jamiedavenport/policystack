@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { XIcon } from "@phosphor-icons/react";
-import { useCategory, useConsent } from "@openpolicy/react/consent";
-import type { Category } from "@openpolicy/core/consent";
+import { useCategory, useConsent } from "@policystack/react/consent";
+import type { Category } from "@policystack/core/consent";
 
 const primaryButton =
 	"inline-flex items-center justify-center border-2 border-black bg-black px-4 py-2 text-xs tracking-wide text-white uppercase hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";

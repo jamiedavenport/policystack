@@ -1,4 +1,4 @@
-# @openpolicy/cli
+# @policystack/cli
 
 ## 0.0.34
 
@@ -12,11 +12,11 @@
 
 ### Patch Changes
 
-- 1d0ca66: Add `@openpolicy/svelte` — native Svelte 5 components for rendering OpenPolicy privacy and cookie policies.
+- 1d0ca66: Add `@policystack/svelte` — native Svelte 5 components for rendering OpenPolicy privacy and cookie policies.
 
   ```svelte
   <script lang="ts">
-  import { OpenPolicy, PrivacyPolicy } from "@openpolicy/svelte";
+  import { OpenPolicy, PrivacyPolicy } from "@policystack/svelte";
   import config from "../openpolicy";
   </script>
 
@@ -27,7 +27,7 @@
 
   The package mirrors the React and Vue integrations: `<OpenPolicy>` provides config via context, `<PrivacyPolicy>` and `<CookiePolicy>` render the compiled document, and any default renderer can be replaced by passing a snippet prop (`heading`, `paragraph`, `list`, `table`, etc.). Works with SvelteKit SSR.
 
-  The CLI also detects `svelte` in `package.json` and installs `@openpolicy/svelte` automatically during `openpolicy init`.
+  The CLI also detects `svelte` in `package.json` and installs `@policystack/svelte` automatically during `openpolicy init`.
 
 ## 0.0.29
 
@@ -53,7 +53,7 @@
 
   A new validation warning (`company-contact-phone-recommended`) fires when `jurisdictions` includes `us-ca` and `phone` is unset. It's a warning, not an error — businesses operating exclusively online may omit it.
 
-  A new `Contact` type is exported from `@openpolicy/sdk` and `@openpolicy/core`.
+  A new `Contact` type is exported from `@policystack/sdk` and `@policystack/core`.
 
 - 9960678: **Breaking:** consolidate per-category metadata into `data.context` and `cookies.context`.
 
@@ -100,27 +100,27 @@
 
   OpenPolicy still generates the cookie _policy_ (the legal document) — `<CookiePolicy>`, `defineCookie()`, and the `cookies.used` / `cookies.context` config keys are unchanged. Only the consent UI/runtime has been extracted.
 
-  Removed from `@openpolicy/react`:
+  Removed from `@policystack/react`:
 
   - `useCookies()` hook
   - `<ConsentGate>` component
   - `useShouldShowCookieBanner()` hook
-  - The consent-tracking responsibilities of `<OpenPolicy>` — the provider is now a thin config-only context (mirrors `@openpolicy/vue`). Continue mounting `<OpenPolicy config={...}>` so `<PrivacyPolicy>` / `<CookiePolicy>` can read the config.
+  - The consent-tracking responsibilities of `<OpenPolicy>` — the provider is now a thin config-only context (mirrors `@policystack/vue`). Continue mounting `<OpenPolicy config={...}>` so `<PrivacyPolicy>` / `<CookiePolicy>` can read the config.
 
-  Removed from `@openpolicy/core`:
+  Removed from `@policystack/core`:
 
   - `acceptAll()` / `rejectAll()` helpers
   - `CookieConsent` and `CookieConsentStatus` types
 
   The `ConsentMechanism` type and `consentMechanism` policy field are unchanged — they are informational policy content, not runtime.
 
-  Removed from `@openpolicy/vite`:
+  Removed from `@policystack/vite`:
 
-  - The auto-collect scanner no longer recognises `<ConsentGate>` or `useCookies().has()` from `@openpolicy/react`. Declare cookie categories with `defineCookie()` instead. (When OpenCookies publishes its own Vite plugin, scanning targeted at its components can be reintroduced.)
+  - The auto-collect scanner no longer recognises `<ConsentGate>` or `useCookies().has()` from `@policystack/react`. Declare cookie categories with `defineCookie()` instead. (When OpenCookies publishes its own Vite plugin, scanning targeted at its components can be reintroduced.)
 
   Migration: install OpenCookies for banner/preferences/consent, keep using OpenPolicy for the cookie policy document.
 
-- 9960678: The `openPolicy()` Vite plugin now runs the validators from `@openpolicy/core` against your resolved `openpolicy.ts` on every build. Errors that previously only fired when you called `validateOpenPolicyConfig()` manually (missing `effectiveDate`, GDPR lawful basis incomplete, retention missing, etc.) now surface inline:
+- 9960678: The `openPolicy()` Vite plugin now runs the validators from `@policystack/core` against your resolved `openpolicy.ts` on every build. Errors that previously only fired when you called `validateOpenPolicyConfig()` manually (missing `effectiveDate`, GDPR lawful basis incomplete, retention missing, etc.) now surface inline:
 
   - `vite build` aborts with a non-zero exit code listing `[openpolicy] code: message` for each error. Warnings (CCPA phone, DPO disclosure, etc.) print via Rollup's warning channel without blocking.
   - `vite dev` streams both errors and warnings to the dev-server logger. HMR keeps working — fix the issues and the next save replays validation.
@@ -134,7 +134,7 @@
   openPolicy({ validate: false });
   ```
 
-  Internally this adds `bundle-require` (the same primitive Vite uses for `vite.config.ts`) and `@openpolicy/core` as runtime dependencies of `@openpolicy/vite`.
+  Internally this adds `bundle-require` (the same primitive Vite uses for `vite.config.ts`) and `@policystack/core` as runtime dependencies of `@policystack/vite`.
 
 ## 0.0.28
 
@@ -202,7 +202,7 @@
   intro sentence "We collect the following categories of information:" followed
   by an empty list, which fails GDPR's categories-of-data disclosure
   requirement. To fix, populate `dataCollected` in your config, or instrument
-  `collecting()` calls and use `autoCollect()` from `@openpolicy/vite-auto-collect`.
+  `collecting()` calls and use `autoCollect()` from `@policystack/vite-auto-collect`.
 
 ## 0.0.26
 
@@ -218,7 +218,7 @@
 
 ### Patch Changes
 
-- a38360e: Bundle `citty` and `consola` into the CLI's `dist/cli.js` and drop them from runtime `dependencies`. The published tarball now ships a single self-contained binary, so installing `@openpolicy/cli` no longer pulls in a dep tree (~470K → one ~126K file) and consumers can't end up on a mismatched dependency version.
+- a38360e: Bundle `citty` and `consola` into the CLI's `dist/cli.js` and drop them from runtime `dependencies`. The published tarball now ships a single self-contained binary, so installing `@policystack/cli` no longer pulls in a dep tree (~470K → one ~126K file) and consumers can't end up on a mismatched dependency version.
 - a38360e: Fix broken `openpolicy` bin in the published package. The CLI's `bin` entry was relying on `publishConfig.bin` to override a dev-only `./src/cli.ts` path to `./dist/cli.js` at publish time, but the override wasn't applied — so the published tarball shipped a bin pointing at a TypeScript source file with no shebang, and invoking `openpolicy` fell through to bash and exited 1. `bin` now points directly at `./dist/cli.js`.
 
 ## 0.0.24
@@ -227,10 +227,10 @@
 
 - 94b16b7: **Breaking:** the CLI is now an install + prompt tool only.
 
-  - `openpolicy generate` and `openpolicy validate` are removed. Use `@openpolicy/vite` to collect data at build time and `@openpolicy/react` / `@openpolicy/vue` to render policies at runtime.
-  - `openpolicy init` now detects your package manager (bun/pnpm/yarn/npm) and the frameworks in your `package.json` (vite / react / vue), installs `@openpolicy/sdk` plus the matching integrations, writes a minimal `openpolicy.ts` stub (preferring `src/openpolicy.ts` when a `src/` directory exists), and prints a prompt you can paste into a coding agent (Claude Code, Cursor, etc.) to complete setup.
+  - `openpolicy generate` and `openpolicy validate` are removed. Use `@policystack/vite` to collect data at build time and `@policystack/react` / `@policystack/vue` to render policies at runtime.
+  - `openpolicy init` now detects your package manager (bun/pnpm/yarn/npm) and the frameworks in your `package.json` (vite / react / vue), installs `@policystack/sdk` plus the matching integrations, writes a minimal `openpolicy.ts` stub (preferring `src/openpolicy.ts` when a `src/` directory exists), and prints a prompt you can paste into a coding agent (Claude Code, Cursor, etc.) to complete setup.
   - New flags: `--cwd`, `--pm`, `--skip-install`, `--dry-run`, `--yes`, `--out`, `--force`.
-  - `@openpolicy/core` and `@openpolicy/renderers` are no longer devDependencies of the CLI.
+  - `@policystack/core` and `@policystack/renderers` are no longer devDependencies of the CLI.
 
 - 94b16b7: Canonical jurisdiction scheme + UK-GDPR support (OP-209, OP-181).
 
@@ -267,8 +267,8 @@
   - `OpenPolicyConfig` is a single flat object. The `privacy` and `cookie` wrapper keys are removed.
   - `EffectiveDate` is now the template literal type `` `${number}-${number}-${number}` ``.
   - `LegalBasis` is narrowed to a union of GDPR Art. 6 lawful bases: `"consent" | "contract" | "legal_obligation" | "vital_interests" | "public_task" | "legitimate_interests"`. Free-form strings are no longer accepted.
-  - `PrivacyPolicyConfig` and `CookiePolicyConfig` are now internal types and no longer re-exported from `@openpolicy/sdk`. Use `OpenPolicyConfig` in user code.
-  - `@openpolicy/sdk` re-exports `Retention` (value helper) and the `Retention` type now collides — the type is re-exported as `RetentionMap`.
+  - `PrivacyPolicyConfig` and `CookiePolicyConfig` are now internal types and no longer re-exported from `@policystack/sdk`. Use `OpenPolicyConfig` in user code.
+  - `@policystack/sdk` re-exports `Retention` (value helper) and the `Retention` type now collides — the type is re-exported as `RetentionMap`.
 
   **Migration — before:**
 
@@ -326,9 +326,9 @@
   **Breaking changes:**
 
   - `PolicyInput` is now a discriminated union of `privacy | cookie` only (the `terms` branch has been removed)
-  - `TermsOfServiceConfig` and `DisputeResolutionMethod` types have been removed from `@openpolicy/sdk` and `@openpolicy/core`
-  - `validateTermsOfService` has been removed from `@openpolicy/core`
-  - `<TermsOfService />` components have been removed from `@openpolicy/react` and `@openpolicy/vue`
+  - `TermsOfServiceConfig` and `DisputeResolutionMethod` types have been removed from `@policystack/sdk` and `@policystack/core`
+  - `validateTermsOfService` has been removed from `@policystack/core`
+  - `<TermsOfService />` components have been removed from `@policystack/react` and `@policystack/vue`
   - CLI `openpolicy init` no longer offers a `terms` template option; filename auto-detection no longer treats `"terms"` as a policy type
   - The `terms-of-service` shadcn registry item has been removed
 
@@ -360,10 +360,10 @@
 
   Related SDK surface changes:
 
-  - `Rights` constant removed from `@openpolicy/sdk` (superseded by derivation).
-  - `UserRight` type re-export removed from `@openpolicy/sdk`.
+  - `Rights` constant removed from `@policystack/sdk` (superseded by derivation).
+  - `UserRight` type re-export removed from `@policystack/sdk`.
   - `Compliance.GDPR` and `Compliance.CCPA` no longer include a `userRights` field — they still provide `jurisdictions` (and `legalBasis` for GDPR), which is enough to drive the correct rights list.
-  - New `deriveUserRights(jurisdictions)` export in `@openpolicy/core` for consumers (e.g. forthcoming DSAR tooling) that need the same mapping.
+  - New `deriveUserRights(jurisdictions)` export in `@policystack/core` for consumers (e.g. forthcoming DSAR tooling) that need the same mapping.
 
 ## 0.0.22
 
@@ -391,7 +391,7 @@
 
 ### Patch Changes
 
-- 2372fdb: - Adds @openpolicy/react library.
+- 2372fdb: - Adds @policystack/react library.
   - Adds PDF renderer
 
 ## 0.0.12

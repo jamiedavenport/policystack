@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { GPC_LEGALLY_REQUIRED_JURISDICTIONS, applyGPC, gpcApplies, readGPCSignal } from "./gpc";
-import type { Category, ConsentState, OpenCookiesConfig } from "./types";
+import type { Category, ConsentState, PolicyStackConsentConfig } from "./types";
 
 describe("GPC_LEGALLY_REQUIRED_JURISDICTIONS", () => {
 	it("contains exactly the four legally-required US states", () => {
@@ -101,7 +101,7 @@ describe("applyGPC", () => {
 		};
 	}
 
-	function makeConfig(overrides: Partial<OpenCookiesConfig> = {}): OpenCookiesConfig {
+	function makeConfig(overrides: Partial<PolicyStackConsentConfig> = {}): PolicyStackConsentConfig {
 		return { categories: baseCategories, gpc: { signal: true }, ...overrides };
 	}
 

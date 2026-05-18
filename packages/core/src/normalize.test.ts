@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
-import { deriveConsentMechanism, normalizeOpenPolicyConfig, seedCompany } from "./normalize";
-import type { CompanyConfig, OpenPolicyConfig } from "./types";
+import { deriveConsentMechanism, normalizePolicyStackConfig, seedCompany } from "./normalize";
+import type { CompanyConfig, PolicyStackConfig } from "./types";
 
 const company: CompanyConfig = {
 	name: "Acme Inc.",
@@ -9,7 +9,7 @@ const company: CompanyConfig = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const base: OpenPolicyConfig = {
+const base: PolicyStackConfig = {
 	company,
 	effectiveDate: "2026-01-01",
 	jurisdictions: ["eea"],
@@ -111,10 +111,10 @@ test("seedCompany: no package.json meta and empty fields → empty strings, no u
 	).toEqual({ name: "", legalName: "L", address: "A", url: undefined, contact: { email: "" } });
 });
 
-// --- normalizeOpenPolicyConfig ---
+// --- normalizePolicyStackConfig ---
 
-test("normalizeOpenPolicyConfig is idempotent", () => {
-	const cfg: OpenPolicyConfig = {
+test("normalizePolicyStackConfig is idempotent", () => {
+	const cfg: PolicyStackConfig = {
 		...base,
 		cookies: {
 			used: { essential: true, analytics: true },
@@ -124,8 +124,8 @@ test("normalizeOpenPolicyConfig is idempotent", () => {
 			},
 		},
 	};
-	const once = normalizeOpenPolicyConfig(cfg);
-	const twice = normalizeOpenPolicyConfig(once);
+	const once = normalizePolicyStackConfig(cfg);
+	const twice = normalizePolicyStackConfig(once);
 	expect(twice).toEqual(once);
 	expect(once.consentMechanism).toEqual({
 		hasBanner: true,

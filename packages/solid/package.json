@@ -1,11 +1,11 @@
 {
-	"name": "@openpolicy/solid",
+	"name": "@policystack/solid",
 	"version": "0.0.34",
-	"description": "Solid consent components and hooks for OpenPolicy",
+	"description": "Solid consent components and hooks for PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/solid"
 	},
 	"files": [
@@ -30,7 +30,7 @@
 		"test": "vp test"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
+		"@policystack/core": "workspace:*",
 		"@solidjs/testing-library": "^0.8.10",
 		"@testing-library/jest-dom": "^6.6.0",
 		"happy-dom": "^15.0.0",

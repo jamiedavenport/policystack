@@ -31,29 +31,29 @@ Run `vp help` for the full list and `vp <command> --help` for specifics.
 
 ## Project Structure
 
-Packages are still published under the `@openpolicy/*` scope (the `@policystack/*`
+Packages are still published under the `@policystack/*` scope (the `@policystack/*`
 rename is planned, not yet done).
 
-- `packages/core` — `@openpolicy/core`: compilation engine **and** the consent
-  runtime (exposed via the `./consent` subpath; OpenCookies was folded in here).
-- `packages/sdk` — `@openpolicy/sdk`: public API (`defineConfig()`), incl. the
+- `packages/core` — `@policystack/core`: compilation engine **and** the consent
+  runtime (exposed via the `./consent` subpath; PolicyStack Consent was folded in here).
+- `packages/sdk` — `@policystack/sdk`: public API (`defineConfig()`), incl. the
   `renderLlmsTxt()` generator.
-- `packages/cli` — `@openpolicy/cli`: install/configure CLI.
-- `packages/vite` — `@openpolicy/vite`: Vite plugin (`openPolicy()`); also hosts
+- `packages/cli` — `@policystack/cli`: install/configure CLI.
+- `packages/vite` — `@policystack/vite`: Vite plugin (`policyStack()`); also hosts
   the opt-in consent scanner.
 - `packages/react` / `vue` / `svelte` / `angular` / `solid` — per-framework
   components & hooks; each splits `./policy` and `./consent` subpath exports
   (React also has `./provider`). `solid` and `renderers` export from `./src`.
-- `packages/scripts` — `@openpolicy/scripts`: consent-gated third-party script
+- `packages/scripts` — `@policystack/scripts`: consent-gated third-party script
   loaders.
-- `packages/renderers` — `@openpolicy/renderers`: shared policy render layer.
-- `tooling/tsconfig` — `@openpolicy/tooling`: shared TS base config (`./base`).
-- `apps/web` — the PolicyStack site (policystack.dev); dogfoods `@openpolicy/{react,sdk}`.
-- `apps/www` — stub redirecting the old OpenPolicy site.
+- `packages/renderers` — `@policystack/renderers`: shared policy render layer.
+- `tooling/tsconfig` — `@policystack/tooling`: shared TS base config (`./base`).
+- `apps/web` — the PolicyStack site (policystack.dev); dogfoods `@policystack/{react,sdk}`.
+- `apps/www` — stub redirecting the old PolicyStack site.
 - `examples/tanstack` — example app (the sole SDK example).
 
-OpenCookies (consent) and the policystack site were separate projects; both are
-now merged in-repo (consent → `@openpolicy/core/consent`, site → `apps/web`).
+PolicyStack Consent (consent) and the policystack site were separate projects; both are
+now merged in-repo (consent → `@policystack/core/consent`, site → `apps/web`).
 
 ## Important Notes
 

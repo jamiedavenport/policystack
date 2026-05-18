@@ -9,7 +9,7 @@
  *
  * `level` is exactly what validate() emits — it stays pure and frozen.
  * Promotion (warnings→errors) and per-code suppression are applied downstream
- * by the @openpolicy/vite plugin's `strict` / `suppress` options (PS-13), not
+ * by the @policystack/vite plugin's `strict` / `suppress` options (PS-13), not
  * here.
  *
  * `summary` is the durable, context-free description of the *rule* — what an

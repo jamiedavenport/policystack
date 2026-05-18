@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { OpenCookiesError } from "./errors";
+import { PolicyStackConsentError } from "./errors";
 import { evaluate } from "./expr";
 import { createConsentStore } from "./store";
-import type { Category, ConsentState, OpenCookiesConfig, UnknownCategoryBehavior } from "./types";
+import type {
+	Category,
+	ConsentState,
+	PolicyStackConsentConfig,
+	UnknownCategoryBehavior,
+} from "./types";
 
 const baseCategories: Category[] = [
 	{ key: "essential", label: "Essential", locked: true },
@@ -12,7 +17,7 @@ const baseCategories: Category[] = [
 
 function makeState(
 	overrides: Partial<ConsentState> = {},
-	configOverrides: Partial<OpenCookiesConfig> = {},
+	configOverrides: Partial<PolicyStackConsentConfig> = {},
 ): ConsentState {
 	const store = createConsentStore({
 		categories: baseCategories,
@@ -153,15 +158,15 @@ describe("evaluate", () => {
 			vi.restoreAllMocks();
 		});
 
-		it("throws OpenCookiesError by default", () => {
+		it("throws PolicyStackConsentError by default", () => {
 			const state = withDecisions({});
 			try {
 				evaluate("ghost", state);
 				expect.unreachable("should have thrown");
 			} catch (err) {
-				expect(err).toBeInstanceOf(OpenCookiesError);
-				expect((err as OpenCookiesError).code).toBe("UNKNOWN_CATEGORY");
-				expect((err as OpenCookiesError).message).toContain("ghost");
+				expect(err).toBeInstanceOf(PolicyStackConsentError);
+				expect((err as PolicyStackConsentError).code).toBe("UNKNOWN_CATEGORY");
+				expect((err as PolicyStackConsentError).message).toContain("ghost");
 			}
 		});
 
@@ -224,6 +229,6 @@ describe("store.has", () => {
 
 	it("throws by default on unknown category via has()", () => {
 		const store = createConsentStore({ categories: baseCategories });
-		expect(() => store.has("ghost")).toThrow(OpenCookiesError);
+		expect(() => store.has("ghost")).toThrow(PolicyStackConsentError);
 	});
 });

@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { TableRowNode } from "@openpolicy/core";
+import type { TableRowNode } from "@policystack/core";
 import type { Snippet } from "svelte";
 
 let {

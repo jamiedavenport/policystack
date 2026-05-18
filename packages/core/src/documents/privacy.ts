@@ -61,7 +61,7 @@ function buildDataCollected(config: PrivacyPolicyConfig, t: T): DocumentSection 
 		const entry = context[category];
 		if (!entry?.purpose) {
 			throw new Error(
-				`OpenPolicy: data.collected["${category}"] has no matching entry in data.context. ` +
+				`PolicyStack: data.collected["${category}"] has no matching entry in data.context. ` +
 					"Every collected category must declare its processing purpose (GDPR Art. 13(1)(c)).",
 			);
 		}
@@ -432,8 +432,8 @@ const SECTION_BUILDERS: ((config: PrivacyPolicyConfig, t: T) => DocumentSection 
 export function compilePrivacyDocument(config: PrivacyPolicyConfig, t: T): DocumentSection[] {
 	if (Object.keys(config.data.collected).length === 0) {
 		throw new Error(
-			"OpenPolicy: cannot compile a privacy policy with no data collected. " +
-				"Populate `data.collected` in your config, or instrument `collecting()` calls and use the `openPolicy()` Vite plugin.",
+			"PolicyStack: cannot compile a privacy policy with no data collected. " +
+				"Populate `data.collected` in your config, or instrument `collecting()` calls and use the `policyStack()` Vite plugin.",
 		);
 	}
 	return SECTION_BUILDERS.map((builder) => builder(config, t)).filter(

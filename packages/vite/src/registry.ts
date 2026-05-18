@@ -6,18 +6,18 @@ import type { VendorRegistry } from "./consent/types";
  * two legacy sources that were keyed on different dimensions and disagreed on
  * categories:
  *
- *  - OpenPolicy `known-packages.ts` — npm-dependency keyed, carried the
+ *  - PolicyStack `known-packages.ts` — npm-dependency keyed, carried the
  *    disclosure metadata (`name` / `purpose` / `policyUrl`).
- *  - OpenCookies `vendors.json` — import/global/scriptUrl keyed, carried the
+ *  - PolicyStack Consent `vendors.json` — import/global/scriptUrl keyed, carried the
  *    consent `category`.
  *
  * Each vendor now carries every lookup dimension plus both metadata halves.
- * `category` is the OpenCookies value where the two disagreed (vendors.json
+ * `category` is the PolicyStack Consent value where the two disagreed (vendors.json
  * wins — Sentry/Datadog `analytics`→`essential`, Intercom `functional`→
  * `marketing`); the derived {@link KNOWN_COOKIE_PACKAGES} reflects that.
  */
 export type VendorRecord = {
-	/** Canonical vendor id (the OpenCookies `vendor` key, e.g. `"posthog"`). */
+	/** Canonical vendor id (the PolicyStack Consent `vendor` key, e.g. `"posthog"`). */
 	vendor: string;
 	/** Display name for the privacy-policy recipient list, e.g. `"PostHog"`. */
 	name: string;
@@ -25,7 +25,7 @@ export type VendorRecord = {
 	purpose: string;
 	/** The vendor's privacy-policy URL. */
 	policyUrl: string;
-	/** Consent category. OpenCookies value is authoritative on conflict. */
+	/** Consent category. PolicyStack Consent value is authoritative on conflict. */
 	category: string;
 	/**
 	 * npm dependency names that imply this vendor. Drives the package.json
@@ -52,7 +52,7 @@ export type VendorRecord = {
 	scriptUrls: string[];
 	/**
 	 * Whether this vendor participates in the consent ungated scan. `true` for
-	 * the tracking vendors that were in OpenCookies `vendors.json`; `false` for
+	 * the tracking vendors that were in PolicyStack Consent `vendors.json`; `false` for
 	 * disclosure-only vendors (payments / transactional email) that should
 	 * appear in the recipient list but must never raise an ungated finding.
 	 * Keeping this explicit preserves the legacy consent behaviour exactly —
@@ -67,7 +67,7 @@ const AD = "Advertising and conversion tracking";
  * The one canonical registry. Hand-authored merge of the two legacy sources;
  * `registry.test.ts` asserts every legacy `known-packages.ts` /
  * `vendors.json` entry still resolves and that the documented category
- * conflicts resolved the OpenCookies way.
+ * conflicts resolved the PolicyStack Consent way.
  */
 export const REGISTRY: readonly VendorRecord[] = [
 	{
@@ -367,7 +367,7 @@ export const KNOWN_PACKAGES: ReadonlyMap<string, ThirdPartyEntry> = new Map(
 
 /**
  * npm package name → cookie categories. Derived from the one registry's
- * `category` (OpenCookies-authoritative). Used by `cookies.usePackageJson`.
+ * `category` (PolicyStack Consent-authoritative). Used by `cookies.usePackageJson`.
  */
 export const KNOWN_COOKIE_PACKAGES: ReadonlyMap<string, readonly string[]> = new Map(
 	REGISTRY.flatMap((r) => r.packages.map((pkg) => [pkg, [r.category]] as const)),
@@ -375,7 +375,7 @@ export const KNOWN_COOKIE_PACKAGES: ReadonlyMap<string, readonly string[]> = new
 
 /**
  * The consent-scanner registry: only the tracking vendors
- * (`consent: true`), projected onto the unchanged OpenCookies
+ * (`consent: true`), projected onto the unchanged PolicyStack Consent
  * {@link VendorRegistry} shape. Behaviourally identical to the old
  * `vendors.json` so the ungated scan does not regress.
  */

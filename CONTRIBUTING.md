@@ -1,9 +1,9 @@
-# Contributing to OpenPolicy
+# Contributing to PolicyStack
 
 ## Setup
 
 ```bash
-git clone https://github.com/jamiedavenport/openpolicy
+git clone https://github.com/jamiedavenport/policystack
 cd openpolicy
 corepack enable      # picks up the pnpm version pinned in package.json
 pnpm install
@@ -19,14 +19,14 @@ vp config
 
 This is a pnpm monorepo (workspaces declared in `pnpm-workspace.yaml`):
 
-| Package            | Description                                     |
-| ------------------ | ----------------------------------------------- |
-| `packages/sdk`     | `@openpolicy/sdk` — public API (`defineConfig`) |
-| `packages/core`    | `@openpolicy/core` — compilation engine         |
-| `packages/vite`    | `@openpolicy/vite` — Vite plugin                |
-| `packages/cli`     | `@openpolicy/cli` — CLI tool                    |
-| `apps/docs`        | Documentation site (Next.js + Fumadocs)         |
-| `tooling/tsconfig` | Shared TypeScript base config                   |
+| Package            | Description                                      |
+| ------------------ | ------------------------------------------------ |
+| `packages/sdk`     | `@policystack/sdk` — public API (`defineConfig`) |
+| `packages/core`    | `@policystack/core` — compilation engine         |
+| `packages/vite`    | `@policystack/vite` — Vite plugin                |
+| `packages/cli`     | `@policystack/cli` — CLI tool                    |
+| `apps/docs`        | Documentation site (Next.js + Fumadocs)          |
+| `tooling/tsconfig` | Shared TypeScript base config                    |
 
 ## Development Workflow
 
@@ -41,18 +41,18 @@ vp run -r check-types
 vp run -r build
 ```
 
-### Working on `@openpolicy/core`
+### Working on `@policystack/core`
 
 `core`'s `package.json` exports point to `./dist/` (not `./src/`). After changing source files in `packages/core`, rebuild it before other packages will pick up the changes:
 
 ```bash
-pnpm --filter @openpolicy/core run build
+pnpm --filter @policystack/core run build
 ```
 
 ### Running the CLI locally
 
 ```bash
-pnpm --filter @openpolicy/cli exec tsx src/cli.ts --help
+pnpm --filter @policystack/cli exec tsx src/cli.ts --help
 ```
 
 ## Architecture
@@ -81,7 +81,7 @@ PolicyInput → compilePolicy() → section builders → PolicySection[] → ren
 vp test
 
 # Single package
-pnpm --filter @openpolicy/core run test
+pnpm --filter @policystack/core run test
 ```
 
 Tests use Vitest via Vite+. Import test utilities from `vite-plus/test` (not `vitest`):
@@ -120,7 +120,7 @@ This repo uses [Changesets](https://github.com/changesets/changesets) for versio
 
 4. Once merged, the GitHub Actions workflow automatically opens a "Version Packages" PR. Merging that PR publishes the updated packages to NPM. `pnpm publish` rewrites `workspace:*` references to the real published version on the way out.
 
-Publishable packages: `@openpolicy/sdk`, `@openpolicy/core`, `@openpolicy/vite`, `@openpolicy/cli`, `@openpolicy/react`, `@openpolicy/vue`, `@openpolicy/svelte`.
+Publishable packages: `@policystack/sdk`, `@policystack/core`, `@policystack/vite`, `@policystack/cli`, `@policystack/react`, `@policystack/vue`, `@policystack/svelte`.
 
 ## Pull Requests
 

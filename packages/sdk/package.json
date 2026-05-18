@@ -1,11 +1,11 @@
 {
-	"name": "@openpolicy/sdk",
+	"name": "@policystack/sdk",
 	"version": "0.0.34",
-	"description": "Public API for defining privacy policies with OpenPolicy",
+	"description": "Public API for defining privacy policies with PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/sdk"
 	},
 	"files": [
@@ -36,8 +36,8 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/core": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"vite-plus": "catalog:"
 	}
 }

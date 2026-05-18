@@ -1,10 +1,10 @@
-import type { OpenPolicyConfig } from "@openpolicy/core";
+import type { PolicyStackConfig } from "@policystack/core";
 import { describe, expect, it } from "vite-plus/test";
 import type { VendorHit } from "./consent/types";
 import { applyDriftPolicy, crossCheck, type DriftFinding, formatDrift } from "./drift";
 import type { Scanned } from "./scanned";
 
-function cfg(over: Partial<OpenPolicyConfig>): OpenPolicyConfig {
+function cfg(over: Partial<PolicyStackConfig>): PolicyStackConfig {
 	return {
 		company: {
 			name: "Acme",
@@ -16,7 +16,7 @@ function cfg(over: Partial<OpenPolicyConfig>): OpenPolicyConfig {
 		jurisdictions: ["eea"],
 		data: { collected: {}, context: {} },
 		...over,
-	} as OpenPolicyConfig;
+	} as PolicyStackConfig;
 }
 
 function emptyScanned(over: Partial<Scanned> = {}): Scanned {
@@ -224,13 +224,13 @@ describe("formatDrift", () => {
 			code: "vendor-used-not-declared",
 			level: "error",
 			message: "PostHog is used",
-			suggestion: "Add to openpolicy.ts thirdParties:\n    { name: ... }",
+			suggestion: "Add to policystack.ts thirdParties:\n    { name: ... }",
 			file: "src/a.ts",
 			line: 7,
 			column: 2,
 		});
-		expect(line).toContain("[openpolicy] src/a.ts:7:2 vendor-used-not-declared:");
+		expect(line).toContain("[policystack] src/a.ts:7:2 vendor-used-not-declared:");
 		expect(line).toContain("PostHog is used");
-		expect(line).toContain("Add to openpolicy.ts thirdParties:");
+		expect(line).toContain("Add to policystack.ts thirdParties:");
 	});
 });

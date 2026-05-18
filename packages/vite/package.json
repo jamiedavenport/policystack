@@ -1,7 +1,7 @@
 {
-	"name": "@openpolicy/vite",
+	"name": "@policystack/vite",
 	"version": "0.0.34",
-	"description": "Vite plugin that scans source files for @openpolicy/sdk collecting()/thirdParty() calls and populates the auto-collected registry at build time",
+	"description": "Vite plugin that scans source files for @policystack/sdk collecting()/thirdParty() calls and populates the auto-collected registry at build time",
 	"keywords": [
 		"openpolicy",
 		"privacy-policy",
@@ -10,7 +10,7 @@
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/vite"
 	},
 	"files": [
@@ -36,14 +36,14 @@
 		"test": "vp test"
 	},
 	"dependencies": {
-		"@openpolicy/core": "workspace:*",
+		"@policystack/core": "workspace:*",
 		"bundle-require": "^5.1.0",
 		"oxc-parser": "^0.124.0",
 		"tinyglobby": "^0.2.0"
 	},
 	"devDependencies": {
-		"@openpolicy/sdk": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/sdk": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"esbuild": "^0.25.12",
 		"vite": "catalog:",
 		"vite-plus": "catalog:"

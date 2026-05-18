@@ -4,13 +4,13 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Databuddy } from "@databuddy/sdk/react";
 import { OffstageProvider } from "@offstage/react";
 import { ArrowRightIcon, ArrowUpRightIcon } from "@phosphor-icons/react";
-import { ConsentGate } from "@openpolicy/react/consent";
-import { PolicyStackProvider } from "@openpolicy/react/provider";
+import { ConsentGate } from "@policystack/react/consent";
+import { PolicyStackProvider } from "@policystack/react/provider";
 
 import favicon from "../assets/favicon.svg?url";
 import appCss from "../styles.css?url";
 import { SITE_NAME, SITE_URL } from "../lib/seo";
-import openpolicy from "../openpolicy";
+import policy from "../policystack";
 import { NotFound } from "../components/NotFound";
 import { CookieBanner } from "../components/CookieBanner";
 import { CookiePreferences } from "../components/CookiePreferences";
@@ -23,8 +23,8 @@ const ORG_JSON_LD = {
 	url: SITE_URL,
 	logo: `${SITE_URL}/logo512.png`,
 	sameAs: [
-		"https://github.com/jamiedavenport/openpolicy",
-		"https://github.com/jamiedavenport/opencookies",
+		"https://github.com/jamiedavenport/policystack",
+		"https://github.com/jamiedavenport/policystack",
 	],
 };
 
@@ -67,7 +67,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body className="bg-canvas font-sans text-ink">
-				<PolicyStackProvider config={openpolicy}>
+				<PolicyStackProvider config={policy}>
 					<div id="app" className="isolate flex min-h-dvh flex-col">
 						<SiteHeader />
 						<main className="flex-1">{children ?? <Outlet />}</main>
@@ -116,28 +116,28 @@ function SiteHeader() {
 
 				<nav className="hidden items-center gap-x-8 text-sm tracking-wide text-mute uppercase md:flex">
 					<Link
-						to="/opencookies"
+						to="/consent"
 						className="flex items-center gap-2.5 hover:text-ink"
 						activeProps={{ className: "text-ink" }}
 					>
 						<ProductMark filled={1} />
-						<span>opencookies</span>
+						<span>consent</span>
 					</Link>
 					<Link
-						to="/openpolicy"
+						to="/policy"
 						className="flex items-center gap-2.5 hover:text-ink"
 						activeProps={{ className: "text-ink" }}
 					>
 						<ProductMark filled={2} />
-						<span>openpolicy</span>
+						<span>policy</span>
 					</Link>
 					<Link
-						to="/policycloud"
+						to="/cloud"
 						className="flex items-center gap-2.5 hover:text-ink"
 						activeProps={{ className: "text-ink" }}
 					>
 						<ProductMark filled={3} />
-						<span>policycloud</span>
+						<span>cloud</span>
 					</Link>
 				</nav>
 
@@ -209,9 +209,9 @@ function SiteFooter() {
 				<FooterCol
 					title="open source"
 					links={[
-						{ to: "/opencookies", label: "OpenCookies" },
-						{ to: "/openpolicy", label: "OpenPolicy" },
-						{ to: "/policycloud", label: "PolicyCloud" },
+						{ to: "/consent", label: "PolicyStack Consent" },
+						{ to: "/policy", label: "PolicyStack" },
+						{ to: "/cloud", label: "PolicyStack Cloud" },
 					]}
 				/>
 				<FooterCol
@@ -219,7 +219,7 @@ function SiteFooter() {
 					links={[
 						{ to: "/docs", label: "Docs" },
 						{ to: "/blog", label: "Blog" },
-						{ href: "mailto:jamie@openpolicy.sh", label: "Contact" },
+						{ href: "mailto:jamie@policystack.dev", label: "Contact" },
 					]}
 				/>
 				<div>

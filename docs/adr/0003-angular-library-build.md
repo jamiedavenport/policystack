@@ -1,4 +1,4 @@
-# ADR 0003 — `@openpolicy/angular` builds with `ng-packagr` on Angular 21
+# ADR 0003 — `@policystack/angular` builds with `ng-packagr` on Angular 21
 
 - **Status:** Accepted
 - **Date:** 2026-05-16
@@ -8,7 +8,7 @@
 
 ## Context
 
-PS-18 scoped a spike: build `@openpolicy/angular` with `vp pack` and, if it
+PS-18 scoped a spike: build `@policystack/angular` with `vp pack` and, if it
 did not build cleanly, **drop Angular from 1.0** — with a hard "no `ng-packagr`
 exception" constraint. ADR 0002 §6 had shipped the package as a TypeScript
 **src-only stopgap** specifically to avoid an `ng-packagr` / TypeScript-version
@@ -36,7 +36,7 @@ build needs the Angular compiler.
 - It is the **official** tool; the Angular CLI itself uses `ng-packagr`. It
   produces APF (partial-Ivy FESM2022 + flattened `.d.ts`) via the Angular
   compiler + Rollup.
-- **Precedent already exists in this monorepo:** `@openpolicy/svelte` does not
+- **Precedent already exists in this monorepo:** `@policystack/svelte` does not
   use `vp pack` — it builds with `@sveltejs/package`. A per-framework packaging
   tool outside `vp pack`, orchestrated fine by `vp run -r build`. `ng-packagr`
   for Angular is the exact analog — consistent, not an exception.
@@ -49,7 +49,7 @@ build needs the Angular compiler.
   | 20                     | `5.5 – 5.8`                                                     | ✗                            |
   | **21** (latest stable) | `@angular/compiler-cli` `>=5.9 <6.1`; `ng-packagr` `>=5.9 <6.0` | ✓                            |
 
-  Bumping `@openpolicy/angular` to **Angular 21** lines the compiler-cli up with
+  Bumping `@policystack/angular` to **Angular 21** lines the compiler-cli up with
   the monorepo's TS 5.9. There is no version exception.
 
 ### Alternatives considered
@@ -65,7 +65,7 @@ build needs the Angular compiler.
 
 ## Decision
 
-`@openpolicy/angular` builds with `ng-packagr` on Angular 21:
+`@policystack/angular` builds with `ng-packagr` on Angular 21:
 
 - Angular devDeps bumped 19 → 21; added `@angular/compiler-cli`, `ng-packagr`,
   `rxjs`; `zone.js` pinned `~0.15.0` (Angular 21 peer); `peerDependencies`
@@ -79,7 +79,7 @@ build needs the Angular compiler.
   — the same convention as `react`/`vue`/`svelte`. ng-packagr's nested
   `dist/package.json` is inert (auto-excluded from the published tarball by
   ng-packagr's `dist/.npmignore`).
-- `@openpolicy/angular` stays in the `.changeset` `fixed` group.
+- `@policystack/angular` stays in the `.changeset` `fixed` group.
 
 The bare `.` entry remains dropped per ADR 0002 §4 (only `./consent` is
 exposed); `ng-packagr` still emits a `.` in its own dist manifest, but the
@@ -94,7 +94,7 @@ published root `exports` only surfaces `./consent`.
   (`ɵɵngDeclareDirective` for `ConsentGate`, `ɵɵngDeclareInjectable`, `ɵfac`/
   `ɵprov`/`ɵdir`); TS 5.9.3 accepted with no compiler-cli conflict; package
   tests pass 11/11 on Angular 21 (happy-dom + zone.js, no source changes); an
-  external Angular consumer resolves and type-checks `@openpolicy/angular/consent`
+  external Angular consumer resolves and type-checks `@policystack/angular/consent`
   against the built `dist`; `npm pack` from root ships a clean FESM + `.d.ts` +
   root `package.json`.
 - Node floor rises to Angular 21's engine (`^20.19 || ^22.12 || >=24`); repo

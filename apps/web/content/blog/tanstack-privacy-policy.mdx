@@ -14,28 +14,28 @@ OpenPolicy fixes this by treating the policy like any other piece of your app: a
 Before you read the rest of this, the genuinely fastest way to get OpenPolicy into a TanStack app is to let Claude Code, Cursor, or whatever coding agent you use do the wiring for you. Run:
 
 ```bash file="terminal" tag="bash"
-bunx @openpolicy/cli init
+bunx @policystack/cli init
 ```
 
-The CLI installs the right packages for your stack, scaffolds an `openpolicy.ts`, and prints a prompt tuned for coding agents — paste it into Claude Code and it'll fill in the company details, infer your jurisdictions, declare the third parties from your `package.json`, and add a `/privacy` route in seconds. `@openpolicy/react` also ships a Claude Code Skill (`render-policies`) that the agent picks up automatically once installed, so it knows the renderer API without you explaining it.
+The CLI installs the right packages for your stack, scaffolds an `openpolicy.ts`, and prints a prompt tuned for coding agents — paste it into Claude Code and it'll fill in the company details, infer your jurisdictions, declare the third parties from your `package.json`, and add a `/privacy` route in seconds. `@policystack/react` also ships a Claude Code Skill (`render-policies`) that the agent picks up automatically once installed, so it knows the renderer API without you explaining it.
 
 If you'd rather understand each piece before handing it off — or you're working in an editor without an agent — the rest of this post walks through the same setup by hand.
 
 ## Install
 
 ```bash file="terminal" tag="bash"
-bun add @openpolicy/sdk @openpolicy/react
-bun add -D @openpolicy/vite
+bun add @policystack/sdk @policystack/react
+bun add -D @policystack/vite
 ```
 
-The SDK gives you the config types and helpers. `@openpolicy/react` renders the config straight into your component tree. The Vite plugin scans your codebase for things you should be declaring (more on this below).
+The SDK gives you the config types and helpers. `@policystack/react` renders the config straight into your component tree. The Vite plugin scans your codebase for things you should be declaring (more on this below).
 
 ## Wire up the Vite plugin
 
 Add `openPolicy` to your plugin list. The order matters — it has to come **before** `tanstackStart()` so it runs against your raw source:
 
 ```ts file="vite.config.ts"
-import { openPolicy } from "@openpolicy/vite";
+import { openPolicy } from "@policystack/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
@@ -65,7 +65,7 @@ import {
 	defineConfig,
 	LegalBases,
 	thirdParties,
-} from "@openpolicy/sdk";
+} from "@policystack/sdk";
 
 export default defineConfig({
 	company: {
@@ -122,11 +122,11 @@ The `jurisdictions` field is what unlocks region-specific clauses. `"eu"` adds t
 
 ## Render it on a route
 
-`@openpolicy/react` reads the config directly. Wrap the policy in `<OpenPolicy>` with your config, then drop in `<PrivacyPolicy />` — it picks up everything from the `data` block automatically:
+`@policystack/react` reads the config directly. Wrap the policy in `<OpenPolicy>` with your config, then drop in `<PrivacyPolicy />` — it picks up everything from the `data` block automatically:
 
 ```tsx file="src/routes/privacy.tsx"
 import { createFileRoute } from "@tanstack/react-router";
-import { OpenPolicy, PrivacyPolicy } from "@openpolicy/react";
+import { OpenPolicy, PrivacyPolicy } from "@policystack/react";
 import openpolicy from "@/openpolicy";
 
 export const Route = createFileRoute("/privacy")({
@@ -150,7 +150,7 @@ That's it. The policy is now part of your app: it ships in the same bundle, it f
 
 ```tsx file="src/routes/privacy.tsx"
 import { createFileRoute } from "@tanstack/react-router";
-import { OpenPolicy, PrivacyPolicy, type PolicyComponents } from "@openpolicy/react";
+import { OpenPolicy, PrivacyPolicy, type PolicyComponents } from "@policystack/react";
 import openpolicy from "@/openpolicy";
 
 const components: PolicyComponents = {
@@ -191,7 +191,7 @@ The hardest part of a code-first policy isn't the initial setup — it's keeping
 **Annotate data writes at the source.** Wrap the values you persist with `collecting()` and the plugin picks up the category and field labels at build time, then merges them into `dataCollected`:
 
 ```ts file="src/lib/users.ts"
-import { collecting } from "@openpolicy/sdk";
+import { collecting } from "@policystack/sdk";
 
 export async function createUser(name: string, email: string) {
 	return db
@@ -207,7 +207,7 @@ export async function createUser(name: string, email: string) {
 **Declare third parties at their initialization sites.** Same pattern, applied to SDK setup — these calls feed the `thirdParties` export:
 
 ```ts file="src/lib/analytics.ts"
-import { thirdParty } from "@openpolicy/sdk";
+import { thirdParty } from "@policystack/sdk";
 import { PostHog } from "posthog-js";
 
 thirdParty("PostHog", "Product analytics", "https://posthog.com/privacy");

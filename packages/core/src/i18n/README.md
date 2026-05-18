@@ -1,6 +1,6 @@
 # i18n
 
-OpenPolicy emits roughly ~125 strings into every compiled privacy/cookie policy. This directory holds the translations.
+PolicyStack emits roughly ~125 strings into every compiled privacy/cookie policy. This directory holds the translations.
 
 ## How it works
 
@@ -22,10 +22,10 @@ There is no string-key lookup. TypeScript is the lookup — every locale must im
 ## What is NOT translated
 
 - `heading(..., { reason: "Required by GDPR Article 13(1)(c)" })` — `reason` is machine-readable audit metadata threaded into the document tree for compliance tooling, not policy content shown to end users. Stays English.
-- Validation messages emitted by `validate.ts`, `validate-config.ts`, and `validate-cookie.ts`. These surface in build logs to the developer integrating OpenPolicy, not in the rendered document. Stays English.
+- Validation messages emitted by `validate.ts`, `validate-config.ts`, and `validate-cookie.ts`. These surface in build logs to the developer integrating PolicyStack, not in the rendered document. Stays English.
 - Section IDs (`"introduction"`, `"data-collected"`, …). These are stable document-tree identifiers used by tests and framework integrations to target sections. Stays English.
 - Format-only output from renderers (markdown syntax, HTML tags, PDF bullet glyphs). Already locale-agnostic.
-- Internal `Error` messages thrown when configs are malformed (e.g. `"OpenPolicy: data.collected[...] has no matching entry"`). Developer-facing.
+- Internal `Error` messages thrown when configs are malformed (e.g. `"PolicyStack: data.collected[...] has no matching entry"`). Developer-facing.
 
 ## Adding a locale
 

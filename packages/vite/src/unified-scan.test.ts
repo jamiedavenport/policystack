@@ -7,7 +7,7 @@ import { createUnifiedScanner } from "./unified-scan";
 
 let tmp: string;
 beforeEach(async () => {
-	tmp = await mkdtemp(join(tmpdir(), "openpolicy-unified-"));
+	tmp = await mkdtemp(join(tmpdir(), "policystack-unified-"));
 	await mkdir(join(tmp, "src"), { recursive: true });
 });
 afterEach(async () => {
@@ -34,7 +34,7 @@ describe("unified scanner — one walk, two outputs", () => {
 		await writeFile(
 			join(tmp, "src", "track.ts"),
 			[
-				`import { collecting } from "@openpolicy/sdk";`,
+				`import { collecting } from "@policystack/sdk";`,
 				`import posthog from "posthog-js";`,
 				`export const x = collecting("Account", { a: 1 }, { a: "A" });`,
 				`posthog.capture("evt");`,
@@ -43,7 +43,7 @@ describe("unified scanner — one walk, two outputs", () => {
 
 		const { scanned, consent } = await scanner(true).fullScan();
 
-		// Policy half (feeds openpolicy.gen.ts)
+		// Policy half (feeds policystack.gen.ts)
 		expect(scanned.dataCollected).toEqual({ Account: ["A"] });
 		// Consent half (ungated tracking import) — same walk
 		expect(consent.vendors.map((v) => v.vendor)).toContain("posthog");
@@ -55,7 +55,7 @@ describe("unified scanner — one walk, two outputs", () => {
 		await writeFile(
 			join(tmp, "src", "track.ts"),
 			[
-				`import { collecting } from "@openpolicy/sdk";`,
+				`import { collecting } from "@policystack/sdk";`,
 				`import posthog from "posthog-js";`,
 				`export const x = collecting("Account", { a: 1 }, { a: "A" });`,
 				`posthog.capture("evt");`,
@@ -73,13 +73,13 @@ describe("unified scanner — one walk, two outputs", () => {
 		// SDK call outside srcDir must NOT feed the gen module…
 		await writeFile(
 			join(tmp, "outside.ts"),
-			`import { collecting } from "@openpolicy/sdk";\nexport const y = collecting("Leaked", { a: 1 }, { a: "A" });\n`,
+			`import { collecting } from "@policystack/sdk";\nexport const y = collecting("Leaked", { a: 1 }, { a: "A" });\n`,
 		);
 		// …but a tracking import outside srcDir is still a consent finding.
 		await writeFile(join(tmp, "outside-track.ts"), `import "posthog-js";\n`);
 		await writeFile(
 			join(tmp, "src", "ok.ts"),
-			`import { collecting } from "@openpolicy/sdk";\nexport const x = collecting("Account", { a: 1 }, { a: "A" });\n`,
+			`import { collecting } from "@policystack/sdk";\nexport const x = collecting("Account", { a: 1 }, { a: "A" });\n`,
 		);
 
 		const { scanned, consent } = await scanner(true).fullScan();

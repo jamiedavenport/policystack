@@ -1,4 +1,4 @@
-import type { BoldNode, ItalicNode, LinkNode, TextNode } from "@openpolicy/core";
+import type { BoldNode, ItalicNode, LinkNode, TextNode } from "@policystack/core";
 import { defineComponent, h, type PropType } from "vue";
 
 export const DefaultText = defineComponent({

@@ -14,13 +14,13 @@ afterEach(() => {
 	rmSync(dir, { recursive: true, force: true });
 });
 
-test("resolveStubPath picks src/openpolicy.ts when src/ exists", () => {
+test("resolveStubPath picks src/policystack.ts when src/ exists", () => {
 	mkdirSync(join(dir, "src"));
-	expect(resolveStubPath(dir)).toBe(join(dir, "src", "openpolicy.ts"));
+	expect(resolveStubPath(dir)).toBe(join(dir, "src", "policystack.ts"));
 });
 
-test("resolveStubPath falls back to ./openpolicy.ts when no src/", () => {
-	expect(resolveStubPath(dir)).toBe(join(dir, "openpolicy.ts"));
+test("resolveStubPath falls back to ./policystack.ts when no src/", () => {
+	expect(resolveStubPath(dir)).toBe(join(dir, "policystack.ts"));
 });
 
 test("resolveStubPath honors --out override (relative)", () => {
@@ -35,7 +35,7 @@ test("resolveStubPath honors --out override (absolute)", () => {
 
 test("getStubContents contains required defineConfig fields", () => {
 	const out = getStubContents("2026-04-22");
-	expect(out).toContain('import { defineConfig } from "@openpolicy/sdk"');
+	expect(out).toContain('import { defineConfig } from "@policystack/sdk"');
 	expect(out).toContain("export default defineConfig(");
 	expect(out).toContain('effectiveDate: "2026-04-22"');
 	expect(out).toContain("jurisdictions: []");
@@ -58,7 +58,7 @@ test("getStubContents ships a commented cookies skeleton; no consentMechanism", 
 });
 
 test("writeStub writes a new file", async () => {
-	const target = join(dir, "openpolicy.ts");
+	const target = join(dir, "policystack.ts");
 	const res = await writeStub(target, false);
 	expect(res.written).toBe(true);
 	expect(existsSync(target)).toBe(true);
@@ -66,7 +66,7 @@ test("writeStub writes a new file", async () => {
 });
 
 test("writeStub skips when file exists and force=false", async () => {
-	const target = join(dir, "openpolicy.ts");
+	const target = join(dir, "policystack.ts");
 	writeFileSync(target, "existing");
 	const res = await writeStub(target, false);
 	expect(res.written).toBe(false);
@@ -74,7 +74,7 @@ test("writeStub skips when file exists and force=false", async () => {
 });
 
 test("writeStub overwrites when force=true", async () => {
-	const target = join(dir, "openpolicy.ts");
+	const target = join(dir, "policystack.ts");
 	writeFileSync(target, "existing");
 	const res = await writeStub(target, true);
 	expect(res.written).toBe(true);

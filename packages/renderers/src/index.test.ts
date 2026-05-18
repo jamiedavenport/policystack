@@ -1,5 +1,5 @@
 import { expect, test } from "vite-plus/test";
-import type { PolicyInput } from "@openpolicy/core";
+import type { PolicyInput } from "@policystack/core";
 import { compilePolicy } from "./index";
 
 const input: PolicyInput = {

@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { LinkNode } from "@openpolicy/core";
+import type { LinkNode } from "@policystack/core";
 
 let { node }: { node: LinkNode } = $props();
 </script>

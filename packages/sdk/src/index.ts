@@ -3,14 +3,14 @@ import type {
 	Contact,
 	CookieContextEntry,
 	DataContextEntry,
-	OpenPolicyConfig,
+	PolicyStackConfig,
 	ThirdParty,
-} from "@openpolicy/core";
+} from "@policystack/core";
 import {
 	computeCookieVersion,
 	computePrivacyVersion,
-	normalizeOpenPolicyConfig,
-} from "@openpolicy/core";
+	normalizePolicyStackConfig,
+} from "@policystack/core";
 import type { ScannedCollectionKeys, ScannedCookieKeys } from "./auto-collected";
 
 export type {
@@ -35,13 +35,13 @@ export type {
 	JurisdictionId,
 	LegalBasis,
 	Locale,
-	OpenPolicyConfig,
+	PolicyStackConfig,
 	PolicyCategory,
 	ProvisionBasis,
 	ProvisionRequirement,
 	ThirdParty,
 	TrackingTechnology,
-} from "@openpolicy/core";
+} from "@policystack/core";
 
 export {
 	computeCookieVersion,
@@ -52,8 +52,8 @@ export {
 	ISSUE_CATALOG,
 	Statutory,
 	Voluntary,
-} from "@openpolicy/core";
-export type { IssueExplanation } from "@openpolicy/core";
+} from "@policystack/core";
+export type { IssueExplanation } from "@policystack/core";
 
 export type {
 	ScannedCollectionKeys,
@@ -80,7 +80,7 @@ type DataKey<Collected> = Extract<keyof Collected, string> | ScannedDataKey;
 type CookieKey<Used> = Extract<keyof Used, string> | ScannedCookieKey;
 
 // `name`, `url` and `contact.email` are seeded from the host package.json by
-// normalizeOpenPolicyConfig() — optional on input, an explicit value still
+// normalizePolicyStackConfig() — optional on input, an explicit value still
 // wins. `legalName`/`address` stay required: a package.json cannot supply a
 // registered legal entity.
 type CompanyInput = Omit<CompanyConfig, "name" | "url" | "contact"> & {
@@ -89,7 +89,7 @@ type CompanyInput = Omit<CompanyConfig, "name" | "url" | "contact"> & {
 	contact?: Partial<Contact>;
 };
 
-// The shape of an explicit `import * as scanned from "./openpolicy.gen"`
+// The shape of an explicit `import * as scanned from "./policystack.gen"`
 // passed as the second argument. All optional so the generated namespace
 // (which always has every export) is structurally assignable, and so a
 // hand-written partial works in tests.
@@ -100,10 +100,10 @@ export type ScannedModule = {
 	sharing?: { key: string; recipient: string }[];
 };
 
-type OpenPolicyConfigWithGenerics<
+type PolicyStackConfigWithGenerics<
 	Collected extends Record<string, string[]>,
 	CookieUsed extends { essential: true; [k: string]: boolean },
-> = Omit<OpenPolicyConfig, "data" | "cookies" | "company" | "consentMechanism"> & {
+> = Omit<PolicyStackConfig, "data" | "cookies" | "company" | "consentMechanism"> & {
 	// `consentMechanism` is omitted entirely: it is DERIVED from the cookie
 	// posture so it can no longer be a lie.
 	company: CompanyInput;
@@ -121,9 +121,9 @@ type OpenPolicyConfigWithGenerics<
 
 /**
  * The canonical config entrypoint. Pass scanned data as the optional second
- * argument — `import * as scanned from "./openpolicy.gen"` — instead of
+ * argument — `import * as scanned from "./policystack.gen"` — instead of
  * spreading `...dataCollected` / `cookies` / `thirdParties` by hand. The
- * static `import` keeps the gen module's `declare module "@openpolicy/sdk"`
+ * static `import` keeps the gen module's `declare module "@policystack/sdk"`
  * augmentation reachable, so scanned categories are still type-required in
  * `data.context`. The returned config is normalized: `consentMechanism` is
  * derived from the cookie posture and `company.{name,url,contact.email}` are
@@ -136,14 +136,14 @@ export function defineConfig<
 		[k: string]: boolean;
 	},
 >(
-	config: OpenPolicyConfigWithGenerics<Collected, CookieUsed>,
+	config: PolicyStackConfigWithGenerics<Collected, CookieUsed>,
 	scanned?: ScannedModule,
-): OpenPolicyConfig {
-	const resolved = config as OpenPolicyConfig;
+): PolicyStackConfig {
+	const resolved = config as PolicyStackConfig;
 
 	const mergedThirdParties = [...(scanned?.thirdParties ?? []), ...(resolved.thirdParties ?? [])];
 
-	const merged: OpenPolicyConfig = {
+	const merged: PolicyStackConfig = {
 		...resolved,
 		data: {
 			...resolved.data,
@@ -167,7 +167,7 @@ export function defineConfig<
 				: resolved.cookies,
 	};
 
-	const normalized = normalizeOpenPolicyConfig(merged);
+	const normalized = normalizePolicyStackConfig(merged);
 	return {
 		...normalized,
 		privacyVersion: normalized.privacyVersion ?? computePrivacyVersion(normalized),

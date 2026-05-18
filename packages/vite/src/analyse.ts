@@ -90,7 +90,7 @@ export function parseModule(filename: string, code: string): ParsedModule | null
 	try {
 		result = parseSync(filename, code);
 	} catch {
-		console.warn(`[openpolicy] parse error in ${filename}`);
+		console.warn(`[policystack] parse error in ${filename}`);
 		return null;
 	}
 
@@ -99,7 +99,7 @@ export function parseModule(filename: string, code: string): ParsedModule | null
 		// produces a usable AST, so we keep going and let the walker decide.
 		const fatal = result.errors.some((e) => e.severity === ("Error" as never));
 		if (fatal) {
-			console.warn(`[openpolicy] parse error in ${filename}`);
+			console.warn(`[policystack] parse error in ${filename}`);
 			return null;
 		}
 	}
@@ -139,7 +139,7 @@ function collectImportSources(program: AnyNode): string[] {
  *
  * `isSdkSpecifier` decides whether an import source is the SDK. It defaults
  * to {@link isCanonicalSdkSpecifier} (exact dual-scope match) so direct
- * `@openpolicy/sdk` / `@policystack/sdk` imports work with no resolver; the
+ * `@policystack/sdk` / `@policystack/sdk` imports work with no resolver; the
  * Vite plugin swaps in a resolver-backed predicate so import aliases also
  * resolve.
  */
@@ -189,7 +189,7 @@ export function extractFromParsed(
 }
 
 /**
- * The local names a module binds to each tracked `@openpolicy/sdk` export.
+ * The local names a module binds to each tracked `@policystack/sdk` export.
  * Resolved once per file by {@link collectSdkBindings} so the single unified
  * walk (PS-25) and the legacy {@link extractFromParsed} share one binding
  * pass instead of five.

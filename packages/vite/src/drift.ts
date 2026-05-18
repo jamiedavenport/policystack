@@ -1,11 +1,11 @@
-import type { OpenPolicyConfig } from "@openpolicy/core";
+import type { PolicyStackConfig } from "@policystack/core";
 import type { VendorHit } from "./consent/types";
 import { vendorById } from "./registry";
 import type { Scanned } from "./scanned";
 
 /**
  * The §4.3 declared-vs-used cross-check codes (PS-25). The OSS differentiator:
- * the policy declared in `openpolicy.ts` is checked *both ways* against what
+ * the policy declared in `policystack.ts` is checked *both ways* against what
  * the single walk actually found in the code. These live here, not in core's
  * frozen config-only `IssueCode` union — drift needs scanned data + config —
  * but they ride the same `strict` / `suppress` policy so a team can commit an
@@ -31,11 +31,11 @@ export type DriftFinding = {
 
 const ESSENTIAL = "essential";
 
-function declaredVendorNames(config: OpenPolicyConfig): Set<string> {
+function declaredVendorNames(config: PolicyStackConfig): Set<string> {
 	return new Set((config.thirdParties ?? []).map((t) => t.name));
 }
 
-function declaredCookieCategories(config: OpenPolicyConfig): Set<string> {
+function declaredCookieCategories(config: PolicyStackConfig): Set<string> {
 	const used = config.cookies?.used ?? {};
 	const out = new Set<string>();
 	for (const [key, enabled] of Object.entries(used)) {
@@ -65,7 +65,7 @@ function usedCookieCategories(scanned: Scanned, vendors: VendorHit[]): Set<strin
  * (sharing edges, cookie categories, declared third parties).
  */
 export function crossCheck(
-	config: OpenPolicyConfig,
+	config: PolicyStackConfig,
 	scanned: Scanned,
 	vendors: VendorHit[],
 ): DriftFinding[] {
@@ -87,7 +87,7 @@ export function crossCheck(
 		// used → declared (vendor)
 		if (!declaredVendors.has(name)) {
 			const suggestion = rec
-				? `Add to openpolicy.ts thirdParties:\n` +
+				? `Add to policystack.ts thirdParties:\n` +
 					`    { name: ${JSON.stringify(rec.name)}, purpose: ${JSON.stringify(
 						rec.purpose,
 					)}, policyUrl: ${JSON.stringify(rec.policyUrl)} }`
@@ -189,13 +189,13 @@ export function applyDriftPolicy(
 }
 
 /**
- * Formats a drift finding for the terminal — same greppable `[openpolicy]`
+ * Formats a drift finding for the terminal — same greppable `[policystack]`
  * prefix as `formatIssue`, with an optional `file:line:col` and the
- * actionable "add this to openpolicy.ts" suggestion.
+ * actionable "add this to policystack.ts" suggestion.
  */
 export function formatDrift(f: DriftFinding): string {
 	const loc = f.file && f.line !== undefined ? ` ${f.file}:${f.line}:${f.column ?? 0}` : "";
-	const lines = [`[openpolicy]${loc} ${f.code}: ${f.message}`];
+	const lines = [`[policystack]${loc} ${f.code}: ${f.message}`];
 	if (f.suggestion) lines.push(`  ${f.suggestion.replace(/\n/g, "\n  ")}`);
 	return lines.join("\n");
 }

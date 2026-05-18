@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
-import { createConsentStore, type Category } from "@openpolicy/core/consent";
+import { createConsentStore, type Category } from "@policystack/core/consent";
 import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { ConsentGate, OpenCookiesProvider, useCategory, useConsent } from "./consent";
+import { ConsentGate, PolicyStackConsentProvider, useCategory, useConsent } from "./consent";
 
 const baseCategories: Category[] = [
 	{ key: "essential", label: "Essential", locked: true },
@@ -13,7 +13,9 @@ const baseCategories: Category[] = [
 
 function Wrapper({ children }: { children: ReactNode }) {
 	return (
-		<OpenCookiesProvider config={{ categories: baseCategories }}>{children}</OpenCookiesProvider>
+		<PolicyStackConsentProvider config={{ categories: baseCategories }}>
+			{children}
+		</PolicyStackConsentProvider>
 	);
 }
 
@@ -22,7 +24,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe("OpenCookiesProvider", () => {
+describe("PolicyStackConsentProvider", () => {
 	it("provides a store created from config", () => {
 		const { result } = renderHook(() => useConsent(), { wrapper: Wrapper });
 		expect(result.current.route).toBe("cookie");
@@ -38,7 +40,7 @@ describe("OpenCookiesProvider", () => {
 		store.toggle("analytics");
 		const { result } = renderHook(() => useConsent(), {
 			wrapper: ({ children }) => (
-				<OpenCookiesProvider store={store}>{children}</OpenCookiesProvider>
+				<PolicyStackConsentProvider store={store}>{children}</PolicyStackConsentProvider>
 			),
 		});
 		expect(result.current.decisions.analytics).toBe(true);
@@ -46,7 +48,7 @@ describe("OpenCookiesProvider", () => {
 
 	it("throws when hooks are used outside the provider", () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});
-		expect(() => renderHook(() => useConsent())).toThrow(/OpenCookiesProvider/);
+		expect(() => renderHook(() => useConsent())).toThrow(/PolicyStackConsentProvider/);
 	});
 });
 
@@ -154,10 +156,10 @@ describe("useCategory", () => {
 		}
 		const store = createConsentStore({ categories: baseCategories });
 		render(
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ProbeAnalytics />
 				<ProbeMarketing />
-			</OpenCookiesProvider>,
+			</PolicyStackConsentProvider>,
 		);
 		const before = { ...renders };
 		act(() => {
@@ -173,22 +175,22 @@ describe("ConsentGate", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		store.acceptAll();
 		render(
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ConsentGate requires="analytics">
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>,
+			</PolicyStackConsentProvider>,
 		);
 		expect(screen.getByTestId("child").textContent).toBe("visible");
 	});
 
 	it("renders fallback when expression is false", () => {
 		render(
-			<OpenCookiesProvider config={{ categories: baseCategories }}>
+			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 				<ConsentGate requires="analytics" fallback={<span data-testid="fb">nope</span>}>
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>,
+			</PolicyStackConsentProvider>,
 		);
 		expect(screen.queryByTestId("child")).toBeNull();
 		expect(screen.getByTestId("fb").textContent).toBe("nope");
@@ -196,11 +198,11 @@ describe("ConsentGate", () => {
 
 	it("renders nothing when no fallback and gate is closed", () => {
 		const { container } = render(
-			<OpenCookiesProvider config={{ categories: baseCategories }}>
+			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 				<ConsentGate requires="analytics">
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>,
+			</PolicyStackConsentProvider>,
 		);
 		expect(container.textContent).toBe("");
 	});
@@ -208,11 +210,11 @@ describe("ConsentGate", () => {
 	it("updates when state crosses the truth boundary", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		render(
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ConsentGate requires="analytics" fallback={<span data-testid="fb">nope</span>}>
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>,
+			</PolicyStackConsentProvider>,
 		);
 		expect(screen.queryByTestId("child")).toBeNull();
 		act(() => {
@@ -225,14 +227,14 @@ describe("ConsentGate", () => {
 	it("evaluates compound expressions via OP-296's evaluator", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		render(
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ConsentGate
 					requires={{ and: ["analytics", "marketing"] }}
 					fallback={<span data-testid="fb">need both</span>}
 				>
 					<span data-testid="child">both granted</span>
 				</ConsentGate>
-			</OpenCookiesProvider>,
+			</PolicyStackConsentProvider>,
 		);
 		expect(screen.queryByTestId("child")).toBeNull();
 		act(() => {

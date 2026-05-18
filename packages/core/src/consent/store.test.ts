@@ -6,7 +6,7 @@ import type {
 	Category,
 	ConsentRecord,
 	JurisdictionResolver,
-	OpenCookiesConfig,
+	PolicyStackConsentConfig,
 	StorageAdapter,
 } from "./types";
 
@@ -16,7 +16,7 @@ const baseCategories: Category[] = [
 	{ key: "marketing", label: "Marketing" },
 ];
 
-function makeConfig(overrides: Partial<OpenCookiesConfig> = {}): OpenCookiesConfig {
+function makeConfig(overrides: Partial<PolicyStackConsentConfig> = {}): PolicyStackConsentConfig {
 	return { categories: baseCategories, ...overrides };
 }
 

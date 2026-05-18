@@ -17,10 +17,10 @@ import {
 	type ConsentState,
 	type ConsentStore,
 	type Jurisdiction,
-	type OpenCookiesConfig,
+	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
-} from "@openpolicy/core/consent";
+} from "@policystack/core/consent";
 
 type Bound = {
 	store: ConsentStore;
@@ -30,7 +30,7 @@ type Bound = {
 const Ctx = createContext<Bound | null>(null);
 
 const NOT_PROVIDED_MESSAGE =
-	"useConsent / useCategory / ConsentGate must be used inside <OpenCookiesProvider>";
+	"useConsent / useCategory / ConsentGate must be used inside <PolicyStackConsentProvider>";
 
 function useBound(): Bound {
 	const ctx = useContext(Ctx);
@@ -38,12 +38,12 @@ function useBound(): Bound {
 	return ctx;
 }
 
-export type OpenCookiesProviderProps = (
-	| { config: OpenCookiesConfig; store?: undefined }
+export type PolicyStackConsentProviderProps = (
+	| { config: PolicyStackConsentConfig; store?: undefined }
 	| { store: ConsentStore; config?: undefined }
 ) & { children?: JSX.Element };
 
-export function OpenCookiesProvider(props: OpenCookiesProviderProps): JSX.Element {
+export function PolicyStackConsentProvider(props: PolicyStackConsentProviderProps): JSX.Element {
 	const store = props.store ?? createConsentStore(props.config!);
 	const [state, setState] = createSignal<ConsentState>(store.getState(), { equals: false });
 	const unsubscribe = store.subscribe(setState);
@@ -157,7 +157,7 @@ export type {
 	ConsentState,
 	ConsentStore,
 	Jurisdiction,
-	OpenCookiesConfig,
+	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,
 };

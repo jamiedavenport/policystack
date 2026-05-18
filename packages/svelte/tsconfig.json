@@ -1,5 +1,5 @@
 {
-	"extends": "@openpolicy/tooling/base",
+	"extends": "@policystack/tooling/base",
 	"compilerOptions": {
 		"outDir": "dist",
 		"types": ["svelte"]

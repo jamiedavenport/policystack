@@ -1,4 +1,4 @@
-import type { Document } from "@openpolicy/core";
+import type { Document } from "@policystack/core";
 import type { VNodeChild } from "vue";
 import type { PolicyComponents } from "../types";
 import { renderNode } from "./renderNode";

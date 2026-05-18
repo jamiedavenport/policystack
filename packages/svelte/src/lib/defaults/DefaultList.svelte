@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ListNode } from "@openpolicy/core";
+import type { ListNode } from "@policystack/core";
 import type { Snippet } from "svelte";
 
 let {

@@ -1,11 +1,11 @@
 {
-	"name": "@openpolicy/vue",
+	"name": "@policystack/vue",
 	"version": "0.0.34",
-	"description": "Vue components for OpenPolicy",
+	"description": "Vue components for PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/vue"
 	},
 	"files": [
@@ -46,8 +46,8 @@
 		"test": "vp test"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/core": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"@vue/test-utils": "^2.4.10",
 		"happy-dom": "^15.11.7",
 		"vite-plus": "catalog:",

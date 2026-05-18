@@ -1,4 +1,4 @@
-import type { LegalBasis } from "@openpolicy/core";
+import type { LegalBasis } from "@policystack/core";
 
 export const DataCategories = {
 	AccountInfo: { "Account Information": ["Name", "Email address"] },

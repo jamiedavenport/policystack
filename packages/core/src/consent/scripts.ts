@@ -23,7 +23,7 @@ export function gateScript(
 		registered.set(store, ids);
 	}
 	if (ids.has(def.id)) {
-		console.warn(`[opencookies] script "${def.id}" is already gated on this store`);
+		console.warn(`[policystack] script "${def.id}" is already gated on this store`);
 		return () => {};
 	}
 	ids.add(def.id);
@@ -68,7 +68,7 @@ export function gateScript(
 		try {
 			if (def.src) await injectScript(doc, def.src, def.attrs);
 		} catch (err) {
-			console.warn(`[opencookies] failed to load script "${def.id}":`, err);
+			console.warn(`[policystack] failed to load script "${def.id}":`, err);
 			return;
 		}
 		def.init?.();
@@ -131,7 +131,7 @@ function resolveEnv(opts?: GateOptions): { win: Win; doc: Document } | null {
 function installStub(win: Win, path: string, onCall: (call: QueuedCall) => void): StubRecord {
 	const segments = path.split(".");
 	const leaf = segments.pop();
-	if (!leaf) throw new Error(`[opencookies] invalid queue path: "${path}"`);
+	if (!leaf) throw new Error(`[policystack] invalid queue path: "${path}"`);
 
 	let parent: Record<string, unknown> = win as unknown as Record<string, unknown>;
 	for (const seg of segments) {

@@ -25,7 +25,7 @@
  *
  * @example
  * ```ts
- * import { sharing } from "@openpolicy/sdk";
+ * import { sharing } from "@policystack/sdk";
  *
  * export async function reportPurchase(email: string, amountCents: number) {
  *   return fetch("https://api.stripe.com/v1/charges", {

@@ -1,8 +1,8 @@
-# `@openpolicy/core`
+# `@policystack/core`
 
-> Compilation engine for [OpenPolicy](https://openpolicy.sh) policy documents.
+> Compilation engine for [PolicyStack](https://policystack.dev) policy documents.
 
-This is an internal package used by `@openpolicy/sdk`, `@openpolicy/vite`, and `@openpolicy/cli`. You generally do not need to install or import it directly.
+This is an internal package used by `@policystack/sdk`, `@policystack/vite`, and `@policystack/cli`. You generally do not need to install or import it directly.
 
 ## What it does
 
@@ -16,7 +16,7 @@ This is an internal package used by `@openpolicy/sdk`, `@openpolicy/vite`, and `
 If you're building a custom integration (e.g. a framework plugin not covered by the official packages), you can use `compilePolicy` directly. It returns the rendered output in memory — the caller decides what to do with it (inject into a page, send over the wire, write to disk, etc.).
 
 ```ts
-import { compilePolicy } from "@openpolicy/core";
+import { compilePolicy } from "@policystack/core";
 
 const results = await compilePolicy(
 	{
@@ -41,6 +41,6 @@ for (const result of results) {
 
 ## Links
 
-- [GitHub](https://github.com/jamiedavenport/openpolicy)
-- [openpolicy.sh](https://openpolicy.sh)
-- [npm](https://www.npmjs.com/package/@openpolicy/core)
+- [GitHub](https://github.com/jamiedavenport/policystack)
+- [policystack.dev](https://policystack.dev)
+- [npm](https://www.npmjs.com/package/@policystack/core)

@@ -1,5 +1,5 @@
 import { Directive, Input, TemplateRef, ViewContainerRef, effect, inject } from "@angular/core";
-import type { ConsentExpr } from "@openpolicy/core/consent";
+import type { ConsentExpr } from "@policystack/core/consent";
 import { ConsentService } from "./consent.service";
 
 @Directive({

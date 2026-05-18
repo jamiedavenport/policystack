@@ -25,25 +25,25 @@ test("returns empty when no package.json", () => {
 test("detects vite as a devDep integration", () => {
 	writePkg({ devDependencies: { vite: "^5.0.0" } });
 	const got = detectIntegrations(dir);
-	expect(got).toEqual([{ trigger: "vite", pkg: "@openpolicy/vite", dev: true }]);
+	expect(got).toEqual([{ trigger: "vite", pkg: "@policystack/vite", dev: true }]);
 });
 
 test("detects react as a prod dep integration", () => {
 	writePkg({ dependencies: { react: "^19.0.0" } });
 	const got = detectIntegrations(dir);
-	expect(got).toEqual([{ trigger: "react", pkg: "@openpolicy/react", dev: false }]);
+	expect(got).toEqual([{ trigger: "react", pkg: "@policystack/react", dev: false }]);
 });
 
 test("detects vue as a prod dep integration", () => {
 	writePkg({ dependencies: { vue: "^3.5.0" } });
 	const got = detectIntegrations(dir);
-	expect(got).toEqual([{ trigger: "vue", pkg: "@openpolicy/vue", dev: false }]);
+	expect(got).toEqual([{ trigger: "vue", pkg: "@policystack/vue", dev: false }]);
 });
 
 test("detects svelte as a prod dep integration", () => {
 	writePkg({ dependencies: { svelte: "^5.0.0" } });
 	const got = detectIntegrations(dir);
-	expect(got).toEqual([{ trigger: "svelte", pkg: "@openpolicy/svelte", dev: false }]);
+	expect(got).toEqual([{ trigger: "svelte", pkg: "@policystack/svelte", dev: false }]);
 });
 
 test("detects multiple integrations (vite + react)", () => {
@@ -52,7 +52,7 @@ test("detects multiple integrations (vite + react)", () => {
 		devDependencies: { vite: "^5.0.0" },
 	});
 	const got = detectIntegrations(dir);
-	expect(got.map((i) => i.pkg).sort()).toEqual(["@openpolicy/react", "@openpolicy/vite"]);
+	expect(got.map((i) => i.pkg).sort()).toEqual(["@policystack/react", "@policystack/vite"]);
 });
 
 test("returns empty when no triggers match", () => {

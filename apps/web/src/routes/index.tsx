@@ -16,7 +16,7 @@ import { highlight } from "../lib/shiki";
 import { getStars } from "../lib/github-stars";
 import { pageMeta } from "../lib/seo";
 
-const HERO_SNIPPET = `import { defineConfig, LegalBases } from "@openpolicy/sdk";
+const HERO_SNIPPET = `import { defineConfig, LegalBases } from "@policystack/sdk";
 
 export default defineConfig({
   company: {
@@ -96,7 +96,7 @@ function Hero({ heroHtml }: { heroHtml: string }) {
 				</p>
 				<div className="mt-16 flex flex-wrap items-center gap-x-6 gap-y-4">
 					<a
-						href="https://docs.openpolicy.sh"
+						href="https://policystack.dev/docs"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="inline-flex items-center gap-2.5 border-2 border-black bg-black px-6 py-3.5 text-sm tracking-wide text-white uppercase hover:bg-white hover:text-black"
@@ -115,7 +115,7 @@ function Hero({ heroHtml }: { heroHtml: string }) {
 
 				<div className="mt-24 grid gap-6 md:grid-cols-2 md:items-stretch">
 					<div className="min-w-0 md:h-112">
-						<CodeBlock className="h-full" file="openpolicy.ts" html={heroHtml} />
+						<CodeBlock className="h-full" file="policystack.ts" html={heroHtml} />
 					</div>
 					<div className="min-w-0 md:h-112">
 						<BrowserPreview />
@@ -259,7 +259,7 @@ function Thesis() {
 	);
 }
 
-function Products({ stars }: { stars: { opencookies: number | null; openpolicy: number | null } }) {
+function Products({ stars }: { stars: { consent: number | null; policy: number | null } }) {
 	return (
 		<section id="products" className="border-b-2 border-black">
 			<div className="mx-auto max-w-6xl px-8 py-32 md:py-40">
@@ -268,33 +268,33 @@ function Products({ stars }: { stars: { opencookies: number | null; openpolicy: 
 					Use one. Use <Highlight>all three.</Highlight>
 				</h2>
 				<p className="mt-8 max-w-[60ch] text-lg text-pretty text-mute">
-					Each repo is independently useful and Apache-2.0 licensed. PolicyCloud sits on top when
-					you want a hosted control plane.
+					Each repo is independently useful and Apache-2.0 licensed. PolicyStack Cloud sits on top
+					when you want a hosted control plane.
 				</p>
 
 				<dl className="mt-20 grid border-2 border-black md:grid-cols-3">
 					<ProductCard
-						to="/opencookies"
+						to="/consent"
 						n="01"
-						slug="opencookies"
+						slug="consent"
 						title="A headless consent state machine."
 						body="Sub-4kb core with adapters for React, Vue, Solid, Svelte, and Angular. A Vite plugin flags ungated cookies at dev time. Integrations for GA, Meta Pixel, and more."
-						tag="@opencookies/react"
-						stars={stars.opencookies}
+						tag="@policystack/react/consent"
+						stars={stars.consent}
 					/>
 					<ProductCard
-						to="/openpolicy"
+						to="/policy"
 						n="02"
-						slug="openpolicy"
+						slug="policy"
 						title="Your policy as a typed config."
 						body="Define your privacy and cookie policy once in TypeScript. Render it as React components, or generate Markdown. Ships a shadcn-style consent banner."
-						tag="@openpolicy/react"
-						stars={stars.openpolicy}
+						tag="@policystack/react"
+						stars={stars.policy}
 					/>
 					<ProductCard
-						to="/policycloud"
+						to="/cloud"
 						n="03"
-						slug="policycloud"
+						slug="cloud"
 						title="The hosted control plane."
 						body="Centralized policy versioning, audit trails, and consent analytics across every app in your stack. Optional. Plays nicely with the OSS pieces."
 						tag="hosted · early access"
@@ -409,17 +409,17 @@ function ClaudeTerminal() {
 				</p>
 				<p className="mt-5 text-white/50">
 					React + Vite detected. I’ll wire up{" "}
-					<span className="text-white/80">@opencookies/react</span> for the banner and{" "}
-					<span className="text-white/80">@openpolicy/react</span> for the policy page.
+					<span className="text-white/80">@policystack/react/consent</span> for the banner and{" "}
+					<span className="text-white/80">@policystack/react</span> for the policy page.
 				</p>
 				<div className="mt-5 space-y-3 text-[0.78125rem]">
 					<TerminalStep
-						command="pnpm add @opencookies/core @opencookies/react"
+						command="pnpm add @policystack/core/consent @policystack/react/consent"
 						result="added 2 packages in 1.4s"
 					/>
 					<TerminalStep
-						command="pnpm dlx @openpolicy/cli init"
-						result="created src/openpolicy.ts"
+						command="pnpm dlx @policystack/cli init"
+						result="created src/policystack.ts"
 					/>
 				</div>
 				<p className="mt-5 text-white/60">
@@ -427,13 +427,13 @@ function ClaudeTerminal() {
 					<span className="text-white/80">src/App.tsx</span>
 				</p>
 				<pre className="mt-2 border-l-2 border-emerald-400/40 pl-4 text-white/85">
-					{`+ import { OpenCookiesProvider } from "@opencookies/react";
+					{`+ import { PolicyStackConsentProvider } from "@policystack/react/consent";
 + import { CookieBanner } from "./CookieBanner";
 +
-+ <OpenCookiesProvider config={cookieConfig}>
++ <PolicyStackConsentProvider config={cookieConfig}>
 +   <App />
 +   <CookieBanner />
-+ </OpenCookiesProvider>`}
++ </PolicyStackConsentProvider>`}
 				</pre>
 				<p className="mt-5 text-white/60">
 					<span className="text-emerald-400">●</span> Write{" "}
@@ -441,7 +441,7 @@ function ClaudeTerminal() {
 				</p>
 				<p className="mt-4 text-white/70">
 					Banner gates analytics on consent. <span className="text-white">/privacy</span> renders
-					from <span className="text-white/80">openpolicy.ts</span>. Want me to fill in the data
+					from <span className="text-white/80">policystack.ts</span>. Want me to fill in the data
 					block next?
 				</p>
 				<p className="mt-3 flex items-center gap-2 text-white/40">
@@ -487,12 +487,12 @@ function Philosophy() {
 		{
 			n: "04",
 			title: "Tiny",
-			body: "OpenCookies core ships under 4kb gzipped. OpenPolicy renders zero JS by default.",
+			body: "PolicyStack Consent core ships under 4kb gzipped. PolicyStack renders zero JS by default.",
 		},
 		{
 			n: "05",
 			title: "Open source",
-			body: "Apache-2.0 across the board. PolicyCloud is the only commercial piece, and it’s optional.",
+			body: "Apache-2.0 across the board. PolicyStack Cloud is the only commercial piece, and it’s optional.",
 		},
 		{
 			n: "06",
@@ -548,7 +548,7 @@ function CTA() {
 					</div>
 					<div className="flex flex-col items-stretch gap-4 md:ml-auto md:w-64">
 						<a
-							href="https://docs.openpolicy.sh"
+							href="https://policystack.dev/docs"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="inline-flex items-center justify-center gap-2.5 border-2 border-black bg-black px-6 py-3.5 text-sm tracking-wide text-white uppercase hover:bg-white hover:text-black"
@@ -557,10 +557,10 @@ function CTA() {
 							get started
 						</a>
 						<Link
-							to="/policycloud"
+							to="/cloud"
 							className="inline-flex items-center justify-center border-2 border-black px-6 py-3.5 text-sm tracking-wide uppercase hover:bg-black hover:text-white"
 						>
-							join policycloud
+							join cloud
 						</Link>
 					</div>
 				</div>

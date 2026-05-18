@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { createConsentStore, type Category } from "@openpolicy/core/consent";
+import { createConsentStore, type Category } from "@policystack/core/consent";
 import { cleanup, render } from "@testing-library/svelte";
 import { flushSync } from "svelte";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
@@ -18,7 +18,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe("setOpenCookiesContext + getConsent", () => {
+describe("setPolicyStackConsentContext + getConsent", () => {
 	it("provides a store created from config", () => {
 		const { getByTestId } = render(Harness, { config: { categories: baseCategories } });
 		expect(getByTestId("route").textContent).toBe("cookie");
@@ -35,7 +35,7 @@ describe("setOpenCookiesContext + getConsent", () => {
 	it("throws when getConsent is called without a provider", () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});
 		vi.spyOn(console, "warn").mockImplementation(() => {});
-		expect(() => render(Orphan)).toThrow(/setOpenCookiesContext/);
+		expect(() => render(Orphan)).toThrow(/setPolicyStackConsentContext/);
 	});
 
 	it("re-renders consumers when state changes", () => {

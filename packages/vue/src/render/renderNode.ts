@@ -1,5 +1,5 @@
-import type { Node, Visitor } from "@openpolicy/core";
-import { visit } from "@openpolicy/core";
+import type { Node, Visitor } from "@policystack/core";
+import { visit } from "@policystack/core";
 import { cloneVNode, h, isVNode, type VNodeChild } from "vue";
 import {
 	DefaultBold,
@@ -27,7 +27,7 @@ export type RenderNode = (node: Node, components: PolicyComponents) => VNodeChil
 // clones the produced VNode with that key. The `table` arm owns its whole grid
 // (its row/cell keys are set directly), so the row/cell arms are
 // exhaustiveness-only no-ops (ADR 0001 unifying principle). Slots come from the
-// one canonical contract in `@openpolicy/core` (PS-15).
+// one canonical contract in `@policystack/core` (PS-15).
 const keyed = (child: VNodeChild, key: number): VNodeChild =>
 	isVNode(child) ? cloneVNode(child, { key }) : child;
 

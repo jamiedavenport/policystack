@@ -8,13 +8,13 @@ export function resolveStubPath(cwd: string, outOverride?: string): string {
 	}
 	const srcDir = join(cwd, "src");
 	if (existsSync(srcDir) && statSync(srcDir).isDirectory()) {
-		return join(srcDir, "openpolicy.ts");
+		return join(srcDir, "policystack.ts");
 	}
-	return join(cwd, "openpolicy.ts");
+	return join(cwd, "policystack.ts");
 }
 
 export function getStubContents(today = new Date().toISOString().slice(0, 10)) {
-	return `import { defineConfig } from "@openpolicy/sdk";
+	return `import { defineConfig } from "@policystack/sdk";
 
 export default defineConfig({
 	// Your legal entity. \`legalName\` and \`address\` appear verbatim in the
@@ -40,12 +40,12 @@ export default defineConfig({
 
 	// ── Cookies & consent ────────────────────────────────────────────────
 	// Uncomment to declare cookies. The single provider (e.g.
-	// \`@openpolicy/react/provider\`'s PolicyStackProvider) derives the consent
+	// \`@policystack/react/provider\`'s PolicyStackProvider) derives the consent
 	// runtime from this block — categories, locked vs. consent-gated, the
 	// automatic re-prompt on policy change, AND the consent mechanism (banner /
 	// preference panel / withdrawal) — so consent is never configured by hand.
-	// Import \`LegalBases\` from "@openpolicy/sdk" to use the values below; pass
-	// a generated \`./openpolicy.gen\` module as defineConfig's second argument
+	// Import \`LegalBases\` from "@policystack/sdk" to use the values below; pass
+	// a generated \`./policystack.gen\` module as defineConfig's second argument
 	// to merge in scanned categories.
 	//
 	// cookies: {

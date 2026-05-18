@@ -2,10 +2,10 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
-import { openPolicy } from "../index";
+import { policyStack } from "../index";
 
 // Proves PS-19's core invariant: ONE plugin object carries both rule sets.
-// The OpenCookies consent scan is folded into the same `openPolicy()` plugin
+// The PolicyStack Consent consent scan is folded into the same `policyStack()` plugin
 // (no second exported plugin) and is opt-in via the `consent` option.
 
 type AnyFn = (...args: unknown[]) => unknown;
@@ -45,7 +45,7 @@ function pluginCtx(): { warn: AnyFn; error: AnyFn } {
 }
 
 async function driveBuild(
-	plugin: ReturnType<typeof openPolicy>,
+	plugin: ReturnType<typeof policyStack>,
 	root: string,
 	cap: LoggerCapture,
 ): Promise<void> {
@@ -55,13 +55,13 @@ async function driveBuild(
 	await buildStart.call(pluginCtx());
 }
 
-function callBuildEnd(plugin: ReturnType<typeof openPolicy>): void {
+function callBuildEnd(plugin: ReturnType<typeof policyStack>): void {
 	(plugin.buildEnd as AnyFn).call({});
 }
 
 let tmp: string;
 beforeEach(async () => {
-	tmp = await mkdtemp(join(tmpdir(), "openpolicy-consent-fold-"));
+	tmp = await mkdtemp(join(tmpdir(), "policystack-consent-fold-"));
 });
 afterEach(async () => {
 	await rm(tmp, { recursive: true, force: true });
@@ -69,8 +69,8 @@ afterEach(async () => {
 
 describe("PS-19 single-plugin fold", () => {
 	it("exposes one plugin with both rule sets' lifecycle hooks", () => {
-		const plugin = openPolicy({ consent: { mode: "warn" } });
-		expect(plugin.name).toBe("openpolicy");
+		const plugin = policyStack({ consent: { mode: "warn" } });
+		expect(plugin.name).toBe("policystack");
 		expect(typeof plugin.buildStart).toBe("function");
 		expect(typeof plugin.configureServer).toBe("function");
 		// `buildEnd` is the consent build-fail seam added by PS-19.
@@ -79,7 +79,7 @@ describe("PS-19 single-plugin fold", () => {
 
 	it("is fully inert when the `consent` option is omitted", async () => {
 		await writeFile(join(tmp, "track.ts"), "document.cookie = 'x=1';\n");
-		const plugin = openPolicy();
+		const plugin = policyStack();
 		const cap = captureLogger();
 		await driveBuild(plugin, tmp, cap);
 		// No consent option → no consent scan, no findings logged, buildEnd
@@ -90,7 +90,7 @@ describe("PS-19 single-plugin fold", () => {
 
 	it("mode:'error' fails the build from buildEnd on an ungated write", async () => {
 		await writeFile(join(tmp, "track.ts"), "document.cookie = 'x=1';\n");
-		const plugin = openPolicy({ consent: { mode: "error" } });
+		const plugin = policyStack({ consent: { mode: "error" } });
 		const cap = captureLogger();
 		await driveBuild(plugin, tmp, cap);
 		expect(cap.errors.some((m) => m.includes("ungated"))).toBe(true);
@@ -99,7 +99,7 @@ describe("PS-19 single-plugin fold", () => {
 
 	it("mode:'warn' logs but never fails the build", async () => {
 		await writeFile(join(tmp, "track.ts"), "document.cookie = 'x=1';\n");
-		const plugin = openPolicy({ consent: { mode: "warn" } });
+		const plugin = policyStack({ consent: { mode: "warn" } });
 		const cap = captureLogger();
 		await driveBuild(plugin, tmp, cap);
 		expect(cap.warns.some((m) => m.includes("ungated"))).toBe(true);

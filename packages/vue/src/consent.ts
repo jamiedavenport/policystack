@@ -21,16 +21,16 @@ import {
 	type ConsentState,
 	type ConsentStore,
 	type Jurisdiction,
-	type OpenCookiesConfig,
+	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
-} from "@openpolicy/core/consent";
+} from "@policystack/core/consent";
 
-const StoreKey: InjectionKey<ConsentStore> = Symbol("opencookies-store");
+const StoreKey: InjectionKey<ConsentStore> = Symbol("policystack-consent-store");
 
 const NOT_PROVIDED_MESSAGE =
-	"useConsent / useCategory / ConsentGate must be used after `app.use(OpenCookiesPlugin, { config })` " +
-	"or inside <OpenCookiesProvider>";
+	"useConsent / useCategory / ConsentGate must be used after `app.use(PolicyStackConsentPlugin, { config })` " +
+	"or inside <PolicyStackConsentProvider>";
 
 function injectStore(): ConsentStore {
 	const store = inject(StoreKey, null);
@@ -47,27 +47,27 @@ function useStoreState(store: ConsentStore): Ref<ConsentState> {
 	return state;
 }
 
-export type OpenCookiesPluginOptions =
-	| { config: OpenCookiesConfig; store?: undefined }
+export type PolicyStackConsentPluginOptions =
+	| { config: PolicyStackConsentConfig; store?: undefined }
 	| { store: ConsentStore; config?: undefined };
 
-export const OpenCookiesPlugin = {
-	install(app: App, options: OpenCookiesPluginOptions): void {
+export const PolicyStackConsentPlugin = {
+	install(app: App, options: PolicyStackConsentPluginOptions): void {
 		const store = resolveStore(options);
 		app.provide(StoreKey, store);
 	},
 };
 
-function resolveStore(options: OpenCookiesPluginOptions): ConsentStore {
+function resolveStore(options: PolicyStackConsentPluginOptions): ConsentStore {
 	if (options.store) return options.store;
 	return createConsentStore(options.config);
 }
 
-export const OpenCookiesProvider = defineComponent({
-	name: "OpenCookiesProvider",
+export const PolicyStackConsentProvider = defineComponent({
+	name: "PolicyStackConsentProvider",
 	props: {
 		config: {
-			type: Object as PropType<OpenCookiesConfig>,
+			type: Object as PropType<PolicyStackConsentConfig>,
 			default: undefined,
 		},
 		store: {
@@ -78,7 +78,7 @@ export const OpenCookiesProvider = defineComponent({
 	slots: Object as SlotsType<{ default?: () => unknown }>,
 	setup(props, { slots }) {
 		if (!props.store && !props.config) {
-			throw new Error("<OpenCookiesProvider> requires either a `config` or a `store` prop");
+			throw new Error("<PolicyStackConsentProvider> requires either a `config` or a `store` prop");
 		}
 		const store = props.store ?? createConsentStore(props.config!);
 		provide(StoreKey, store);
@@ -173,7 +173,7 @@ export type {
 	ConsentState,
 	ConsentStore,
 	Jurisdiction,
-	OpenCookiesConfig,
+	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,
 };

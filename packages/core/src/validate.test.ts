@@ -1,12 +1,12 @@
 import { expect, test } from "vite-plus/test";
 import { isJurisdictionId, JURISDICTION_IDS } from "./jurisdiction-id";
-import type { OpenPolicyConfig } from "./types";
+import type { PolicyStackConfig } from "./types";
 import { validate } from "./validate";
 
 // Valid flat config under an `equivalent` (non-gating) jurisdiction. It emits
 // exactly one issue — the `jurisdiction-generic-policy-text` honesty warning
 // for "ca" — and zero errors. Tests override slices to exercise each check.
-const baseConfig: OpenPolicyConfig = {
+const baseConfig: PolicyStackConfig = {
 	company: {
 		name: "Acme Inc.",
 		legalName: "Acme Corporation",

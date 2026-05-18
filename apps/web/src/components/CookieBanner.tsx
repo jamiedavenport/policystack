@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useConsent } from "@openpolicy/react/consent";
+import { useConsent } from "@policystack/react/consent";
 
 const primaryButton =
 	"inline-flex items-center justify-center border-2 border-black bg-black px-4 py-2 text-xs tracking-wide text-white uppercase hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";

@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
 import { compile } from "./documents";
-import type { OpenPolicyConfig, PolicyInput, UserRight } from "./types";
+import type { PolicyStackConfig, PolicyInput, UserRight } from "./types";
 import { deriveUserRights } from "./user-rights";
 import { validate } from "./validate";
 
@@ -97,7 +97,7 @@ test("buildUserRights: privacy policy omits 'Your Rights' section when derivatio
 });
 
 test("validate: emits no userRights-related issues", () => {
-	const config: OpenPolicyConfig = {
+	const config: PolicyStackConfig = {
 		company: {
 			name: "Acme Inc.",
 			legalName: "Acme Corporation",

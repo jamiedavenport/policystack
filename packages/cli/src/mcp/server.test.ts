@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { ISSUE_CATALOG, JURISDICTION_IDS } from "@openpolicy/core";
+import { ISSUE_CATALOG, JURISDICTION_IDS } from "@policystack/core";
 import { expect, test } from "vite-plus/test";
 import { createMcpServer } from "./server";
 import { TOOL_NAMES } from "./tools";
@@ -81,7 +81,7 @@ test("scaffold_config returns a defineConfig stub", async () => {
 	const client = await connect();
 	const res = await client.callTool({ name: "scaffold_config", arguments: {} });
 	const sc = structured(res);
-	expect(sc.filename).toBe("openpolicy.ts");
+	expect(sc.filename).toBe("policystack.ts");
 	expect(String(sc.contents)).toContain("defineConfig");
 	expect(sc.llmsTxt).toBeUndefined();
 	const withLlms = structured(

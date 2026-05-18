@@ -1,4 +1,4 @@
-import { CookiePolicy, PrivacyPolicy } from "@openpolicy/react/policy";
+import { CookiePolicy, PrivacyPolicy } from "@policystack/react/policy";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/css-vars")({

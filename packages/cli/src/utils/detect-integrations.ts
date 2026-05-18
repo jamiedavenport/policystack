@@ -8,10 +8,10 @@ export type Integration = {
 };
 
 const RULES: Array<{ trigger: string; pkg: string; dev: boolean }> = [
-	{ trigger: "vite", pkg: "@openpolicy/vite", dev: true },
-	{ trigger: "react", pkg: "@openpolicy/react", dev: false },
-	{ trigger: "vue", pkg: "@openpolicy/vue", dev: false },
-	{ trigger: "svelte", pkg: "@openpolicy/svelte", dev: false },
+	{ trigger: "vite", pkg: "@policystack/vite", dev: true },
+	{ trigger: "react", pkg: "@policystack/react", dev: false },
+	{ trigger: "vue", pkg: "@policystack/vue", dev: false },
+	{ trigger: "svelte", pkg: "@policystack/svelte", dev: false },
 ];
 
 export function detectIntegrations(cwd: string): Integration[] {

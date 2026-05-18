@@ -17,8 +17,8 @@ import type {
 	TextNode,
 	UnknownNode,
 	Visitor,
-} from "@openpolicy/core";
-import { visit } from "@openpolicy/core";
+} from "@policystack/core";
+import { visit } from "@policystack/core";
 import { type CSSProperties, Fragment, type ReactNode } from "react";
 import type { PolicyComponents } from "../types";
 

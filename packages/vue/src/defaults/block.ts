@@ -6,7 +6,7 @@ import type {
 	ListNode,
 	ParagraphNode,
 	UnknownNode,
-} from "@openpolicy/core";
+} from "@policystack/core";
 import { defineComponent, h, type PropType } from "vue";
 
 export const DefaultRoot = defineComponent({

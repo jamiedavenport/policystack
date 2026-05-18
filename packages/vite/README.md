@@ -1,15 +1,15 @@
-# `@openpolicy/vite`
+# `@policystack/vite`
 
-> Vite plugin that scans source files for [OpenPolicy](https://openpolicy.sh) `collecting()`, `thirdParty()`, `defineCookie()`, and `sharing()` calls and populates the SDK's auto-collected registry at build time.
+> Vite plugin that scans source files for [PolicyStack](https://policystack.dev) `collecting()`, `thirdParty()`, `defineCookie()`, and `sharing()` calls and populates the SDK's auto-collected registry at build time.
 
-At `buildStart` the plugin walks your `srcDir`, extracts every `collecting()` / `thirdParty()` / `defineCookie()` / `sharing()` call from `@openpolicy/sdk`, and emits the merged result (`dataCollected` / `thirdParties` / `cookies` / `sharing`) into the on-disk `openpolicy.gen.ts` your config imports. `sharing(key, recipient, value)` marks personal data _leaving_ to a third party at the egress point — the data-flow edge that feeds the CCPA/CPRA sell/share posture, distinct from `thirdParty()` which only declares that a vendor exists.
+At `buildStart` the plugin walks your `srcDir`, extracts every `collecting()` / `thirdParty()` / `defineCookie()` / `sharing()` call from `@policystack/sdk`, and emits the merged result (`dataCollected` / `thirdParties` / `cookies` / `sharing`) into the on-disk `policystack.gen.ts` your config imports. `sharing(key, recipient, value)` marks personal data _leaving_ to a third party at the egress point — the data-flow edge that feeds the CCPA/CPRA sell/share posture, distinct from `thirdParty()` which only declares that a vendor exists.
 
 ## Install
 
 ```sh
-bun add -D @openpolicy/vite
-bun add @openpolicy/sdk
-# or: npm install --save-dev @openpolicy/vite && npm install @openpolicy/sdk
+bun add -D @policystack/vite
+bun add @policystack/sdk
+# or: npm install --save-dev @policystack/vite && npm install @policystack/sdk
 ```
 
 ## Setup
@@ -17,10 +17,10 @@ bun add @openpolicy/sdk
 ```ts
 // vite.config.ts
 import { defineConfig } from "vite";
-import { openPolicy } from "@openpolicy/vite";
+import { policyStack } from "@policystack/vite";
 
 export default defineConfig({
-	plugins: [openPolicy()],
+	plugins: [policyStack()],
 });
 ```
 
@@ -34,15 +34,15 @@ Astro users: add it the same way under `vite.plugins` in `astro.config.mjs`.
 | `extensions`                  | `string[]`    | `[".ts", ".tsx"]` | File extensions to scan.                                                                                                                        |
 | `ignore`                      | `string[]`    | `[]`              | Extra directory basenames to skip (appended to the built-in list: `node_modules`, `dist`, `.git`, `.next`, `.output`, `.svelte-kit`, `.cache`). |
 | `thirdParties.usePackageJson` | `boolean`     | `false`           | Auto-detect third-party services from `package.json` dependencies against the built-in registry (Stripe, Sentry, PostHog, etc.).                |
-| `validate`                    | `boolean`     | `true`            | Validate the resolved `openpolicy.ts` after each scan (see [Validation](#validation)).                                                          |
+| `validate`                    | `boolean`     | `true`            | Validate the resolved `policystack.ts` after each scan (see [Validation](#validation)).                                                         |
 | `strict`                      | `boolean`     | `false`           | Promote remaining warnings to errors, so they fail `vite build` like real errors.                                                               |
 | `suppress`                    | `IssueCode[]` | `[]`              | Issue codes to drop entirely, at any level (errors included). Applied before `strict`.                                                          |
 
 ## Validation
 
 When `validate` is `true`, the plugin runs the single `validate()` from
-`@openpolicy/core` against your resolved config after every scan and reports
-each [`IssueCode`](https://docs.openpolicy.sh) once:
+`@policystack/core` against your resolved config after every scan and reports
+each [`IssueCode`](https://policystack.dev/docs) once:
 
 - In **`vite build`**, errors abort the build (`PluginContext.error`); warnings
   are reported (`PluginContext.warn`) but never block.
@@ -62,7 +62,7 @@ in this order:
    but still never crash HMR.
 
 ```ts
-openPolicy({
+policyStack({
 	strict: true, // warnings now fail `vite build`
 	suppress: ["company-dpo-undeclared"], // …except this one, which we accept
 });
@@ -70,10 +70,10 @@ openPolicy({
 
 ## Documentation
 
-[openpolicy.sh/docs](https://docs.openpolicy.sh)
+[policystack.dev/docs](https://policystack.dev/docs)
 
 ## Links
 
-- [GitHub](https://github.com/jamiedavenport/openpolicy)
-- [openpolicy.sh](https://openpolicy.sh)
-- [npm](https://www.npmjs.com/package/@openpolicy/vite)
+- [GitHub](https://github.com/jamiedavenport/policystack)
+- [policystack.dev](https://policystack.dev)
+- [npm](https://www.npmjs.com/package/@policystack/vite)

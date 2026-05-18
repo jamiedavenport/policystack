@@ -15,6 +15,6 @@ export { default as DefaultTableHeaderRow } from "./defaults/DefaultTableHeaderR
 export { default as DefaultTableRow } from "./defaults/DefaultTableRow.svelte";
 export { default as DefaultText } from "./defaults/DefaultText.svelte";
 export { default as DefaultUnknown } from "./defaults/DefaultUnknown.svelte";
-export { default as OpenPolicy } from "./OpenPolicy.svelte";
+export { default as PolicyStack } from "./PolicyStack.svelte";
 export { default as PrivacyPolicy } from "./PrivacyPolicy.svelte";
 export type { PolicyComponents } from "./types";

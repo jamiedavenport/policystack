@@ -14,7 +14,7 @@ import {
 import { formatCommand, runInstall } from "../utils/install";
 import { resolveStubPath, writeStub } from "../utils/stub";
 
-const SDK_PACKAGE = "@openpolicy/sdk";
+const SDK_PACKAGE = "@policystack/sdk";
 
 type InitArgs = {
 	cwd: string;
@@ -66,7 +66,7 @@ export async function runInit(args: InitArgs): Promise<void> {
 	}
 
 	consola.box(
-		"Welcome to OpenPolicy\nInstalling packages and preparing a setup prompt for your coding agent.",
+		"Welcome to PolicyStack\nInstalling packages and preparing a setup prompt for your coding agent.",
 	);
 
 	const pm = args.pm ? toPackageManager(args.pm as PackageManagerName) : detectPackageManager(cwd);
@@ -140,7 +140,7 @@ export async function runInit(args: InitArgs): Promise<void> {
 	);
 
 	consola.warn(
-		"OpenPolicy generates policy documents from your config — it does not provide legal advice. Have a lawyer review your policies before publication. https://openpolicy.sh/legal-notice",
+		"PolicyStack generates policy documents from your config — it does not provide legal advice. Have a lawyer review your policies before publication. https://policystack.dev/legal-notice",
 	);
 }
 
@@ -148,7 +148,7 @@ export const initCommand = defineCommand({
 	meta: {
 		name: "init",
 		description:
-			"Install OpenPolicy into the current project and print a setup prompt for coding agents",
+			"Install PolicyStack into the current project and print a setup prompt for coding agents",
 	},
 	args: {
 		cwd: {
@@ -179,7 +179,7 @@ export const initCommand = defineCommand({
 		out: {
 			type: "string",
 			description:
-				"Output path for the openpolicy.ts stub (defaults to src/openpolicy.ts if src/ exists)",
+				"Output path for the policystack.ts stub (defaults to src/policystack.ts if src/ exists)",
 		},
 		force: {
 			type: "boolean",

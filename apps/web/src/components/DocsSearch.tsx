@@ -87,7 +87,7 @@ export function DocsSearch() {
 					const data = await r.data();
 					// Pagefind returns URLs with a trailing slash (because each page
 					// is indexed as <slug>/index.html). Strip it so the link matches
-					// the live route ("/docs/openpolicy/cli", not ".../cli/").
+					// the live route ("/docs/policy/cli", not ".../cli/").
 					const url = data.url.replace(/\/$/, "") || "/";
 					return {
 						id: r.id,

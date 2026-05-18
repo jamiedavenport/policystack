@@ -13,8 +13,8 @@ OpenPolicy ships a different shape for this. The policy is a typed TypeScript co
 
 Two packages, plus your own components:
 
-- **`@openpolicy/sdk`** — the config types and helpers (`defineConfig`, `LegalBases`, `Retention`, `Providers`, `Compliance`). Pure TypeScript; no native modules.
-- **`@openpolicy/react`** — `<OpenPolicy>` and `<PrivacyPolicy>`. The renderer is platform-agnostic: it builds a document tree from your config and dispatches each node (`Section`, `Heading`, `Paragraph`, `Table`, `Link`, …) to a React component. On the web that component is a `<p>`. On Expo it's a `<Text>`. Same renderer, different leaves.
+- **`@policystack/sdk`** — the config types and helpers (`defineConfig`, `LegalBases`, `Retention`, `Providers`, `Compliance`). Pure TypeScript; no native modules.
+- **`@policystack/react`** — `<OpenPolicy>` and `<PrivacyPolicy>`. The renderer is platform-agnostic: it builds a document tree from your config and dispatches each node (`Section`, `Heading`, `Paragraph`, `Table`, `Link`, …) to a React component. On the web that component is a `<p>`. On Expo it's a `<Text>`. Same renderer, different leaves.
 - **A `PolicyComponents` map you write once.** Maybe 80 lines. It's the bridge from the document tree to React Native primitives, and it's the only file in this setup that's specific to mobile.
 
 The point is that the rendered policy is composed entirely of native components. No `WebView` cold-start, no JS markdown parser shipped to the device, no third-party SaaS embed. The policy text lives in your JS bundle and renders as fast as any other screen.
@@ -22,10 +22,10 @@ The point is that the rendered policy is composed entirely of native components.
 ## Install
 
 ```bash file="terminal" tag="bash"
-bun add @openpolicy/sdk @openpolicy/react
+bun add @policystack/sdk @policystack/react
 ```
 
-That's it for runtime. There's no Expo config plugin to register, no native module to link, no `prebuild` step. If you're starting from scratch, `bunx @openpolicy/cli init` scaffolds the config and prints a prompt tuned for Claude Code that fills in the company details, jurisdictions, and known third parties from your `package.json`.
+That's it for runtime. There's no Expo config plugin to register, no native module to link, no `prebuild` step. If you're starting from scratch, `bunx @policystack/cli init` scaffolds the config and prints a prompt tuned for Claude Code that fills in the company details, jurisdictions, and known third parties from your `package.json`.
 
 ## Define the policy
 
@@ -39,7 +39,7 @@ import {
 	Providers,
 	Retention,
 	Voluntary,
-} from "@openpolicy/sdk";
+} from "@policystack/sdk";
 
 export default defineConfig({
 	company: {
@@ -90,7 +90,7 @@ This is the only mobile-specific file. `<PrivacyPolicy>` accepts a `components` 
 
 ```tsx file="components/PolicyComponents.tsx"
 import { Linking, StyleSheet, Text, View } from "react-native";
-import type { PolicyComponents } from "@openpolicy/react";
+import type { PolicyComponents } from "@policystack/react";
 
 const HEADING_SIZES: Record<1 | 2 | 3 | 4 | 5 | 6, number> = {
 	1: 28,
@@ -147,7 +147,7 @@ The full overridable surface is `Root`, `Section`, `Heading`, `Paragraph`, `List
 The screen itself is a thin wrapper. It owns the `SafeAreaView`, the `ScrollView`, and the page title; everything below the title comes from the renderer. From the example's [`PrivacyPolicyScreen.tsx`](https://github.com/terms-sh/expo-example/blob/main/screens/PrivacyPolicyScreen.tsx):
 
 ```tsx file="screens/PrivacyPolicyScreen.tsx"
-import { OpenPolicy, PrivacyPolicy } from "@openpolicy/react";
+import { OpenPolicy, PrivacyPolicy } from "@policystack/react";
 import { SafeAreaView, ScrollView, StyleSheet, Text } from "react-native";
 import openpolicy from "../openpolicy";
 import policyComponents from "../components/PolicyComponents";
@@ -209,7 +209,7 @@ package.json against thirdParties in openpolicy.ts.
 For any new SDK in package.json that's likely a third party data
 recipient (analytics, error tracking, payments, push, ads, attribution),
 add it to thirdParties — prefer the Providers.* preset from
-@openpolicy/sdk if one exists, otherwise add a literal entry with name,
+@policystack/sdk if one exists, otherwise add a literal entry with name,
 purpose, and privacyUrl.
 
 Bump effectiveDate to today only if you actually changed thirdParties
@@ -219,7 +219,7 @@ or the data block. Don't touch anything else.
 Three things make this work in practice:
 
 - **The config is typed.** Claude gets an immediate signal when an entry is shaped wrong — no `Providers.SentryReactNative` (it's just `Providers.Sentry`), no missing required fields. The agent iterates against the type checker.
-- **`@openpolicy/react` ships a Claude Code Skill.** Once installed, the `render-policies` skill is auto-discovered, so Claude knows the renderer API and the `Providers` registry without you pasting docs into the conversation.
+- **`@policystack/react` ships a Claude Code Skill.** Once installed, the `render-policies` skill is auto-discovered, so Claude knows the renderer API and the `Providers` registry without you pasting docs into the conversation.
 - **The diff is small and reviewable.** Because the policy is one file with a stable structure, an "add Sentry to thirdParties" change is two lines in PR review, not a redline against a Google Doc. You glance, approve, ship.
 
 Run that prompt as part of your weekly housekeeping — or wire it into a CI check that opens a PR when `package.json` changes — and the policy stays in sync with the code without anyone manually remembering to do it.

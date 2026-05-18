@@ -1,11 +1,11 @@
 {
-	"name": "@openpolicy/scripts",
+	"name": "@policystack/scripts",
 	"version": "0.0.34",
-	"description": "Consent-gated third-party tag loaders for OpenPolicy (GA4, Meta Pixel, PostHog, …)",
+	"description": "Consent-gated third-party tag loaders for PolicyStack (GA4, Meta Pixel, PostHog, …)",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/scripts"
 	},
 	"files": [
@@ -53,7 +53,7 @@
 		"test": "vp test"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
+		"@policystack/core": "workspace:*",
 		"happy-dom": "^15.0.0",
 		"vite-plus": "catalog:"
 	}

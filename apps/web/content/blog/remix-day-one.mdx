@@ -24,17 +24,17 @@ The shape that falls out: most of your app is HTML produced on the server with n
 Two runtime packages plus the policy SDK:
 
 ```bash file="terminal" tag="bash"
-pnpm add @opencookies/core @openpolicy/core @openpolicy/sdk
+pnpm add @opencookies/core @policystack/core @policystack/sdk
 ```
 
-`@openpolicy/sdk` is the typed config builder. `@openpolicy/core` compiles the config into a framework-agnostic Document AST that you walk with whatever component model you've got. `@opencookies/core` is the consent state machine — categories, decisions, jurisdiction resolution, GPC, persistence. No framework adapter required, because Remix 3 isn't on the adapter list and doesn't need to be: the state machine subscribes to changes, you call `handle.update()`, the rest is your code.
+`@policystack/sdk` is the typed config builder. `@policystack/core` compiles the config into a framework-agnostic Document AST that you walk with whatever component model you've got. `@opencookies/core` is the consent state machine — categories, decisions, jurisdiction resolution, GPC, persistence. No framework adapter required, because Remix 3 isn't on the adapter list and doesn't need to be: the state machine subscribes to changes, you call `handle.update()`, the rest is your code.
 
 ## One config, three surfaces
 
 The point of doing this once on day one is that the privacy policy, the cookie policy, and the banner's categories all come from the same source. Put it under `app/data/`:
 
 ```ts file="app/data/openpolicy.ts"
-import { ContractPrerequisite, LegalBases, Voluntary, defineConfig } from "@openpolicy/sdk";
+import { ContractPrerequisite, LegalBases, Voluntary, defineConfig } from "@policystack/sdk";
 
 export const policy = defineConfig({
 	company: {
@@ -81,10 +81,10 @@ This is the only file you edit when something changes. Add an SDK that drops a t
 
 ## Server-render the policy pages
 
-`@openpolicy/core` exposes two compiler functions — `compilePrivacyPolicy` and `compileCookiePolicy` — that produce a Document AST. Compile once at module load, then hand the result to a server component that walks the tree:
+`@policystack/core` exposes two compiler functions — `compilePrivacyPolicy` and `compileCookiePolicy` — that produce a Document AST. Compile once at module load, then hand the result to a server component that walks the tree:
 
 ```tsx file="app/controllers/privacy.tsx"
-import { compilePrivacyPolicy } from "@openpolicy/core";
+import { compilePrivacyPolicy } from "@policystack/core";
 import type { BuildAction } from "remix/fetch-router";
 
 import { policy } from "../data/openpolicy.ts";
@@ -113,7 +113,7 @@ The cookie policy is the same controller with `compileCookiePolicy` instead. Bot
 `PolicyDocument` is the framework-specific bit. Because the AST is plain data (`Document → DocumentSection → ContentNode → InlineNode`), the walker is short and reads like a stand-alone HTML transformer:
 
 ```tsx file="app/ui/policy-document.tsx"
-import type { ContentNode, Document, InlineNode, ListNode, TableNode } from "@openpolicy/core";
+import type { ContentNode, Document, InlineNode, ListNode, TableNode } from "@policystack/core";
 import { css, type Handle, type RemixNode } from "remix/ui";
 
 export function PolicyDocument(handle: Handle<{ doc: Document }>) {
@@ -166,7 +166,7 @@ The banner is the one piece that has to run on the client — visitor clicks "Ac
 ```tsx file="app/ui/cookie-banner.tsx"
 import { createConsentStore, timezoneResolver, type ConsentStore } from "@opencookies/core";
 import { localStorageAdapter } from "@opencookies/core/storage/local-storage";
-import { toOpenCookiesConfig } from "@openpolicy/sdk/opencookies";
+import { toOpenCookiesConfig } from "@policystack/sdk/opencookies";
 import { clientEntry, css, on, type Handle } from "remix/ui";
 
 import { policy } from "../data/openpolicy.ts";

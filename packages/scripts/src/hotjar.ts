@@ -1,5 +1,5 @@
-import { defineScript } from "@openpolicy/core/consent";
-import type { ConsentExpr, ScriptDefinition } from "@openpolicy/core/consent";
+import { defineScript } from "@policystack/core/consent";
+import type { ConsentExpr, ScriptDefinition } from "@policystack/core/consent";
 
 export type HotjarOptions = {
 	siteId: number | string;

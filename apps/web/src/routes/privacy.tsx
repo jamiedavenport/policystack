@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PrivacyPolicy, type PolicyComponents } from "@openpolicy/react/policy";
-import openpolicy from "../openpolicy";
+import { PrivacyPolicy, type PolicyComponents } from "@policystack/react/policy";
+import policy from "../policystack";
 import { Highlight } from "../components/Highlight";
 import { pageMeta } from "../lib/seo";
 
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/privacy")({
 			{
 				title: "Privacy Policy — PolicyStack",
 				description:
-					"How PolicyStack collects, uses, and protects your data. Rendered from a typed config with OpenPolicy.",
+					"How PolicyStack collects, uses, and protects your data. Rendered from a typed config with PolicyStack.",
 				path: "/privacy",
 			},
 			ctx,
@@ -96,7 +96,7 @@ function Privacy() {
 						Privacy <Highlight>policy.</Highlight>
 					</h1>
 					<p className="mt-10 max-w-[60ch] text-lg text-pretty text-mute">
-						This page is rendered at build time from a TypeScript config using OpenPolicy. The same
+						This page is rendered at build time from a TypeScript config using PolicyStack. The same
 						source of truth ships with the rest of the site, version-controlled and reviewable in
 						pull requests.
 					</p>
@@ -106,7 +106,7 @@ function Privacy() {
 			<section>
 				<div className="mx-auto max-w-6xl px-8 py-16 md:py-24">
 					<article className="max-w-[72ch]">
-						<PrivacyPolicy config={openpolicy} components={policyComponents} />
+						<PrivacyPolicy config={policy} components={policyComponents} />
 					</article>
 				</div>
 			</section>

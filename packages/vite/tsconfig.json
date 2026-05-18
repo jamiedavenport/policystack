@@ -1,5 +1,5 @@
 {
-	"extends": "@openpolicy/tooling/base",
+	"extends": "@policystack/tooling/base",
 	"include": ["src"],
 	"exclude": ["src/consent/__fixtures__"],
 	"compilerOptions": {

@@ -4,27 +4,27 @@ import {
 	compilePrivacyPolicy,
 	type CookiePolicyConfig,
 	type Document,
-	isOpenPolicyConfig,
-	type OpenPolicyConfig,
+	isPolicyStackConfig,
+	type PolicyStackConfig,
 	type PolicyType,
 	type PrivacyPolicyConfig,
-} from "@openpolicy/core";
+} from "@policystack/core";
 import { computed, type ComputedRef, inject, type MaybeRefOrGetter, toValue } from "vue";
-import { OpenPolicyContextKey } from "../context";
+import { PolicyStackContextKey } from "../context";
 
-type ConfigInput = OpenPolicyConfig | PrivacyPolicyConfig | CookiePolicyConfig | undefined;
+type ConfigInput = PolicyStackConfig | PrivacyPolicyConfig | CookiePolicyConfig | undefined;
 
 export function usePolicyDocument(
 	type: PolicyType,
 	configProp: MaybeRefOrGetter<ConfigInput>,
 ): ComputedRef<Document | null> {
-	const context = inject(OpenPolicyContextKey, null);
+	const context = inject(PolicyStackContextKey, null);
 
 	return computed(() => {
 		const config = toValue(configProp) ?? context?.config.value;
 		if (!config) return null;
 
-		if (isOpenPolicyConfig(config)) {
+		if (isPolicyStackConfig(config)) {
 			return type === "privacy" ? compilePrivacyPolicy(config) : compileCookiePolicy(config);
 		}
 

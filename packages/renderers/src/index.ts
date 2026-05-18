@@ -1,5 +1,5 @@
-import type { CompileOptions, OutputFormat, PolicyInput } from "@openpolicy/core";
-import { compile } from "@openpolicy/core";
+import type { CompileOptions, OutputFormat, PolicyInput } from "@policystack/core";
+import { compile } from "@policystack/core";
 
 export { renderHTML } from "./html";
 export { renderMarkdown } from "./markdown";

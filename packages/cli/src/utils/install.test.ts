@@ -24,7 +24,7 @@ test("runInstall resolves immediately when deps is empty", async () => {
 test("runInstall dry-run logs command and does not spawn", async () => {
 	const lines: string[] = [];
 	let spawned = false;
-	await runInstall(toPackageManager("bun"), ["@openpolicy/sdk"], {
+	await runInstall(toPackageManager("bun"), ["@policystack/sdk"], {
 		dev: false,
 		cwd: "/tmp",
 		dryRun: true,
@@ -35,7 +35,7 @@ test("runInstall dry-run logs command and does not spawn", async () => {
 		}) as never,
 	});
 	expect(spawned).toBe(false);
-	expect(lines).toEqual(["> bun add @openpolicy/sdk"]);
+	expect(lines).toEqual(["> bun add @policystack/sdk"]);
 });
 
 test("runInstall resolves on exit code 0", async () => {
@@ -46,13 +46,13 @@ test("runInstall resolves on exit code 0", async () => {
 		queueMicrotask(() => ee.emit("exit", 0));
 		return ee as never;
 	}) as never;
-	await runInstall(toPackageManager("pnpm"), ["@openpolicy/sdk"], {
+	await runInstall(toPackageManager("pnpm"), ["@policystack/sdk"], {
 		dev: false,
 		cwd: "/tmp",
 		log: () => {},
 		spawnImpl,
 	});
-	expect(calls).toEqual([{ bin: "pnpm", args: ["add", "@openpolicy/sdk"] }]);
+	expect(calls).toEqual([{ bin: "pnpm", args: ["add", "@policystack/sdk"] }]);
 });
 
 test("runInstall rejects on non-zero exit", async () => {
@@ -79,11 +79,11 @@ test("runInstall builds dev-flag args", async () => {
 		queueMicrotask(() => ee.emit("exit", 0));
 		return ee as never;
 	}) as never;
-	await runInstall(toPackageManager("yarn"), ["@openpolicy/vite"], {
+	await runInstall(toPackageManager("yarn"), ["@policystack/vite"], {
 		dev: true,
 		cwd: "/tmp",
 		log: () => {},
 		spawnImpl,
 	});
-	expect(calls).toEqual([{ bin: "yarn", args: ["add", "-D", "@openpolicy/vite"] }]);
+	expect(calls).toEqual([{ bin: "yarn", args: ["add", "-D", "@policystack/vite"] }]);
 });

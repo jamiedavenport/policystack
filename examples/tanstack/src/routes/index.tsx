@@ -50,7 +50,7 @@ const demos = [
 		to: "/fr" as const,
 		label: "Localized policies",
 		description:
-			"Render the same config in French, German, Dutch, or Spanish via a locale prop on PrivacyPolicy/CookiePolicy. OpenPolicy translates the strings it emits; user-supplied content stays in whichever language you wrote it. Switch via the nav: FR / DE / NL / ES.",
+			"Render the same config in French, German, Dutch, or Spanish via a locale prop on PrivacyPolicy/CookiePolicy. PolicyStack translates the strings it emits; user-supplied content stays in whichever language you wrote it. Switch via the nav: FR / DE / NL / ES.",
 		code: '<PrivacyPolicy locale="fr" />',
 		badge: "i18n",
 	},
@@ -65,7 +65,7 @@ function RouteComponent() {
 					Alpha — feedback welcome
 				</div>
 				<h1 className="mb-4 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-					OpenPolicy
+					PolicyStack
 					<br />
 					<span className="text-muted-foreground">for TanStack</span>
 				</h1>
@@ -75,7 +75,7 @@ function RouteComponent() {
 				</p>
 				<div className="flex flex-wrap items-center gap-3">
 					<a
-						href="https://openpolicy.sh"
+						href="https://policystack.dev"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 transition-opacity"
@@ -84,7 +84,7 @@ function RouteComponent() {
 						<ArrowRight className="size-3.5" />
 					</a>
 					<a
-						href="https://github.com/jamiedavenport/openpolicy"
+						href="https://github.com/jamiedavenport/policystack"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
@@ -148,7 +148,7 @@ function RouteComponent() {
 					<div>
 						<div className="mb-2 text-sm font-medium text-foreground">2. Compile at build time</div>
 						<p className="text-sm text-muted-foreground">
-							The <code className="font-mono text-xs">openPolicy()</code> Vite plugin compiles your
+							The <code className="font-mono text-xs">policyStack()</code> Vite plugin compiles your
 							config into HTML/Markdown/PDF during the build.
 						</p>
 					</div>

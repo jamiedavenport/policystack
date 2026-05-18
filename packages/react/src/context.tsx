@@ -1,19 +1,19 @@
-import type { OpenPolicyConfig } from "@openpolicy/core";
+import type { PolicyStackConfig } from "@policystack/core";
 import { createContext, type ReactNode } from "react";
 
-type OpenPolicyContextValue = {
-	config: OpenPolicyConfig | null;
+type PolicyStackContextValue = {
+	config: PolicyStackConfig | null;
 };
 
-export const OpenPolicyContext = createContext<OpenPolicyContextValue>({
+export const PolicyStackContext = createContext<PolicyStackContextValue>({
 	config: null,
 });
 
-type OpenPolicyProviderProps = {
-	config: OpenPolicyConfig;
+type PolicyStackProps = {
+	config: PolicyStackConfig;
 	children?: ReactNode;
 };
 
-export function OpenPolicyProvider({ config, children }: OpenPolicyProviderProps) {
-	return <OpenPolicyContext.Provider value={{ config }}>{children}</OpenPolicyContext.Provider>;
+export function PolicyStack({ config, children }: PolicyStackProps) {
+	return <PolicyStackContext.Provider value={{ config }}>{children}</PolicyStackContext.Provider>;
 }

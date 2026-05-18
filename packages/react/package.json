@@ -1,11 +1,11 @@
 {
-	"name": "@openpolicy/react",
+	"name": "@policystack/react",
 	"version": "0.0.34",
-	"description": "React components and hooks for OpenPolicy",
+	"description": "React components and hooks for PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/react"
 	},
 	"files": [
@@ -54,9 +54,9 @@
 		"test": "vp test"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/sdk": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/core": "workspace:*",
+		"@policystack/sdk": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"@testing-library/react": "^16.3.2",
 		"@types/react": "^18.0.0 || ^19.0.0",
 		"@types/react-dom": "^18.0.0 || ^19.0.0",

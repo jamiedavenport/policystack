@@ -1,4 +1,4 @@
-import type { ContainerSlotName, SlotNodes } from "@openpolicy/core";
+import type { ContainerSlotName, SlotNodes } from "@policystack/core";
 import type { Snippet } from "svelte";
 
 // Per-slot snippet argument, derived from the canonical core contract: every
@@ -11,7 +11,7 @@ type SlotArg<K extends keyof SlotNodes> = { node: SlotNodes[K] } & (K extends Co
 /**
  * The Svelte snippet-override map. One optional snippet per canonical slot
  * (PS-15 §2.4) — keys and node payloads are the single source of truth in
- * `@openpolicy/core`; this type only adapts them to Svelte `Snippet`s.
+ * `@policystack/core`; this type only adapts them to Svelte `Snippet`s.
  */
 export type PolicyComponents = {
 	[K in keyof SlotNodes]?: Snippet<[SlotArg<K>]>;

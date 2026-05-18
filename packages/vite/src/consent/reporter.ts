@@ -13,7 +13,7 @@ export type Logger = {
 	error: (msg: string) => void;
 };
 
-const PREFIX = "[opencookies]";
+const PREFIX = "[policystack]";
 
 const FIX_HINTS: Record<string, string> = {
 	"vendor-imports":
@@ -58,7 +58,7 @@ export function formatUngated(u: Ungated, root: string): string {
 		`${PREFIX} ungated ${describeHit(u.hit)} at ${loc}`,
 		`  Rule: ${rule}`,
 		`  Fix: ${fix}`,
-		`  Suppress: // opencookies-ignore-next-line`,
+		`  Suppress: // policystack-ignore-next-line`,
 	].join("\n");
 }
 

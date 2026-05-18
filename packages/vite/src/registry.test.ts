@@ -211,7 +211,7 @@ describe("registry — KNOWN_COOKIE_PACKAGES migration (vendors.json wins on con
 		}
 	});
 
-	it("resolves the documented category conflicts the OpenCookies way", () => {
+	it("resolves the documented category conflicts the PolicyStack Consent way", () => {
 		expect(KNOWN_COOKIE_PACKAGES.get("@sentry/browser")).toEqual(["essential"]);
 		expect(KNOWN_COOKIE_PACKAGES.get("@datadog/browser-rum")).toEqual(["essential"]);
 		expect(KNOWN_COOKIE_PACKAGES.get("@intercom/messenger-js-sdk")).toEqual(["marketing"]);

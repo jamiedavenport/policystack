@@ -1,7 +1,7 @@
 // src/routes/__root.tsx
 /// <reference types="vite-plus/client" />
 
-import { PolicyStackProvider } from "@openpolicy/react/provider";
+import { PolicyStackProvider } from "@policystack/react/provider";
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -14,7 +14,7 @@ function GithubIcon({ className }: { className?: string }) {
 }
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import openpolicy from "../openpolicy";
+import openpolicy from "../policystack";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -22,11 +22,11 @@ export const Route = createRootRoute({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: "OpenPolicy — TanStack Example" },
+			{ title: "PolicyStack — TanStack Example" },
 			{
 				name: "description",
 				content:
-					"Demo app showing three ways to style OpenPolicy React components in a TanStack Start app.",
+					"Demo app showing three ways to style PolicyStack React components in a TanStack Start app.",
 			},
 		],
 		links: [{ rel: "stylesheet", href: appCss }],
@@ -61,7 +61,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 							to="/"
 							className="flex items-center gap-2 font-semibold text-foreground hover:opacity-80 transition-opacity"
 						>
-							<span className="text-lg">OpenPolicy</span>
+							<span className="text-lg">PolicyStack</span>
 							<span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
 								TanStack
 							</span>
@@ -114,15 +114,15 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 
 						<div className="flex items-center gap-3">
 							<a
-								href="https://openpolicy.sh"
+								href="https://policystack.dev"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-sm text-muted-foreground hover:text-foreground transition-colors"
 							>
-								openpolicy.sh
+								policystack.dev
 							</a>
 							<a
-								href="https://github.com/jamiedavenport/openpolicy"
+								href="https://github.com/jamiedavenport/policystack"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-muted-foreground hover:text-foreground transition-colors"
@@ -141,12 +141,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 						<span>
 							Built with{" "}
 							<a
-								href="https://openpolicy.sh"
+								href="https://policystack.dev"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="hover:text-foreground transition-colors underline underline-offset-2"
 							>
-								OpenPolicy
+								PolicyStack
 							</a>{" "}
 							+{" "}
 							<a
@@ -159,13 +159,13 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 							</a>
 						</span>
 						<a
-							href="https://github.com/jamiedavenport/openpolicy"
+							href="https://github.com/jamiedavenport/policystack"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center gap-1.5 hover:text-foreground transition-colors"
 						>
 							<GithubIcon className="size-3.5" />
-							jamiedavenport/openpolicy
+							jamiedavenport/policystack
 						</a>
 					</div>
 				</footer>

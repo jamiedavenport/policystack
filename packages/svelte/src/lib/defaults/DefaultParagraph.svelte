@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { ParagraphNode } from "@openpolicy/core";
+import type { ParagraphNode } from "@policystack/core";
 import type { Snippet } from "svelte";
 
 let {

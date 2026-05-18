@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
 import { computeCookieVersion, computePrivacyVersion } from "./policy-version";
-import type { OpenPolicyConfig } from "./types";
+import type { PolicyStackConfig } from "./types";
 
 const company = {
 	name: "Acme Inc.",
@@ -9,7 +9,7 @@ const company = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const base: OpenPolicyConfig = {
+const base: PolicyStackConfig = {
 	company,
 	effectiveDate: "2026-01-01",
 	jurisdictions: ["eea"],
@@ -83,7 +83,7 @@ test("computeCookieVersion ignores the cookieVersion field itself", () => {
 
 test("privacy-only field change shifts privacyVersion but not cookieVersion", () => {
 	const before = base;
-	const after: OpenPolicyConfig = {
+	const after: PolicyStackConfig = {
 		...base,
 		automatedDecisionMaking: [
 			{ name: "Fraud", logic: "Rules engine", significance: "May decline" },
@@ -94,7 +94,7 @@ test("privacy-only field change shifts privacyVersion but not cookieVersion", ()
 });
 
 test("cookie-only field change shifts cookieVersion but not privacyVersion", () => {
-	const after: OpenPolicyConfig = {
+	const after: PolicyStackConfig = {
 		...base,
 		consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
 	};
@@ -103,7 +103,7 @@ test("cookie-only field change shifts cookieVersion but not privacyVersion", () 
 });
 
 test("a shared field change (cookies.used) shifts both versions", () => {
-	const after: OpenPolicyConfig = {
+	const after: PolicyStackConfig = {
 		...base,
 		cookies: {
 			used: { essential: true, analytics: true },
@@ -118,7 +118,7 @@ test("a shared field change (cookies.used) shifts both versions", () => {
 });
 
 test("effectiveDate change shifts both versions", () => {
-	const after: OpenPolicyConfig = { ...base, effectiveDate: "2026-06-01" };
+	const after: PolicyStackConfig = { ...base, effectiveDate: "2026-06-01" };
 	expect(computePrivacyVersion(after)).not.toBe(computePrivacyVersion(base));
 	expect(computeCookieVersion(after)).not.toBe(computeCookieVersion(base));
 });
@@ -128,7 +128,7 @@ test("effectiveDate change shifts both versions", () => {
 // Swapping a storage adapter / resolver — or going from none to one — must
 // produce byte-identical versions, or every visitor gets falsely re-prompted.
 test("consent runtime knobs never affect privacyVersion or cookieVersion", () => {
-	const withConsent: OpenPolicyConfig = {
+	const withConsent: PolicyStackConfig = {
 		...base,
 		consent: {
 			adapter: { read: () => null, write: () => {}, clear: () => {} },
@@ -137,7 +137,7 @@ test("consent runtime knobs never affect privacyVersion or cookieVersion", () =>
 			triggers: { policyVersionChanged: true },
 		},
 	};
-	const swappedAdapter: OpenPolicyConfig = {
+	const swappedAdapter: PolicyStackConfig = {
 		...base,
 		consent: { adapter: { read: () => null, write: () => {}, clear: () => {} } },
 	};
@@ -148,8 +148,8 @@ test("consent runtime knobs never affect privacyVersion or cookieVersion", () =>
 });
 
 test("policies override gates the hash", () => {
-	const onlyPrivacy: OpenPolicyConfig = { ...base, policies: ["privacy"] };
-	const onlyCookie: OpenPolicyConfig = { ...base, policies: ["cookie"] };
+	const onlyPrivacy: PolicyStackConfig = { ...base, policies: ["privacy"] };
+	const onlyCookie: PolicyStackConfig = { ...base, policies: ["cookie"] };
 	expect(computeCookieVersion(onlyPrivacy)).toBeUndefined();
 	expect(computePrivacyVersion(onlyCookie)).toBeUndefined();
 	expect(computePrivacyVersion(onlyPrivacy)).toMatch(/^[0-9a-f]{8}$/);

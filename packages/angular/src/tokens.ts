@@ -1,4 +1,6 @@
 import { InjectionToken } from "@angular/core";
-import type { ConsentStore } from "@openpolicy/core/consent";
+import type { ConsentStore } from "@policystack/core/consent";
 
-export const OPEN_COOKIES_STORE = new InjectionToken<ConsentStore>("OPEN_COOKIES_STORE");
+export const POLICYSTACK_CONSENT_STORE = new InjectionToken<ConsentStore>(
+	"POLICYSTACK_CONSENT_STORE",
+);

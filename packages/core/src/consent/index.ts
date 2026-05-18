@@ -1,5 +1,5 @@
-export { OpenCookiesError } from "./errors";
-export type { OpenCookiesErrorCode } from "./errors";
+export { PolicyStackConsentError } from "./errors";
+export type { PolicyStackConsentErrorCode } from "./errors";
 export { evaluate } from "./expr";
 export { GPC_LEGALLY_REQUIRED_JURISDICTIONS, applyGPC, gpcApplies, readGPCSignal } from "./gpc";
 export {
@@ -31,8 +31,8 @@ export type {
 	GPCConfig,
 	Jurisdiction,
 	JurisdictionResolver,
-	OpenCookiesConfig,
-	OpenPolicyConsentConfig,
+	PolicyStackConsentConfig,
+	PolicyStackConsentOptions,
 	RepromptEventDetail,
 	RepromptReason,
 	RepromptTriggers,

@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
-import { createConsentStore, type Category } from "@openpolicy/core/consent";
+import { createConsentStore, type Category } from "@policystack/core/consent";
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	ConsentGate,
-	OpenCookiesProvider,
+	PolicyStackConsentProvider,
 	useCategory,
 	useConsent,
 	type UseCategoryResult,
@@ -25,18 +25,18 @@ afterEach(() => {
 function withProvider(probe: (consent: UseConsentResult) => unknown): UseConsentResult {
 	let captured: UseConsentResult | undefined;
 	render(() => (
-		<OpenCookiesProvider config={{ categories: baseCategories }}>
+		<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 			{(() => {
 				captured = useConsent();
 				probe(captured);
 				return <div data-testid="probe" />;
 			})()}
-		</OpenCookiesProvider>
+		</PolicyStackConsentProvider>
 	));
 	return captured!;
 }
 
-describe("OpenCookiesProvider", () => {
+describe("PolicyStackConsentProvider", () => {
 	it("provides a store created from config", () => {
 		const consent = withProvider(() => {});
 		expect(consent.route()).toBe("cookie");
@@ -52,12 +52,12 @@ describe("OpenCookiesProvider", () => {
 		store.acceptAll();
 		let captured: UseConsentResult | undefined;
 		render(() => (
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				{(() => {
 					captured = useConsent();
 					return null;
 				})()}
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(captured?.route()).toBe("closed");
 		expect(captured?.decisions().analytics).toBe(true);
@@ -65,7 +65,7 @@ describe("OpenCookiesProvider", () => {
 
 	it("throws when used outside any provider", () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});
-		expect(() => render(() => <Orphan />)).toThrow(/OpenCookiesProvider/);
+		expect(() => render(() => <Orphan />)).toThrow(/PolicyStackConsentProvider/);
 	});
 });
 
@@ -78,9 +78,9 @@ describe("useConsent", () => {
 	it("re-renders consumers when state changes", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		render(() => (
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<RouteLabel />
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.getByTestId("route").textContent).toBe("cookie");
 		store.acceptAll();
@@ -113,12 +113,12 @@ describe("useCategory", () => {
 	function withCategory(key: string): UseCategoryResult {
 		let captured: UseCategoryResult | undefined;
 		render(() => (
-			<OpenCookiesProvider config={{ categories: baseCategories }}>
+			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 				{(() => {
 					captured = useCategory(key);
 					return null;
 				})()}
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		return captured!;
 	}
@@ -143,22 +143,22 @@ describe("ConsentGate", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		store.acceptAll();
 		render(() => (
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ConsentGate requires="analytics">
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.queryByTestId("child")?.textContent).toBe("visible");
 	});
 
 	it("renders fallback when expression is false", () => {
 		render(() => (
-			<OpenCookiesProvider config={{ categories: baseCategories }}>
+			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 				<ConsentGate requires="analytics" fallback={<span data-testid="fb">nope</span>}>
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.queryByTestId("child")).toBeNull();
 		expect(screen.queryByTestId("fb")?.textContent).toBe("nope");
@@ -166,11 +166,11 @@ describe("ConsentGate", () => {
 
 	it("renders nothing when no fallback and gate is closed", () => {
 		const { container } = render(() => (
-			<OpenCookiesProvider config={{ categories: baseCategories }}>
+			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 				<ConsentGate requires="analytics">
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.queryByTestId("child")).toBeNull();
 		expect(container.textContent).toBe("");
@@ -179,11 +179,11 @@ describe("ConsentGate", () => {
 	it("updates when state crosses the truth boundary", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		render(() => (
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ConsentGate requires="analytics" fallback={<span data-testid="fb">nope</span>}>
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.queryByTestId("child")).toBeNull();
 		expect(screen.queryByTestId("fb")?.textContent).toBe("nope");
@@ -195,14 +195,14 @@ describe("ConsentGate", () => {
 	it("evaluates compound expressions", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		render(() => (
-			<OpenCookiesProvider store={store}>
+			<PolicyStackConsentProvider store={store}>
 				<ConsentGate
 					requires={{ and: ["analytics", "marketing"] }}
 					fallback={<span data-testid="fb">need both</span>}
 				>
 					<span data-testid="child">both</span>
 				</ConsentGate>
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.queryByTestId("child")).toBeNull();
 		store.toggle("analytics");
@@ -213,9 +213,9 @@ describe("ConsentGate", () => {
 
 	it("toggle through accessor flips the gate", () => {
 		render(() => (
-			<OpenCookiesProvider config={{ categories: baseCategories }}>
+			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
 				<ToggleProbe />
-			</OpenCookiesProvider>
+			</PolicyStackConsentProvider>
 		));
 		expect(screen.queryByTestId("gated")).toBeNull();
 		fireEvent.click(screen.getByTestId("toggle"));

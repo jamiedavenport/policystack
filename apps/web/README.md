@@ -10,11 +10,11 @@ The project is split across several open-source repos. This repo is just the web
 
 ## Sibling repos
 
-### [openpolicy](https://github.com/jamiedavenport/openpolicy) — `openpolicy.sh`
+### [policystack](https://github.com/jamiedavenport/policystack) — `policystack.dev`
 
-Define a privacy/cookie policy once as a TypeScript config, render it as React components. Ships a shadcn-style consent banner. Disclaimer: it generates documents, it doesn't give legal advice. Mostly TypeScript with Astro docs and a Svelte adapter. Active — currently around `@openpolicy/react@0.0.30`.
+Define a privacy/cookie policy once as a TypeScript config, render it as React components. Ships a shadcn-style consent banner. Disclaimer: it generates documents, it doesn't give legal advice. Mostly TypeScript with Astro docs and a Svelte adapter. Active — currently around `@policystack/react@0.0.30`.
 
-### [opencookies](https://github.com/jamiedavenport/opencookies)
+### [policystack](https://github.com/jamiedavenport/policystack)
 
 Headless consent state machine + framework hooks. UI is whatever you build around it. Sub-4kb core, adapters for React / Vue / Solid / Svelte / Angular. Includes a Vite plugin that flags ungated cookie usage at dev time, a static scanner, pre-built script integrations (GA, Meta Pixel, …), and a planned CLI. Apache-2.0, pre-1.0.
 

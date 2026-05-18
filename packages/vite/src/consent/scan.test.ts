@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 import { scan } from "./scan";
 
-const root = mkdtempSync(join(tmpdir(), "opencookies-scan-"));
+const root = mkdtempSync(join(tmpdir(), "policystack-consent-scan-"));
 
 function file(rel: string, body: string): void {
 	const full = join(root, rel);
@@ -19,7 +19,7 @@ file(
 	"src/gated.tsx",
 	`export function Gated() {\n  return (\n    <ConsentGate purpose="analytics">\n      {(() => { document.cookie = 'g=1'; return null; })()}\n    </ConsentGate>\n  );\n}\n`,
 );
-file("src/suppressed.ts", `// opencookies-ignore-next-line\ndocument.cookie = 'c=1';\n`);
+file("src/suppressed.ts", `// policystack-ignore-next-line\ndocument.cookie = 'c=1';\n`);
 file("src/ignored.d.ts", `declare const foo: any;\n`);
 file("node_modules/lib/index.ts", `document.cookie = 'x=1';\n`);
 
@@ -35,7 +35,7 @@ describe("scan", () => {
 		expect(result.cookies.every((c) => !c.file.includes("node_modules"))).toBe(true);
 	});
 
-	it("respects // opencookies-ignore-next-line", async () => {
+	it("respects // policystack-ignore-next-line", async () => {
 		const result = await scan({ cwd: root });
 		const fromSuppressed = result.cookies.filter((c) => c.file.endsWith("suppressed.ts"));
 		expect(fromSuppressed).toEqual([]);

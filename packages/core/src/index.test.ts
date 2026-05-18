@@ -3,11 +3,11 @@ import { compile } from "./documents";
 import {
 	compileCookiePolicy,
 	compilePrivacyPolicy,
-	expandOpenPolicyConfig,
-	isOpenPolicyConfig,
+	expandPolicyStackConfig,
+	isPolicyStackConfig,
 	shouldEmit,
 } from "./index";
-import type { OpenPolicyConfig, PolicyInput } from "./types";
+import type { PolicyStackConfig, PolicyInput } from "./types";
 
 const input: PolicyInput = {
 	type: "privacy",
@@ -53,7 +53,7 @@ const company = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const fullConfig: OpenPolicyConfig = {
+const fullConfig: PolicyStackConfig = {
 	company,
 	effectiveDate: "2026-01-01",
 	jurisdictions: ["ca"],
@@ -82,33 +82,33 @@ const fullConfig: OpenPolicyConfig = {
 	thirdParties: [],
 };
 
-test("isOpenPolicyConfig returns true for flat config", () => {
-	expect(isOpenPolicyConfig(fullConfig)).toBe(true);
+test("isPolicyStackConfig returns true for flat config", () => {
+	expect(isPolicyStackConfig(fullConfig)).toBe(true);
 });
 
-test("isOpenPolicyConfig returns false for PolicyInput (has type discriminator)", () => {
-	expect(isOpenPolicyConfig(input)).toBe(false);
+test("isPolicyStackConfig returns false for PolicyInput (has type discriminator)", () => {
+	expect(isPolicyStackConfig(input)).toBe(false);
 });
 
-test("isOpenPolicyConfig returns false for null/non-object", () => {
-	expect(isOpenPolicyConfig(null)).toBe(false);
-	expect(isOpenPolicyConfig("string")).toBe(false);
-	expect(isOpenPolicyConfig(42)).toBe(false);
+test("isPolicyStackConfig returns false for null/non-object", () => {
+	expect(isPolicyStackConfig(null)).toBe(false);
+	expect(isPolicyStackConfig("string")).toBe(false);
+	expect(isPolicyStackConfig(42)).toBe(false);
 });
 
-test("isOpenPolicyConfig returns false for object without effectiveDate", () => {
-	expect(isOpenPolicyConfig({ company })).toBe(false);
+test("isPolicyStackConfig returns false for object without effectiveDate", () => {
+	expect(isPolicyStackConfig({ company })).toBe(false);
 });
 
-test("expandOpenPolicyConfig emits both inputs when all fields present", () => {
-	const inputs = expandOpenPolicyConfig(fullConfig);
+test("expandPolicyStackConfig emits both inputs when all fields present", () => {
+	const inputs = expandPolicyStackConfig(fullConfig);
 	expect(inputs).toHaveLength(2);
 	expect(inputs[0]?.type).toBe("privacy");
 	expect(inputs[1]?.type).toBe("cookie");
 });
 
-test("expandOpenPolicyConfig merges company and shared fields into each input", () => {
-	const inputs = expandOpenPolicyConfig(fullConfig);
+test("expandPolicyStackConfig merges company and shared fields into each input", () => {
+	const inputs = expandPolicyStackConfig(fullConfig);
 	expect(inputs[0]?.company).toEqual(company);
 	expect(inputs[1]?.company).toEqual(company);
 	expect(inputs[0]?.effectiveDate).toBe("2026-01-01");
@@ -117,15 +117,15 @@ test("expandOpenPolicyConfig merges company and shared fields into each input", 
 	expect(inputs[1]?.jurisdictions).toEqual(["ca"]);
 });
 
-test("expandOpenPolicyConfig auto-detects privacy-only when cookies omitted", () => {
+test("expandPolicyStackConfig auto-detects privacy-only when cookies omitted", () => {
 	const { cookies: _, ...privacyOnly } = fullConfig;
-	const inputs = expandOpenPolicyConfig(privacyOnly);
+	const inputs = expandPolicyStackConfig(privacyOnly);
 	expect(inputs).toHaveLength(1);
 	expect(inputs[0]?.type).toBe("privacy");
 });
 
-test("expandOpenPolicyConfig emits cookie-only when policies excludes privacy", () => {
-	const inputs = expandOpenPolicyConfig({
+test("expandPolicyStackConfig emits cookie-only when policies excludes privacy", () => {
+	const inputs = expandPolicyStackConfig({
 		company,
 		effectiveDate: "2026-01-01",
 		jurisdictions: ["ca"],
@@ -140,8 +140,8 @@ test("expandOpenPolicyConfig emits cookie-only when policies excludes privacy", 
 	expect(inputs[0]?.type).toBe("cookie");
 });
 
-test("expandOpenPolicyConfig returns empty array when policies is empty", () => {
-	const inputs = expandOpenPolicyConfig({
+test("expandPolicyStackConfig returns empty array when policies is empty", () => {
+	const inputs = expandPolicyStackConfig({
 		company,
 		effectiveDate: "2026-01-01",
 		jurisdictions: ["ca"],
@@ -151,8 +151,8 @@ test("expandOpenPolicyConfig returns empty array when policies is empty", () => 
 	expect(inputs).toHaveLength(0);
 });
 
-test("expandOpenPolicyConfig passes automatedDecisionMaking through unchanged when set", () => {
-	const inputs = expandOpenPolicyConfig({
+test("expandPolicyStackConfig passes automatedDecisionMaking through unchanged when set", () => {
+	const inputs = expandPolicyStackConfig({
 		...fullConfig,
 		automatedDecisionMaking: [
 			{ name: "Fraud scoring", logic: "Rules engine", significance: "May decline" },
@@ -166,28 +166,28 @@ test("expandOpenPolicyConfig passes automatedDecisionMaking through unchanged wh
 	]);
 });
 
-test("expandOpenPolicyConfig preserves undefined automatedDecisionMaking (no default)", () => {
-	const inputs = expandOpenPolicyConfig(fullConfig);
+test("expandPolicyStackConfig preserves undefined automatedDecisionMaking (no default)", () => {
+	const inputs = expandPolicyStackConfig(fullConfig);
 	const privacy = inputs.find((i) => i.type === "privacy");
 	if (privacy?.type !== "privacy") throw new Error("expected privacy input");
 	expect(privacy.automatedDecisionMaking).toBeUndefined();
 });
 
-test("expandOpenPolicyConfig preserves explicit empty automatedDecisionMaking array", () => {
-	const inputs = expandOpenPolicyConfig({ ...fullConfig, automatedDecisionMaking: [] });
+test("expandPolicyStackConfig preserves explicit empty automatedDecisionMaking array", () => {
+	const inputs = expandPolicyStackConfig({ ...fullConfig, automatedDecisionMaking: [] });
 	const privacy = inputs.find((i) => i.type === "privacy");
 	if (privacy?.type !== "privacy") throw new Error("expected privacy input");
 	expect(privacy.automatedDecisionMaking).toEqual([]);
 });
 
 test("shouldEmit honours explicit policies override", () => {
-	const config: OpenPolicyConfig = {
+	const config: PolicyStackConfig = {
 		...fullConfig,
 		policies: ["privacy"],
 	};
 	expect(shouldEmit("privacy", config)).toBe(true);
 	expect(shouldEmit("cookie", config)).toBe(false);
-	const inputs = expandOpenPolicyConfig(config);
+	const inputs = expandPolicyStackConfig(config);
 	expect(inputs).toHaveLength(1);
 	expect(inputs[0]?.type).toBe("privacy");
 });
@@ -216,13 +216,13 @@ test("compileCookiePolicy returns null when only privacy fields are present", ()
 });
 
 test("compilePrivacyPolicy matches compile(expand(...).find(privacy))", () => {
-	const expanded = expandOpenPolicyConfig(fullConfig).find((i) => i.type === "privacy");
+	const expanded = expandPolicyStackConfig(fullConfig).find((i) => i.type === "privacy");
 	if (!expanded) throw new Error("expected privacy input");
 	expect(compilePrivacyPolicy(fullConfig)).toEqual(compile(expanded));
 });
 
 test("compileCookiePolicy matches compile(expand(...).find(cookie))", () => {
-	const expanded = expandOpenPolicyConfig(fullConfig).find((i) => i.type === "cookie");
+	const expanded = expandPolicyStackConfig(fullConfig).find((i) => i.type === "cookie");
 	if (!expanded) throw new Error("expected cookie input");
 	expect(compileCookiePolicy(fullConfig)).toEqual(compile(expanded));
 });
@@ -245,22 +245,22 @@ test("compilePrivacyPolicy intro renders version when privacyVersion is set", ()
 	expect(JSON.stringify(intro)).toContain("Version: priv1234");
 });
 
-test("expandOpenPolicyConfig threads privacyVersion onto privacy input", () => {
-	const inputs = expandOpenPolicyConfig({ ...fullConfig, privacyVersion: "priv1234" });
+test("expandPolicyStackConfig threads privacyVersion onto privacy input", () => {
+	const inputs = expandPolicyStackConfig({ ...fullConfig, privacyVersion: "priv1234" });
 	const privacy = inputs.find((i) => i.type === "privacy");
 	if (privacy?.type !== "privacy") throw new Error("expected privacy input");
 	expect(privacy.version).toBe("priv1234");
 });
 
-test("expandOpenPolicyConfig threads cookieVersion onto cookie input", () => {
-	const inputs = expandOpenPolicyConfig({ ...fullConfig, cookieVersion: "cook1234" });
+test("expandPolicyStackConfig threads cookieVersion onto cookie input", () => {
+	const inputs = expandPolicyStackConfig({ ...fullConfig, cookieVersion: "cook1234" });
 	const cookie = inputs.find((i) => i.type === "cookie");
 	if (cookie?.type !== "cookie") throw new Error("expected cookie input");
 	expect(cookie.version).toBe("cook1234");
 });
 
 test("company.url renders the Website label in both contact sections (en)", () => {
-	const withUrl: OpenPolicyConfig = {
+	const withUrl: PolicyStackConfig = {
 		...fullConfig,
 		company: { ...company, url: "https://acme.example" },
 	};

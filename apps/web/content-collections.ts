@@ -50,7 +50,7 @@ const docs = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string().optional(),
-		product: z.enum(["openpolicy", "opencookies", "shared"]).optional(),
+		product: z.enum(["policy", "consent", "shared"]).optional(),
 	}),
 	transform: async (doc, ctx) => {
 		const body = await compileMDX(ctx, doc, {

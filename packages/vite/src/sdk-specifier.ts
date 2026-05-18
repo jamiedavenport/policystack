@@ -1,5 +1,5 @@
 /**
- * Canonical, dual-scope root specifiers for the OpenPolicy SDK.
+ * Canonical, dual-scope root specifiers for the PolicyStack SDK.
  *
  * Recognising *both* scopes is what lets the `@openpolicy/` → `@policystack/`
  * rename (Phase 6 / PS-34) happen with **no scanner change at rename time** —
@@ -10,7 +10,7 @@
 export const CANONICAL_SDK_SPECIFIERS = ["@openpolicy/sdk", "@policystack/sdk"] as const;
 
 /**
- * Decides whether an import source string is the OpenPolicy SDK. The Vite
+ * Decides whether an import source string is the PolicyStack SDK. The Vite
  * plugin swaps in a resolver-backed implementation so import aliases resolve;
  * the default ({@link isCanonicalSdkSpecifier}) is used everywhere a Vite
  * resolver isn't available (unit tests, SDK not installed) and as the

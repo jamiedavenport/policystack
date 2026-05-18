@@ -1,4 +1,4 @@
-import { sharing, thirdParty } from "@openpolicy/sdk";
+import { sharing, thirdParty } from "@policystack/sdk";
 
 thirdParty("Stripe", "Payment processing", "https://stripe.com/privacy");
 

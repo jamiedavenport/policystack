@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea or improvement for OpenPolicy
+about: Suggest an idea or improvement for PolicyStack
 labels: enhancement
 ---
 

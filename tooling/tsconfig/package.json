@@ -1,5 +1,5 @@
 {
-	"name": "@openpolicy/tooling",
+	"name": "@policystack/tooling",
 	"version": "0.0.0",
 	"private": true,
 	"exports": {

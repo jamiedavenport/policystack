@@ -1,4 +1,4 @@
-import type { OpenPolicyConfig, PrivacyPolicyConfig } from "@openpolicy/core";
+import type { PolicyStackConfig, PrivacyPolicyConfig } from "@policystack/core";
 import { type CSSProperties, defineComponent, h, type PropType } from "vue";
 import { usePolicyDocument } from "../composables/usePolicyDocument";
 import { DefaultRoot } from "../defaults";
@@ -9,7 +9,7 @@ export const PrivacyPolicy = defineComponent({
 	name: "PrivacyPolicy",
 	props: {
 		config: {
-			type: Object as PropType<OpenPolicyConfig | PrivacyPolicyConfig>,
+			type: Object as PropType<PolicyStackConfig | PrivacyPolicyConfig>,
 			required: false,
 		},
 		components: {

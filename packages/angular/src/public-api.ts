@@ -1,8 +1,8 @@
 export { ConsentService } from "./consent.service";
 export { injectCategory, type CategoryRef } from "./category";
 export { ConsentGate } from "./consent-gate";
-export { provideOpenCookies, type ProvideOpenCookiesOptions } from "./provider";
-export { OPEN_COOKIES_STORE } from "./tokens";
+export { providePolicyStackConsent, type ProvidePolicyStackConsentOptions } from "./provider";
+export { POLICYSTACK_CONSENT_STORE } from "./tokens";
 
 export type {
 	Category,
@@ -12,7 +12,7 @@ export type {
 	ConsentState,
 	ConsentStore,
 	Jurisdiction,
-	OpenCookiesConfig,
+	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,
-} from "@openpolicy/core/consent";
+} from "@policystack/core/consent";

@@ -8,7 +8,7 @@ import { isCanonicalSdkSpecifier, type SdkSpecifierMatcher } from "./sdk-specifi
 
 test("canonical case: string literal values in object literal", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Account Information", { name, email }, {
 			name: "Name",
 			email: "Email address",
@@ -21,7 +21,7 @@ test("canonical case: string literal values in object literal", () => {
 
 test("renamed import", () => {
 	const code = `
-		import { collecting as col } from "@openpolicy/sdk";
+		import { collecting as col } from "@policystack/sdk";
 		col("Cat", v, { a: "Name" });
 	`;
 	expect(extractFromFile("a.ts", code).dataCollected).toEqual({
@@ -52,7 +52,7 @@ test("ignores local `collecting` not imported from anywhere", () => {
 
 test("ignores type-only imports", () => {
 	const code = `
-		import type { collecting } from "@openpolicy/sdk";
+		import type { collecting } from "@policystack/sdk";
 		collecting("Cat", v, { a: "Name" });
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -62,7 +62,7 @@ test("ignores type-only imports", () => {
 
 test("template-literal category is dropped with a located diagnostic", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting(\`Cat\`, v, { a: "Name" });
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -80,7 +80,7 @@ test("template-literal category is dropped with a located diagnostic", () => {
 
 test("non-string label values diagnosed individually, string values kept", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Cat", v, { a: 42, b: "Kept", c: true });
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -105,7 +105,7 @@ test("non-string label values diagnosed individually, string values kept", () =>
 
 test("spread in the label object is dropped with a diagnostic, string values kept", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		const rest = {};
 		collecting("Cat", v, { ...rest, b: "Kept" });
 	`;
@@ -124,7 +124,7 @@ test("spread in the label object is dropped with a diagnostic, string values kep
 
 test("malformed source returns empty without throwing", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Cat", v, { a: "Name"
 	`;
 	const originalWarn = console.warn;
@@ -142,7 +142,7 @@ test("malformed source returns empty without throwing", () => {
 
 test("merges multiple calls with the same category", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Cat", v, { a: "A" });
 		collecting("Cat", w, { b: "B", a2: "A" });
 	`;
@@ -153,7 +153,7 @@ test("merges multiple calls with the same category", () => {
 
 test("deduplicates repeated label values — intentional dedup, no diagnostic", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Cat", v, { a: "A", a2: "A" });
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -163,7 +163,7 @@ test("deduplicates repeated label values — intentional dedup, no diagnostic", 
 
 test("collecting with fewer than three arguments is diagnosed", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Cat", v);
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -181,7 +181,7 @@ test("collecting with fewer than three arguments is diagnosed", () => {
 
 test("collecting whose third arg is a variable reference is diagnosed", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		const labels = { a: "Name" };
 		collecting("Cat", v, labels);
 	`;
@@ -200,7 +200,7 @@ test("collecting whose third arg is a variable reference is diagnosed", () => {
 
 test("collecting whose third arg is an arrow function is diagnosed", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		collecting("Cat", v, (v) => ({ Name: v.a }));
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -224,7 +224,7 @@ test("empty source returns empty", () => {
 
 test("Ignore sentinel omits the field, keeps other labels, emits no diagnostic", () => {
 	const code = `
-		import { collecting, Ignore } from "@openpolicy/sdk";
+		import { collecting, Ignore } from "@policystack/sdk";
 		collecting("Account Information", { name, hashedPassword }, {
 			name: "Name",
 			hashedPassword: Ignore,
@@ -238,7 +238,7 @@ test("Ignore sentinel omits the field, keeps other labels, emits no diagnostic",
 
 test("Ignore recognised under a renamed import emits no diagnostic", () => {
 	const code = `
-		import { collecting, Ignore as Skip } from "@openpolicy/sdk";
+		import { collecting, Ignore as Skip } from "@policystack/sdk";
 		collecting("Cat", v, {
 			a: "Name",
 			b: Skip,
@@ -254,7 +254,7 @@ test("Ignore imported from a non-SDK module is diagnosed (not the sentinel)", ()
 	// is genuinely unreadable — that's ambiguous data loss and must surface a
 	// located diagnostic rather than vanish.
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		import { Ignore } from "./somewhere-else";
 		collecting("Cat", v, {
 			a: "Name",
@@ -276,7 +276,7 @@ test("Ignore imported from a non-SDK module is diagnosed (not the sentinel)", ()
 
 test("all properties marked Ignore yields an empty label array, no diagnostic", () => {
 	const code = `
-		import { collecting, Ignore } from "@openpolicy/sdk";
+		import { collecting, Ignore } from "@policystack/sdk";
 		collecting("Cat", v, {
 			a: Ignore,
 			b: Ignore,
@@ -289,7 +289,7 @@ test("all properties marked Ignore yields an empty label array, no diagnostic", 
 
 test("calls nested inside other functions are still extracted", () => {
 	const code = `
-		import { collecting } from "@openpolicy/sdk";
+		import { collecting } from "@policystack/sdk";
 		export function createUser(name: string, email: string) {
 			return db.insert(users).values(
 				collecting("Account Information", { name, email }, {
@@ -310,7 +310,7 @@ test("calls nested inside other functions are still extracted", () => {
 
 test("thirdParty: canonical case with 3 string literal args", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 	`;
 	expect(extractFromFile("a.ts", code).thirdParties).toEqual([
@@ -324,7 +324,7 @@ test("thirdParty: canonical case with 3 string literal args", () => {
 
 test("thirdParty: renamed import", () => {
 	const code = `
-		import { thirdParty as tp } from "@openpolicy/sdk";
+		import { thirdParty as tp } from "@policystack/sdk";
 		tp("Stripe", "Payments", "https://stripe.com/privacy");
 	`;
 	expect(extractFromFile("a.ts", code).thirdParties).toEqual([
@@ -346,7 +346,7 @@ test("thirdParty: ignored if imported from non-SDK module", () => {
 
 test("thirdParty with fewer than 3 args is diagnosed", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		thirdParty("Stripe", "Payments");
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -364,7 +364,7 @@ test("thirdParty with fewer than 3 args is diagnosed", () => {
 
 test("thirdParty with a non-literal name is diagnosed", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		const name = "Stripe";
 		thirdParty(name, "Payments", "https://stripe.com/privacy");
 	`;
@@ -383,7 +383,7 @@ test("thirdParty with a non-literal name is diagnosed", () => {
 
 test("thirdParty with a non-literal purpose is diagnosed", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		thirdParty("Stripe", getPurpose(), "https://stripe.com/privacy");
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -401,7 +401,7 @@ test("thirdParty with a non-literal purpose is diagnosed", () => {
 
 test("thirdParty with a non-literal policyUrl is diagnosed", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		thirdParty("Stripe", "Payments", STRIPE_POLICY_URL);
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -419,7 +419,7 @@ test("thirdParty with a non-literal policyUrl is diagnosed", () => {
 
 test("thirdParty: deduplication — same name in same file appears once, no diagnostic", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 		thirdParty("Stripe", "Billing", "https://stripe.com/other");
 	`;
@@ -437,7 +437,7 @@ test("thirdParty: deduplication — same name in same file appears once, no diag
 
 test("thirdParty: multiple distinct entries", () => {
 	const code = `
-		import { thirdParty } from "@openpolicy/sdk";
+		import { thirdParty } from "@policystack/sdk";
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 		thirdParty("Sentry", "Error tracking", "https://sentry.io/privacy");
 	`;
@@ -457,7 +457,7 @@ test("thirdParty: multiple distinct entries", () => {
 
 test("collecting and thirdParty can coexist in the same file", () => {
 	const code = `
-		import { collecting, thirdParty } from "@openpolicy/sdk";
+		import { collecting, thirdParty } from "@policystack/sdk";
 		collecting("Account Information", v, { name: "Name" });
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 	`;
@@ -478,7 +478,7 @@ test("collecting and thirdParty can coexist in the same file", () => {
 
 test("defineCookie: string literal category is collected", () => {
 	const code = `
-		import { defineCookie } from "@openpolicy/sdk";
+		import { defineCookie } from "@policystack/sdk";
 		defineCookie("analytics");
 	`;
 	expect(extractFromFile("a.ts", code).cookies).toEqual(["analytics"]);
@@ -486,7 +486,7 @@ test("defineCookie: string literal category is collected", () => {
 
 test("defineCookie: multiple distinct categories collected in insertion order", () => {
 	const code = `
-		import { defineCookie } from "@openpolicy/sdk";
+		import { defineCookie } from "@policystack/sdk";
 		defineCookie("analytics");
 		defineCookie("marketing");
 	`;
@@ -495,7 +495,7 @@ test("defineCookie: multiple distinct categories collected in insertion order", 
 
 test("defineCookie: duplicate categories deduped, no diagnostic", () => {
 	const code = `
-		import { defineCookie } from "@openpolicy/sdk";
+		import { defineCookie } from "@policystack/sdk";
 		defineCookie("analytics");
 		defineCookie("analytics");
 	`;
@@ -506,7 +506,7 @@ test("defineCookie: duplicate categories deduped, no diagnostic", () => {
 
 test("defineCookie: renamed import recognised", () => {
 	const code = `
-		import { defineCookie as dc } from "@openpolicy/sdk";
+		import { defineCookie as dc } from "@policystack/sdk";
 		dc("functional");
 	`;
 	expect(extractFromFile("a.ts", code).cookies).toEqual(["functional"]);
@@ -522,7 +522,7 @@ test("defineCookie: ignored if imported from non-SDK module", () => {
 
 test("defineCookie: ignored for type-only imports", () => {
 	const code = `
-		import type { defineCookie } from "@openpolicy/sdk";
+		import type { defineCookie } from "@policystack/sdk";
 		defineCookie("analytics");
 	`;
 	expect(extractFromFile("a.ts", code).cookies).toEqual([]);
@@ -530,7 +530,7 @@ test("defineCookie: ignored for type-only imports", () => {
 
 test("defineCookie with a non-literal argument is diagnosed", () => {
 	const code = `
-		import { defineCookie } from "@openpolicy/sdk";
+		import { defineCookie } from "@policystack/sdk";
 		const cat = "analytics";
 		defineCookie(cat);
 	`;
@@ -549,7 +549,7 @@ test("defineCookie with a non-literal argument is diagnosed", () => {
 
 test("cookies + collecting + thirdParty coexist in one file", () => {
 	const code = `
-		import { collecting, thirdParty, defineCookie } from "@openpolicy/sdk";
+		import { collecting, thirdParty, defineCookie } from "@policystack/sdk";
 		collecting("Account Information", v, { name: "Name" });
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 		defineCookie("analytics");
@@ -568,7 +568,7 @@ test("cookies + collecting + thirdParty coexist in one file", () => {
 
 test("sharing: canonical case with 2 string literals + a value", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		sharing("Account Information", "Stripe", { email });
 	`;
 	expect(extractFromFile("a.ts", code).sharing).toEqual([
@@ -578,7 +578,7 @@ test("sharing: canonical case with 2 string literals + a value", () => {
 
 test("sharing: renamed import", () => {
 	const code = `
-		import { sharing as shareWith } from "@openpolicy/sdk";
+		import { sharing as shareWith } from "@policystack/sdk";
 		shareWith("Usage Data", "PostHog", payload);
 	`;
 	expect(extractFromFile("a.ts", code).sharing).toEqual([
@@ -596,7 +596,7 @@ test("sharing: ignored if imported from non-SDK module", () => {
 
 test("sharing: ignored for type-only imports", () => {
 	const code = `
-		import type { sharing } from "@openpolicy/sdk";
+		import type { sharing } from "@policystack/sdk";
 		sharing("Account Information", "Stripe", v);
 	`;
 	expect(extractFromFile("a.ts", code).sharing).toEqual([]);
@@ -604,7 +604,7 @@ test("sharing: ignored for type-only imports", () => {
 
 test("sharing with fewer than 3 args is diagnosed", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		sharing("Account Information", "Stripe");
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -622,7 +622,7 @@ test("sharing with fewer than 3 args is diagnosed", () => {
 
 test("sharing with a non-literal key is diagnosed", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		const key = "Account Information";
 		sharing(key, "Stripe", v);
 	`;
@@ -641,7 +641,7 @@ test("sharing with a non-literal key is diagnosed", () => {
 
 test("sharing with a non-literal recipient is diagnosed", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		sharing("Account Information", getRecipient(), v);
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -659,7 +659,7 @@ test("sharing with a non-literal recipient is diagnosed", () => {
 
 test("sharing: the value argument is never scanned and never diagnosed", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		sharing("Account Information", "Stripe", buildPayload(user, opts));
 	`;
 	const result = extractFromFile("a.ts", code);
@@ -669,7 +669,7 @@ test("sharing: the value argument is never scanned and never diagnosed", () => {
 
 test("sharing: identical (key, recipient) in same file appears once, no diagnostic", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		sharing("Account Information", "Stripe", a);
 		sharing("Account Information", "Stripe", b);
 	`;
@@ -681,7 +681,7 @@ test("sharing: identical (key, recipient) in same file appears once, no diagnost
 
 test("sharing: same key to different recipients are distinct edges", () => {
 	const code = `
-		import { sharing } from "@openpolicy/sdk";
+		import { sharing } from "@policystack/sdk";
 		sharing("Usage Data", "PostHog", a);
 		sharing("Usage Data", "Stripe", b);
 	`;
@@ -693,7 +693,7 @@ test("sharing: same key to different recipients are distinct edges", () => {
 
 test("all four call-site helpers coexist in one file", () => {
 	const code = `
-		import { collecting, thirdParty, defineCookie, sharing } from "@openpolicy/sdk";
+		import { collecting, thirdParty, defineCookie, sharing } from "@policystack/sdk";
 		collecting("Account Information", v, { name: "Name" });
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 		defineCookie("analytics");
@@ -715,7 +715,7 @@ test("diagnostic location is the 1-based line:column of the call expression", ()
 	// Built without a leading newline so the line/column math is unambiguous:
 	// line 1 = import, line 2 = const, line 3 = the call indented 3 spaces.
 	const code =
-		'import { collecting } from "@openpolicy/sdk";\n' +
+		'import { collecting } from "@policystack/sdk";\n' +
 		"const x = 1;\n" +
 		'   collecting(cat, v, { a: "Name" });\n';
 	const result = extractFromFile("src/x.ts", code);
@@ -732,7 +732,7 @@ test("diagnostic location is the 1-based line:column of the call expression", ()
 
 test("canonical valid calls produce zero diagnostics", () => {
 	const code = `
-		import { collecting, thirdParty, defineCookie } from "@openpolicy/sdk";
+		import { collecting, thirdParty, defineCookie } from "@policystack/sdk";
 		collecting("Account Information", { name }, { name: "Name" });
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 		defineCookie("analytics");
@@ -742,7 +742,7 @@ test("canonical valid calls produce zero diagnostics", () => {
 
 test("multiple skipped calls each produce their own located diagnostic", () => {
 	const code = `
-		import { collecting, defineCookie } from "@openpolicy/sdk";
+		import { collecting, defineCookie } from "@policystack/sdk";
 		collecting(catA, v, { a: "Name" });
 		defineCookie(catB);
 	`;
@@ -804,25 +804,25 @@ test("an injected predicate makes an aliased specifier collectable", () => {
 
 test("parseModule + extractFromParsed equals extractFromFile (single-parse seam)", () => {
 	const code = `
-		import { collecting, thirdParty } from "@openpolicy/sdk";
+		import { collecting, thirdParty } from "@policystack/sdk";
 		collecting("Account Information", v, { email: "Email" });
 		thirdParty("Stripe", "Payments", "https://stripe.com/privacy");
 	`;
 	const parsed = parseModule("a.ts", code);
 	expect(parsed).not.toBeNull();
 	if (!parsed) return;
-	expect(parsed.importSources).toEqual(["@openpolicy/sdk"]);
+	expect(parsed.importSources).toEqual(["@policystack/sdk"]);
 	expect(extractFromParsed(parsed, isCanonicalSdkSpecifier)).toEqual(extractFromFile("a.ts", code));
 });
 
 test("parseModule skips type-only import sources", () => {
 	const code = `
-		import type { PolicyConfig } from "@openpolicy/core";
-		import { collecting } from "@openpolicy/sdk";
+		import type { PolicyConfig } from "@policystack/core";
+		import { collecting } from "@policystack/sdk";
 		collecting("C", v, { a: "A" });
 	`;
 	const parsed = parseModule("a.ts", code);
-	expect(parsed?.importSources).toEqual(["@openpolicy/sdk"]);
+	expect(parsed?.importSources).toEqual(["@policystack/sdk"]);
 });
 
 test("parseModule returns null on a hard parse failure", () => {

@@ -2,18 +2,20 @@ import { type EnvironmentProviders, makeEnvironmentProviders } from "@angular/co
 import {
 	createConsentStore,
 	type ConsentStore,
-	type OpenCookiesConfig,
-} from "@openpolicy/core/consent";
-import { OPEN_COOKIES_STORE } from "./tokens";
+	type PolicyStackConsentConfig,
+} from "@policystack/core/consent";
+import { POLICYSTACK_CONSENT_STORE } from "./tokens";
 
-export type ProvideOpenCookiesOptions =
-	| { config: OpenCookiesConfig; store?: undefined }
+export type ProvidePolicyStackConsentOptions =
+	| { config: PolicyStackConsentConfig; store?: undefined }
 	| { store: ConsentStore; config?: undefined };
 
-export function provideOpenCookies(options: ProvideOpenCookiesOptions): EnvironmentProviders {
+export function providePolicyStackConsent(
+	options: ProvidePolicyStackConsentOptions,
+): EnvironmentProviders {
 	return makeEnvironmentProviders([
 		{
-			provide: OPEN_COOKIES_STORE,
+			provide: POLICYSTACK_CONSENT_STORE,
 			useFactory: () => (options.store ? options.store : createConsentStore(options.config)),
 		},
 	]);

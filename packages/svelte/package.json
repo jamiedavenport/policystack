@@ -1,11 +1,11 @@
 {
-	"name": "@openpolicy/svelte",
+	"name": "@policystack/svelte",
 	"version": "0.0.34",
-	"description": "Svelte components for OpenPolicy",
+	"description": "Svelte components for PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/svelte"
 	},
 	"files": [
@@ -60,8 +60,8 @@
 		"test": "vp test"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/core": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"@sveltejs/package": "^2.4.4",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@testing-library/svelte": "^5.3.1",

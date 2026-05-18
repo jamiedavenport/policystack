@@ -27,7 +27,7 @@ If a locale is missing a key — or a refactor adds a new string that hasn't bee
 Either set `locale` once on the config and every render uses it:
 
 ```ts file="openpolicy.ts"
-import { defineConfig } from "@openpolicy/sdk";
+import { defineConfig } from "@policystack/sdk";
 
 export default defineConfig({
 	company: { name: "Acme, Inc." },
@@ -43,7 +43,7 @@ export default defineConfig({
 Or pass `locale` as a prop on the React adapter to override per render. The same config can drive a language switcher, an English fallback, or a side-by-side bilingual page:
 
 ```tsx file="app/privacy/page.tsx"
-import { OpenPolicy, PrivacyPolicy } from "@openpolicy/react";
+import { OpenPolicy, PrivacyPolicy } from "@policystack/react";
 import openpolicy from "@/openpolicy";
 
 export function PrivacyPolicyPage() {

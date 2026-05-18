@@ -1,6 +1,6 @@
-import { CookiePolicy, PrivacyPolicy } from "@openpolicy/react/policy";
+import { CookiePolicy, PrivacyPolicy } from "@policystack/react/policy";
 import type { ReactNode } from "react";
-import type { Locale } from "@openpolicy/sdk";
+import type { Locale } from "@policystack/sdk";
 import { cn } from "@/lib/utils";
 
 const policyStyles = cn(
@@ -21,9 +21,9 @@ type LocalizedPolicyProps = {
 	tagline: ReactNode;
 };
 
-// Re-uses the same English config set on <OpenPolicy> in __root.tsx.
+// Re-uses the same English config set on <PolicyStack> in __root.tsx.
 // The `locale` prop on PrivacyPolicy/CookiePolicy overrides config.locale at
-// compile time — OpenPolicy translates the strings it emits (headings, table
+// compile time — PolicyStack translates the strings it emits (headings, table
 // headers, GDPR/CCPA disclosures, the formatted effective date) while
 // user-supplied content (purposes, retention text, etc.) is passed through
 // in whatever language the config wrote it.

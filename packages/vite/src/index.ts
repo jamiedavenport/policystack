@@ -1,6 +1,6 @@
 import { access, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
-import type { IssueCode } from "@openpolicy/core";
+import type { IssueCode } from "@policystack/core";
 import type { Plugin, ViteDevServer } from "vite";
 import { renderGenModule, type Scanned } from "./scanned";
 import { createSdkMatcher, type ResolveId } from "./sdk-resolver";
@@ -22,7 +22,7 @@ import {
 } from "./consent/reporter";
 import { createUnifiedScanner, type UnifiedScanner } from "./unified-scan";
 
-export type OpenPolicyOptions = {
+export type PolicyStackOptions = {
 	/**
 	 * Directory walked for `collecting()` calls. Resolved relative to the
 	 * Vite project root. Defaults to `"src"`.
@@ -48,7 +48,7 @@ export type OpenPolicyOptions = {
 	};
 
 	/**
-	 * Run `validate()` against the resolved `openpolicy.ts` after each scan.
+	 * Run `validate()` against the resolved `policystack.ts` after each scan.
 	 * Errors fail `vite build`
 	 * (`PluginContext.error`); warnings are reported (`PluginContext.warn`)
 	 * but never block. In dev, both error and warning issues are logged
@@ -77,13 +77,13 @@ export type OpenPolicyOptions = {
 	suppress?: (IssueCode | DriftCode)[];
 
 	/**
-	 * Opt-in OpenCookies consent scanner (folded in by PS-19). When this key
+	 * Opt-in PolicyStack Consent consent scanner (folded in by PS-19). When this key
 	 * is present, the same plugin also runs a *separate* oxc walk that flags
 	 * ungated cookie writes / tracking-vendor usage. Omit it entirely to skip
 	 * the consent scan — existing policy behaviour is unaffected.
 	 *
 	 * This is structural co-location only: the consent walk never contributes
-	 * to `openpolicy.gen.ts` and is independent of `validate()` / `strict` /
+	 * to `policystack.gen.ts` and is independent of `validate()` / `strict` /
 	 * `suppress`. A single unified walk + declared-vs-used cross-check is
 	 * PS-25.
 	 */
@@ -104,23 +104,23 @@ export type OpenPolicyOptions = {
 };
 
 /**
- * Name of the generated module emitted next to the user's `openpolicy.ts`.
+ * Name of the generated module emitted next to the user's `policystack.ts`.
  * The user imports it explicitly; it carries the scanned values and the
- * `@openpolicy/sdk` type augmentation.
+ * `@policystack/sdk` type augmentation.
  */
-const GEN_FILENAME = "openpolicy.gen.ts";
+const GEN_FILENAME = "policystack.gen.ts";
 
 /**
- * Common locations for the user's `openpolicy.ts` config, in priority order.
- * The plugin emits `openpolicy.gen.ts` alongside the first one that exists so
+ * Common locations for the user's `policystack.ts` config, in priority order.
+ * The plugin emits `policystack.gen.ts` alongside the first one that exists so
  * the generated file sits next to the config in the editor and in git.
  */
 const CONFIG_CANDIDATES = [
-	"openpolicy.ts",
-	"src/openpolicy.ts",
-	"src/lib/openpolicy.ts",
-	"app/openpolicy.ts",
-	"lib/openpolicy.ts",
+	"policystack.ts",
+	"src/policystack.ts",
+	"src/lib/policystack.ts",
+	"app/policystack.ts",
+	"lib/policystack.ts",
 ];
 
 async function findConfig(root: string): Promise<{ dir: string; file: string | null }> {
@@ -135,10 +135,10 @@ async function findConfig(root: string): Promise<{ dir: string; file: string | n
 }
 
 /**
- * Emits the on-disk `openpolicy.gen.ts` module next to the user's
- * `openpolicy.ts`. The module is imported explicitly by the config and carries
+ * Emits the on-disk `policystack.gen.ts` module next to the user's
+ * `policystack.ts`. The module is imported explicitly by the config and carries
  * the scanned values (`dataCollected` / `thirdParties` / `cookies`) plus a
- * `declare module "@openpolicy/sdk"` augmentation of `ScannedCollectionKeys` /
+ * `declare module "@policystack/sdk"` augmentation of `ScannedCollectionKeys` /
  * `ScannedCookieKeys`, so `defineConfig` requires every scanned category to
  * have matching `data.context` (with `purpose`, `lawfulBasis`, `retention`,
  * and `provision`) and `cookies.context` entries. Commit the file — that
@@ -147,7 +147,7 @@ async function findConfig(root: string): Promise<{ dir: string; file: string | n
  *
  * The write is atomic: content goes to a unique temp sibling and is then
  * `rename`d over the target. A crashed or partial write (ENOSPC, an EACCES
- * mid-write, …) leaves the previously committed `openpolicy.gen.ts` intact —
+ * mid-write, …) leaves the previously committed `policystack.gen.ts` intact —
  * the last-good output is retained rather than truncated. Throws on failure;
  * callers decide whether to warn-and-continue (build) or skip-and-retry (dev).
  */
@@ -170,19 +170,19 @@ async function writeGenModule(targetDir: string, scanned: Scanned): Promise<void
 }
 
 /**
- * Vite plugin that scans source files for `@openpolicy/sdk` `collecting()`,
+ * Vite plugin that scans source files for `@policystack/sdk` `collecting()`,
  * `thirdParty()`, and `defineCookie()` calls at the start of each build and
- * emits the discovered data into an on-disk `openpolicy.gen.ts` module next
- * to the user's `openpolicy.ts`.
+ * emits the discovered data into an on-disk `policystack.gen.ts` module next
+ * to the user's `policystack.ts`.
  *
- * The user imports the generated values explicitly from `./openpolicy.gen`,
+ * The user imports the generated values explicitly from `./policystack.gen`,
  * so the scanned data is an ordinary part of the consumer's own source — no
  * virtual-module interception, no `optimizeDeps`/`ssr.noExternal` pins, and
  * HMR is normal file invalidation. The generated module also augments
- * `@openpolicy/sdk`'s `ScannedCollectionKeys` / `ScannedCookieKeys` so
+ * `@policystack/sdk`'s `ScannedCollectionKeys` / `ScannedCookieKeys` so
  * `defineConfig` still forces a sibling legal-context entry per scanned key.
  */
-export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
+export function policyStack(options: PolicyStackOptions = {}): Plugin {
 	const srcDirOpt = options.srcDir ?? "src";
 	const extensions = options.extensions ?? [".ts", ".tsx"];
 	const ignore = options.ignore ?? [];
@@ -196,7 +196,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 	let resolvedConfigDir: string;
 	let resolvedConfigFile: string | null = null;
 	let resolvedCommand: "build" | "serve" = "build";
-	// Opt-in OpenCookies consent scanner (PS-19). Stays null unless
+	// Opt-in PolicyStack Consent consent scanner (PS-19). Stays null unless
 	// `options.consent` is set, so existing policy-only users see no change.
 	let consentLogger: Logger | null = null;
 	let consentMode: Mode = "warn";
@@ -205,7 +205,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 	// Resolver-backed SDK matcher, built from `this.resolve` in `buildStart`.
 	// Defaults are the pure dual-scope predicate so an out-of-order or
 	// resolver-less call (test stubs, a dev rescan that somehow beats
-	// `buildStart`) still recognises direct `@openpolicy/sdk` /
+	// `buildStart`) still recognises direct `@policystack/sdk` /
 	// `@policystack/sdk` imports. Vite runs `buildStart` before the
 	// `configureServer` watcher fires, so dev rescans reuse the captured
 	// resolver matcher — no `PluginContext` is needed in `configureServer`.
@@ -234,8 +234,8 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 	}
 
 	/**
-	 * Re-runs the scan and, if anything changed, rewrites `openpolicy.gen.ts`.
-	 * The user's `openpolicy.ts` imports that module, so Vite picks up the
+	 * Re-runs the scan and, if anything changed, rewrites `policystack.gen.ts`.
+	 * The user's `policystack.ts` imports that module, so Vite picks up the
 	 * write through normal file invalidation — no virtual-module poking and no
 	 * manual full-reload.
 	 */
@@ -247,13 +247,13 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			// Commit the new in-memory state only once the write succeeds. On
 			// failure `scanned` stays put so the `changed` check re-fires on
 			// the next file event and retries — no permanent disk/memory drift,
-			// and the prior `openpolicy.gen.ts` remains as last-good.
+			// and the prior `policystack.gen.ts` remains as last-good.
 			try {
 				await writeGenModule(resolvedConfigDir, next);
 				scanned = next;
 			} catch (err) {
 				server.config.logger.warn(
-					`[openpolicy] could not write ${GEN_FILENAME}: ${err}; keeping the previously generated module`,
+					`[policystack] could not write ${GEN_FILENAME}: ${err}; keeping the previously generated module`,
 				);
 			}
 		}
@@ -274,7 +274,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 				suppress: suppressOpt,
 			});
 		} catch (err) {
-			server.config.logger.error(`[openpolicy] validation crashed: ${err}`);
+			server.config.logger.error(`[policystack] validation crashed: ${err}`);
 			return;
 		}
 		if (result.loadError) {
@@ -282,7 +282,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			// already shows them. Surface only the message at warn level so
 			// it's discoverable without spamming.
 			server.config.logger.warn(
-				`[openpolicy] could not load config for validation: ${result.loadError.message}`,
+				`[policystack] could not load config for validation: ${result.loadError.message}`,
 			);
 			return;
 		}
@@ -307,7 +307,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 	}
 
 	return {
-		name: "openpolicy",
+		name: "policystack",
 		enforce: "pre",
 		configResolved(config) {
 			resolvedRoot = config.root;
@@ -369,7 +369,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 				await writeGenModule(resolvedConfigDir, scanned);
 			} catch (err) {
 				this.warn(
-					`[openpolicy] could not write ${GEN_FILENAME}: ${err}; keeping the previously generated module`,
+					`[policystack] could not write ${GEN_FILENAME}: ${err}; keeping the previously generated module`,
 				);
 			}
 			// Always surface scanner diagnostics — a recognized call that
@@ -389,7 +389,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 				});
 				if (result.loadError) {
 					this.warn(
-						`[openpolicy] could not load config for validation: ${result.loadError.message}`,
+						`[policystack] could not load config for validation: ${result.loadError.message}`,
 					);
 				} else {
 					const errors = result.issues.filter((i) => i.level === "error");
@@ -398,7 +398,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 					if (errors.length > 0) {
 						const lines = errors.map(formatIssue).join("\n");
 						this.error(
-							`OpenPolicy validation found ${errors.length} error${errors.length === 1 ? "" : "s"}:\n${lines}`,
+							`PolicyStack validation found ${errors.length} error${errors.length === 1 ? "" : "s"}:\n${lines}`,
 						);
 					}
 					// §4.3 declared-vs-used cross-check (PS-25). Ordered *after*
@@ -414,13 +414,13 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 						if (driftErrors.length > 0) {
 							const lines = driftErrors.map(formatDrift).join("\n");
 							this.error(
-								`OpenPolicy found ${driftErrors.length} declared-vs-used drift error${driftErrors.length === 1 ? "" : "s"}:\n${lines}`,
+								`PolicyStack found ${driftErrors.length} declared-vs-used drift error${driftErrors.length === 1 ? "" : "s"}:\n${lines}`,
 							);
 						}
 					}
 				}
 			}
-			// Co-located OpenCookies consent reporting (PS-19 → PS-25: now from
+			// Co-located PolicyStack Consent consent reporting (PS-19 → PS-25: now from
 			// the same unified walk). Runs *after* policy validation, so a
 			// policy `this.error()` abort still short-circuits it. Reports
 			// through Vite's logger; only `buildEnd` fails the build.
@@ -435,7 +435,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			// event — the very case we most need to re-scan on.
 			server.watcher.add(resolvedSrcDir);
 
-			// Watch the config file too so edits to `openpolicy.ts` re-run
+			// Watch the config file too so edits to `policystack.ts` re-run
 			// validation even when no scanned source has changed.
 			if (resolvedConfigFile) server.watcher.add(resolvedConfigFile);
 
@@ -453,7 +453,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 							});
 						}
 					} catch (error) {
-						server.config.logger.error(`[opencookies] consent rescan failed: ${error}`);
+						server.config.logger.error(`[policystack] consent rescan failed: ${error}`);
 					}
 				}
 				const tracked = isTrackedSource(file);
@@ -464,7 +464,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 				try {
 					await rescanAndRefresh(server);
 				} catch (error) {
-					server.config.logger.error(`[openpolicy] rescan failed: ${error}`);
+					server.config.logger.error(`[policystack] rescan failed: ${error}`);
 				}
 			};
 
@@ -491,7 +491,7 @@ export function openPolicy(options: OpenPolicyOptions = {}): Plugin {
 			const loc = formatHitLocation(first.hit, resolvedRoot);
 			const summary = formatUngated(first, resolvedRoot);
 			const more = result.ungated.length > 1 ? ` (+${result.ungated.length - 1} more)` : "";
-			throw new Error(`[opencookies] ungated finding at ${loc}${more}\n${summary}`);
+			throw new Error(`[policystack] ungated finding at ${loc}${more}\n${summary}`);
 		},
 	};
 }

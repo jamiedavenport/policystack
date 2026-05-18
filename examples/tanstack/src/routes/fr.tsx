@@ -13,7 +13,7 @@ function RouteComponent() {
 				<>
 					Même <code className="font-mono text-xs">defineConfig()</code> que le reste de la démo,
 					mais les composants reçoivent <code className="font-mono text-xs">locale="fr"</code>.
-					OpenPolicy traduit les intitulés, les en-têtes de tableaux et les textes RGPD ; les
+					PolicyStack traduit les intitulés, les en-têtes de tableaux et les textes RGPD ; les
 					chaînes que vous fournissez (finalités, durées de conservation, etc.) sont rendues telles
 					quelles.
 				</>

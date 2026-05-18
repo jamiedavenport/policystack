@@ -12,7 +12,7 @@ import type {
 	ConsentState,
 	ConsentStore,
 	Jurisdiction,
-	OpenCookiesConfig,
+	PolicyStackConsentConfig,
 	RepromptReason,
 	ResolverContext,
 	Route,
@@ -20,7 +20,7 @@ import type {
 
 type Listener = (state: ConsentState) => void;
 
-export function createConsentStore(config: OpenCookiesConfig): ConsentStore {
+export function createConsentStore(config: PolicyStackConsentConfig): ConsentStore {
 	const listeners = new Set<Listener>();
 	const locale = resolveLocale(config);
 
@@ -187,11 +187,11 @@ export function createConsentStore(config: OpenCookiesConfig): ConsentStore {
 			const result = config.adapter.write(record);
 			if (isPromise(result)) {
 				result.catch((err) => {
-					console.warn("[opencookies] adapter.write failed:", err);
+					console.warn("[policystack] adapter.write failed:", err);
 				});
 			}
 		} catch (err) {
-			console.warn("[opencookies] adapter.write failed:", err);
+			console.warn("[policystack] adapter.write failed:", err);
 		}
 	}
 
@@ -330,7 +330,7 @@ type InitialJurisdiction = {
 };
 
 function resolveSync(
-	config: OpenCookiesConfig,
+	config: PolicyStackConsentConfig,
 	req: ResolverContext | undefined,
 ): InitialJurisdiction {
 	const resolver = config.jurisdictionResolver;
@@ -374,7 +374,7 @@ function isPromise<T>(value: unknown): value is Promise<T> {
 }
 
 function warnResolverError(err: unknown): void {
-	console.warn("[opencookies] jurisdiction resolver failed:", err);
+	console.warn("[policystack] jurisdiction resolver failed:", err);
 }
 
 type InitialRecord = {
@@ -382,20 +382,20 @@ type InitialRecord = {
 	pending: Promise<ConsentRecord | null> | null;
 };
 
-function readSync(config: OpenCookiesConfig, locale: string): InitialRecord {
+function readSync(config: PolicyStackConsentConfig, locale: string): InitialRecord {
 	if (!config.adapter) return { value: null, pending: null };
 	let result: Promise<ConsentRecord | null> | ConsentRecord | null;
 	try {
 		result = config.adapter.read();
 	} catch (err) {
-		console.warn("[opencookies] adapter.read failed:", err);
+		console.warn("[policystack] adapter.read failed:", err);
 		return { value: null, pending: null };
 	}
 	if (isPromise(result)) {
 		const pending = result
 			.then((raw) => fromUnknown(raw, locale))
 			.catch((err) => {
-				console.warn("[opencookies] adapter.read failed:", err);
+				console.warn("[policystack] adapter.read failed:", err);
 				return null;
 			});
 		return { value: null, pending };

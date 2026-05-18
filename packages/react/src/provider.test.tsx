@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
-import type { OpenPolicyConfig } from "@openpolicy/core";
-import type { ConsentRecord, StorageAdapter } from "@openpolicy/core/consent";
-import { toOpenCookiesConfig } from "@openpolicy/sdk/consent";
+import type { PolicyStackConfig } from "@policystack/core";
+import type { ConsentRecord, StorageAdapter } from "@policystack/core/consent";
+import { toPolicyStackConsentConfig } from "@policystack/sdk/consent";
 import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
 import { useContext, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { ConsentGate, useConsent } from "./consent";
-import { OpenPolicyContext } from "./context";
+import { PolicyStackContext } from "./context";
 import { deriveConsentConfig, PolicyStackProvider } from "./provider";
 
 const company = {
@@ -16,14 +16,14 @@ const company = {
 	contact: { email: "privacy@acme.com" },
 };
 
-const policyOnly: OpenPolicyConfig = {
+const policyOnly: PolicyStackConfig = {
 	company,
 	effectiveDate: "2026-01-01",
 	jurisdictions: ["eea"],
 	data: { collected: {}, context: {} },
 };
 
-const withCookies: OpenPolicyConfig = {
+const withCookies: PolicyStackConfig = {
 	...policyOnly,
 	cookieVersion: "v1",
 	cookies: {
@@ -44,7 +44,7 @@ afterEach(() => {
 describe("PolicyStackProvider — policy context", () => {
 	it("always supplies the policy config via context", () => {
 		function Probe() {
-			return <span>{useContext(OpenPolicyContext).config?.company.name}</span>;
+			return <span>{useContext(PolicyStackContext).config?.company.name}</span>;
 		}
 		render(
 			<PolicyStackProvider config={policyOnly}>
@@ -78,7 +78,7 @@ describe("PolicyStackProvider — policy-only (no cookie categories)", () => {
 });
 
 describe("PolicyStackProvider — consent store derived from the one config", () => {
-	function wrapper(config: OpenPolicyConfig) {
+	function wrapper(config: PolicyStackConfig) {
 		return ({ children }: { children: ReactNode }) => (
 			<PolicyStackProvider config={config}>{children}</PolicyStackProvider>
 		);
@@ -162,8 +162,8 @@ describe("PolicyStackProvider — consent store derived from the one config", ()
 	});
 });
 
-describe("deriveConsentConfig parity with @openpolicy/sdk toOpenCookiesConfig", () => {
-	const cases: Record<string, OpenPolicyConfig> = {
+describe("deriveConsentConfig parity with @policystack/sdk toPolicyStackConsentConfig", () => {
+	const cases: Record<string, PolicyStackConfig> = {
 		"no consent block": withCookies,
 		"with runtime knobs": {
 			...withCookies,
@@ -183,8 +183,10 @@ describe("deriveConsentConfig parity with @openpolicy/sdk toOpenCookiesConfig", 
 	};
 
 	for (const [name, config] of Object.entries(cases)) {
-		it(`matches toOpenCookiesConfig for: ${name}`, () => {
-			expect(deriveConsentConfig(config)).toEqual(toOpenCookiesConfig(config, config.consent));
+		it(`matches toPolicyStackConsentConfig for: ${name}`, () => {
+			expect(deriveConsentConfig(config)).toEqual(
+				toPolicyStackConsentConfig(config, config.consent),
+			);
 		});
 	}
 });

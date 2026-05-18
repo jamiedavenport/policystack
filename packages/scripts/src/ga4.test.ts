@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { gateScript } from "@openpolicy/core/consent";
+import { gateScript } from "@policystack/core/consent";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { ga4 } from "./ga4.ts";
 import { flushMicrotasks, makeFakeDoc, makeStore } from "./test-helpers.ts";

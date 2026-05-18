@@ -1,5 +1,5 @@
 import { expect, test } from "vite-plus/test";
-import { compile, type PolicyInput } from "@openpolicy/core";
+import { compile, type PolicyInput } from "@policystack/core";
 import { renderPDF } from "./pdf";
 
 const input: PolicyInput = {

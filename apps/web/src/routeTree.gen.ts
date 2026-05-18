@@ -11,15 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SdkDottxtRouteImport } from './routes/sdk[.]txt'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PolicycloudDotmdRouteImport } from './routes/policycloud[.]md'
-import { Route as PolicycloudRouteImport } from './routes/policycloud'
-import { Route as OpenpolicyDotmdRouteImport } from './routes/openpolicy[.]md'
-import { Route as OpenpolicyRouteImport } from './routes/openpolicy'
-import { Route as OpencookiesDotmdRouteImport } from './routes/opencookies[.]md'
-import { Route as OpencookiesRouteImport } from './routes/opencookies'
+import { Route as PolicyDotmdRouteImport } from './routes/policy[.]md'
+import { Route as PolicyRouteImport } from './routes/policy'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as IndexDotmdRouteImport } from './routes/index[.]md'
 import { Route as DocsDotmdRouteImport } from './routes/docs[.]md'
+import { Route as ConsentDotmdRouteImport } from './routes/consent[.]md'
+import { Route as ConsentRouteImport } from './routes/consent'
+import { Route as CloudDotmdRouteImport } from './routes/cloud[.]md'
+import { Route as CloudRouteImport } from './routes/cloud'
 import { Route as BlogDotmdRouteImport } from './routes/blog[.]md'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as DocsRouteRouteImport } from './routes/docs/route'
@@ -39,34 +39,14 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PolicycloudDotmdRoute = PolicycloudDotmdRouteImport.update({
-  id: '/policycloud.md',
-  path: '/policycloud.md',
+const PolicyDotmdRoute = PolicyDotmdRouteImport.update({
+  id: '/policy.md',
+  path: '/policy.md',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PolicycloudRoute = PolicycloudRouteImport.update({
-  id: '/policycloud',
-  path: '/policycloud',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpenpolicyDotmdRoute = OpenpolicyDotmdRouteImport.update({
-  id: '/openpolicy.md',
-  path: '/openpolicy.md',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpenpolicyRoute = OpenpolicyRouteImport.update({
-  id: '/openpolicy',
-  path: '/openpolicy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpencookiesDotmdRoute = OpencookiesDotmdRouteImport.update({
-  id: '/opencookies.md',
-  path: '/opencookies.md',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpencookiesRoute = OpencookiesRouteImport.update({
-  id: '/opencookies',
-  path: '/opencookies',
+const PolicyRoute = PolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -82,6 +62,26 @@ const IndexDotmdRoute = IndexDotmdRouteImport.update({
 const DocsDotmdRoute = DocsDotmdRouteImport.update({
   id: '/docs.md',
   path: '/docs.md',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsentDotmdRoute = ConsentDotmdRouteImport.update({
+  id: '/consent.md',
+  path: '/consent.md',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsentRoute = ConsentRouteImport.update({
+  id: '/consent',
+  path: '/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CloudDotmdRoute = CloudDotmdRouteImport.update({
+  id: '/cloud.md',
+  path: '/cloud.md',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CloudRoute = CloudRouteImport.update({
+  id: '/cloud',
+  path: '/cloud',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogDotmdRoute = BlogDotmdRouteImport.update({
@@ -130,15 +130,15 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteRouteWithChildren
   '/blog': typeof BlogRoute
   '/blog.md': typeof BlogDotmdRoute
+  '/cloud': typeof CloudRoute
+  '/cloud.md': typeof CloudDotmdRoute
+  '/consent': typeof ConsentRoute
+  '/consent.md': typeof ConsentDotmdRoute
   '/docs.md': typeof DocsDotmdRoute
   '/index.md': typeof IndexDotmdRoute
   '/llms.txt': typeof LlmsDottxtRoute
-  '/opencookies': typeof OpencookiesRoute
-  '/opencookies.md': typeof OpencookiesDotmdRoute
-  '/openpolicy': typeof OpenpolicyRoute
-  '/openpolicy.md': typeof OpenpolicyDotmdRoute
-  '/policycloud': typeof PolicycloudRoute
-  '/policycloud.md': typeof PolicycloudDotmdRoute
+  '/policy': typeof PolicyRoute
+  '/policy.md': typeof PolicyDotmdRoute
   '/privacy': typeof PrivacyRoute
   '/sdk.txt': typeof SdkDottxtRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -150,15 +150,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/blog': typeof BlogRoute
   '/blog.md': typeof BlogDotmdRoute
+  '/cloud': typeof CloudRoute
+  '/cloud.md': typeof CloudDotmdRoute
+  '/consent': typeof ConsentRoute
+  '/consent.md': typeof ConsentDotmdRoute
   '/docs.md': typeof DocsDotmdRoute
   '/index.md': typeof IndexDotmdRoute
   '/llms.txt': typeof LlmsDottxtRoute
-  '/opencookies': typeof OpencookiesRoute
-  '/opencookies.md': typeof OpencookiesDotmdRoute
-  '/openpolicy': typeof OpenpolicyRoute
-  '/openpolicy.md': typeof OpenpolicyDotmdRoute
-  '/policycloud': typeof PolicycloudRoute
-  '/policycloud.md': typeof PolicycloudDotmdRoute
+  '/policy': typeof PolicyRoute
+  '/policy.md': typeof PolicyDotmdRoute
   '/privacy': typeof PrivacyRoute
   '/sdk.txt': typeof SdkDottxtRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -172,15 +172,15 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteRouteWithChildren
   '/blog': typeof BlogRoute
   '/blog.md': typeof BlogDotmdRoute
+  '/cloud': typeof CloudRoute
+  '/cloud.md': typeof CloudDotmdRoute
+  '/consent': typeof ConsentRoute
+  '/consent.md': typeof ConsentDotmdRoute
   '/docs.md': typeof DocsDotmdRoute
   '/index.md': typeof IndexDotmdRoute
   '/llms.txt': typeof LlmsDottxtRoute
-  '/opencookies': typeof OpencookiesRoute
-  '/opencookies.md': typeof OpencookiesDotmdRoute
-  '/openpolicy': typeof OpenpolicyRoute
-  '/openpolicy.md': typeof OpenpolicyDotmdRoute
-  '/policycloud': typeof PolicycloudRoute
-  '/policycloud.md': typeof PolicycloudDotmdRoute
+  '/policy': typeof PolicyRoute
+  '/policy.md': typeof PolicyDotmdRoute
   '/privacy': typeof PrivacyRoute
   '/sdk.txt': typeof SdkDottxtRoute
   '/blog_/$slug': typeof BlogSlugRoute
@@ -195,15 +195,15 @@ export interface FileRouteTypes {
     | '/docs'
     | '/blog'
     | '/blog.md'
+    | '/cloud'
+    | '/cloud.md'
+    | '/consent'
+    | '/consent.md'
     | '/docs.md'
     | '/index.md'
     | '/llms.txt'
-    | '/opencookies'
-    | '/opencookies.md'
-    | '/openpolicy'
-    | '/openpolicy.md'
-    | '/policycloud'
-    | '/policycloud.md'
+    | '/policy'
+    | '/policy.md'
     | '/privacy'
     | '/sdk.txt'
     | '/blog/$slug'
@@ -215,15 +215,15 @@ export interface FileRouteTypes {
     | '/'
     | '/blog'
     | '/blog.md'
+    | '/cloud'
+    | '/cloud.md'
+    | '/consent'
+    | '/consent.md'
     | '/docs.md'
     | '/index.md'
     | '/llms.txt'
-    | '/opencookies'
-    | '/opencookies.md'
-    | '/openpolicy'
-    | '/openpolicy.md'
-    | '/policycloud'
-    | '/policycloud.md'
+    | '/policy'
+    | '/policy.md'
     | '/privacy'
     | '/sdk.txt'
     | '/blog/$slug'
@@ -236,15 +236,15 @@ export interface FileRouteTypes {
     | '/docs'
     | '/blog'
     | '/blog.md'
+    | '/cloud'
+    | '/cloud.md'
+    | '/consent'
+    | '/consent.md'
     | '/docs.md'
     | '/index.md'
     | '/llms.txt'
-    | '/opencookies'
-    | '/opencookies.md'
-    | '/openpolicy'
-    | '/openpolicy.md'
-    | '/policycloud'
-    | '/policycloud.md'
+    | '/policy'
+    | '/policy.md'
     | '/privacy'
     | '/sdk.txt'
     | '/blog_/$slug'
@@ -258,15 +258,15 @@ export interface RootRouteChildren {
   DocsRouteRoute: typeof DocsRouteRouteWithChildren
   BlogRoute: typeof BlogRoute
   BlogDotmdRoute: typeof BlogDotmdRoute
+  CloudRoute: typeof CloudRoute
+  CloudDotmdRoute: typeof CloudDotmdRoute
+  ConsentRoute: typeof ConsentRoute
+  ConsentDotmdRoute: typeof ConsentDotmdRoute
   DocsDotmdRoute: typeof DocsDotmdRoute
   IndexDotmdRoute: typeof IndexDotmdRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
-  OpencookiesRoute: typeof OpencookiesRoute
-  OpencookiesDotmdRoute: typeof OpencookiesDotmdRoute
-  OpenpolicyRoute: typeof OpenpolicyRoute
-  OpenpolicyDotmdRoute: typeof OpenpolicyDotmdRoute
-  PolicycloudRoute: typeof PolicycloudRoute
-  PolicycloudDotmdRoute: typeof PolicycloudDotmdRoute
+  PolicyRoute: typeof PolicyRoute
+  PolicyDotmdRoute: typeof PolicyDotmdRoute
   PrivacyRoute: typeof PrivacyRoute
   SdkDottxtRoute: typeof SdkDottxtRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -289,46 +289,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/policycloud.md': {
-      id: '/policycloud.md'
-      path: '/policycloud.md'
-      fullPath: '/policycloud.md'
-      preLoaderRoute: typeof PolicycloudDotmdRouteImport
+    '/policy.md': {
+      id: '/policy.md'
+      path: '/policy.md'
+      fullPath: '/policy.md'
+      preLoaderRoute: typeof PolicyDotmdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/policycloud': {
-      id: '/policycloud'
-      path: '/policycloud'
-      fullPath: '/policycloud'
-      preLoaderRoute: typeof PolicycloudRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/openpolicy.md': {
-      id: '/openpolicy.md'
-      path: '/openpolicy.md'
-      fullPath: '/openpolicy.md'
-      preLoaderRoute: typeof OpenpolicyDotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/openpolicy': {
-      id: '/openpolicy'
-      path: '/openpolicy'
-      fullPath: '/openpolicy'
-      preLoaderRoute: typeof OpenpolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opencookies.md': {
-      id: '/opencookies.md'
-      path: '/opencookies.md'
-      fullPath: '/opencookies.md'
-      preLoaderRoute: typeof OpencookiesDotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opencookies': {
-      id: '/opencookies'
-      path: '/opencookies'
-      fullPath: '/opencookies'
-      preLoaderRoute: typeof OpencookiesRouteImport
+    '/policy': {
+      id: '/policy'
+      path: '/policy'
+      fullPath: '/policy'
+      preLoaderRoute: typeof PolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -350,6 +322,34 @@ declare module '@tanstack/react-router' {
       path: '/docs.md'
       fullPath: '/docs.md'
       preLoaderRoute: typeof DocsDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consent.md': {
+      id: '/consent.md'
+      path: '/consent.md'
+      fullPath: '/consent.md'
+      preLoaderRoute: typeof ConsentDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consent': {
+      id: '/consent'
+      path: '/consent'
+      fullPath: '/consent'
+      preLoaderRoute: typeof ConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cloud.md': {
+      id: '/cloud.md'
+      path: '/cloud.md'
+      fullPath: '/cloud.md'
+      preLoaderRoute: typeof CloudDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cloud': {
+      id: '/cloud'
+      path: '/cloud'
+      fullPath: '/cloud'
+      preLoaderRoute: typeof CloudRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog.md': {
@@ -430,15 +430,15 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRouteRoute: DocsRouteRouteWithChildren,
   BlogRoute: BlogRoute,
   BlogDotmdRoute: BlogDotmdRoute,
+  CloudRoute: CloudRoute,
+  CloudDotmdRoute: CloudDotmdRoute,
+  ConsentRoute: ConsentRoute,
+  ConsentDotmdRoute: ConsentDotmdRoute,
   DocsDotmdRoute: DocsDotmdRoute,
   IndexDotmdRoute: IndexDotmdRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
-  OpencookiesRoute: OpencookiesRoute,
-  OpencookiesDotmdRoute: OpencookiesDotmdRoute,
-  OpenpolicyRoute: OpenpolicyRoute,
-  OpenpolicyDotmdRoute: OpenpolicyDotmdRoute,
-  PolicycloudRoute: PolicycloudRoute,
-  PolicycloudDotmdRoute: PolicycloudDotmdRoute,
+  PolicyRoute: PolicyRoute,
+  PolicyDotmdRoute: PolicyDotmdRoute,
   PrivacyRoute: PrivacyRoute,
   SdkDottxtRoute: SdkDottxtRoute,
   BlogSlugRoute: BlogSlugRoute,

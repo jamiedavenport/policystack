@@ -1,7 +1,7 @@
 import type { ConsentRecord } from "../types";
 
 // SSR base64 fallback when atob/btoa are absent. Typed locally so the consent
-// runtime needs no @types/node — @openpolicy/core stays a pure, node-free build.
+// runtime needs no @types/node — @policystack/core stays a pure, node-free build.
 declare const Buffer: {
 	from(data: string, encoding: string): { toString(encoding: string): string };
 };

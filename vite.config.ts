@@ -3,7 +3,7 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
 	fmt: {
 		useTabs: true,
-		// `**/__fixtures__/**`: vendored OpenCookies consent-scanner fixtures
+		// `**/__fixtures__/**`: vendored PolicyStack Consent consent-scanner fixtures
 		// (PS-19) are intentionally messy sample sources with frozen
 		// `.expected.json` snapshots — never reformat them.
 		// `plugin/**` + `.claude-plugin/**`: the generated PolicyStack skill

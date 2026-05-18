@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a problem with OpenPolicy
+about: Report a problem with PolicyStack
 labels: bug
 ---
 

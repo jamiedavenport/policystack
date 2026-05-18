@@ -15,7 +15,7 @@ import type {
 	TextNode,
 	UnknownNode,
 	Visitor,
-} from "@openpolicy/core";
+} from "@policystack/core";
 
 /**
  * Svelte renders from compiled templates, not a value-returning function, so it
@@ -26,7 +26,7 @@ import type {
  * ADR 0001).
  *
  * Each slot variant is keyed by the canonical PascalCase slot name from
- * `@openpolicy/core` (PS-15) and carries the precisely-typed node, so the
+ * `@policystack/core` (PS-15) and carries the precisely-typed node, so the
  * interpreter needs no casts; the `Visitor` mapped type still forces every
  * `Node` variant to be handled. There are no structural-only slots: `<thead>`
  * is a render detail of the default header-row component, and `Root` is applied

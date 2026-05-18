@@ -3,10 +3,10 @@ import pkgJson from "../package.json";
 
 export const mainCommand = defineCommand({
 	meta: {
-		name: "openpolicy",
+		name: "policystack",
 		version: pkgJson.version,
 		description:
-			"Install OpenPolicy and print a setup prompt for coding agents. OpenPolicy generates policy documents from your config — it does not provide legal advice. Have a lawyer review your policies before publication. See https://openpolicy.sh/legal-notice",
+			"Install PolicyStack and print a setup prompt for coding agents. PolicyStack generates policy documents from your config — it does not provide legal advice. Have a lawyer review your policies before publication. See https://policystack.dev/legal-notice",
 	},
 	subCommands: {
 		init: () => import("./commands/init").then((m) => m.initCommand),

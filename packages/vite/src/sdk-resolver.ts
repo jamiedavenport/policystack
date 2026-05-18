@@ -78,7 +78,7 @@ export async function createSdkMatcher(args: {
 
 	if (sdkRootIds.size === 0) {
 		warn(
-			"[openpolicy] could not resolve the SDK via the Vite resolver; " +
+			"[policystack] could not resolve the SDK via the Vite resolver; " +
 				"falling back to literal specifier matching — aliased SDK imports " +
 				"will not be detected.",
 		);

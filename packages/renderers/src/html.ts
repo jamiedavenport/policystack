@@ -1,5 +1,5 @@
-import type { Document, Visitor } from "@openpolicy/core";
-import { visit } from "@openpolicy/core";
+import type { Document, Visitor } from "@policystack/core";
+import { visit } from "@policystack/core";
 
 function escapeHtml(str: string): string {
 	return str

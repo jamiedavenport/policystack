@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
-import { createConsentStore, type Category } from "@openpolicy/core/consent";
+import { createConsentStore, type Category } from "@policystack/core/consent";
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { defineComponent, h } from "vue";
 import {
 	ConsentGate,
-	OpenCookiesPlugin,
-	OpenCookiesProvider,
+	PolicyStackConsentPlugin,
+	PolicyStackConsentProvider,
 	useCategory,
 	useConsent,
 } from "./consent";
@@ -25,12 +25,12 @@ function withProvider(setupFn: () => unknown) {
 	const Probe = defineComponent({ setup: setupFn, render: () => h("div") });
 	return mount(Probe, {
 		global: {
-			plugins: [[OpenCookiesPlugin, { config: { categories: baseCategories } }]],
+			plugins: [[PolicyStackConsentPlugin, { config: { categories: baseCategories } }]],
 		},
 	});
 }
 
-describe("OpenCookiesPlugin", () => {
+describe("PolicyStackConsentPlugin", () => {
 	it("provides a store created from config", () => {
 		let captured: ReturnType<typeof useConsent> | undefined;
 		withProvider(() => {
@@ -55,13 +55,13 @@ describe("OpenCookiesPlugin", () => {
 			render: () => h("div"),
 		});
 		mount(Probe, {
-			global: { plugins: [[OpenCookiesPlugin, { store }]] },
+			global: { plugins: [[PolicyStackConsentPlugin, { store }]] },
 		});
 		expect(captured?.decisions.value.analytics).toBe(true);
 	});
 });
 
-describe("OpenCookiesProvider", () => {
+describe("PolicyStackConsentProvider", () => {
 	it("provides a store via component scope", () => {
 		let captured: ReturnType<typeof useConsent> | undefined;
 		const Inner = defineComponent({
@@ -70,7 +70,7 @@ describe("OpenCookiesProvider", () => {
 			},
 			render: () => h("div"),
 		});
-		mount(OpenCookiesProvider, {
+		mount(PolicyStackConsentProvider, {
 			props: { config: { categories: baseCategories } },
 			slots: { default: () => h(Inner) },
 		});
@@ -87,7 +87,7 @@ describe("OpenCookiesProvider", () => {
 			},
 			render: () => h("div"),
 		});
-		mount(OpenCookiesProvider, {
+		mount(PolicyStackConsentProvider, {
 			props: { store },
 			slots: { default: () => h(Inner) },
 		});
@@ -104,7 +104,7 @@ describe("OpenCookiesProvider", () => {
 			},
 			render: () => h("div"),
 		});
-		expect(() => mount(Probe)).toThrow(/OpenCookiesProvider|OpenCookiesPlugin/);
+		expect(() => mount(Probe)).toThrow(/PolicyStackConsentProvider|PolicyStackConsentPlugin/);
 	});
 });
 
@@ -118,7 +118,7 @@ describe("useConsent", () => {
 				return () => h("span", { "data-testid": "route" }, captured?.route.value);
 			},
 		});
-		const wrapper = mount(OpenCookiesProvider, {
+		const wrapper = mount(PolicyStackConsentProvider, {
 			props: { store },
 			slots: { default: () => h(Inner) },
 		});
@@ -203,7 +203,7 @@ describe("ConsentGate", () => {
 	it("renders default slot when expression is true", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		store.acceptAll();
-		const wrapper = mount(OpenCookiesProvider, {
+		const wrapper = mount(PolicyStackConsentProvider, {
 			props: { store },
 			slots: {
 				default: () =>
@@ -220,7 +220,7 @@ describe("ConsentGate", () => {
 	});
 
 	it("renders fallback slot when expression is false", () => {
-		const wrapper = mount(OpenCookiesProvider, {
+		const wrapper = mount(PolicyStackConsentProvider, {
 			props: { config: { categories: baseCategories } },
 			slots: {
 				default: () =>
@@ -239,7 +239,7 @@ describe("ConsentGate", () => {
 	});
 
 	it("renders nothing when no fallback and gate is closed", () => {
-		const wrapper = mount(OpenCookiesProvider, {
+		const wrapper = mount(PolicyStackConsentProvider, {
 			props: { config: { categories: baseCategories } },
 			slots: {
 				default: () =>
@@ -257,7 +257,7 @@ describe("ConsentGate", () => {
 
 	it("updates when state crosses the truth boundary", async () => {
 		const store = createConsentStore({ categories: baseCategories });
-		const wrapper = mount(OpenCookiesProvider, {
+		const wrapper = mount(PolicyStackConsentProvider, {
 			props: { store },
 			slots: {
 				default: () =>
@@ -280,7 +280,7 @@ describe("ConsentGate", () => {
 
 	it("evaluates compound expressions", async () => {
 		const store = createConsentStore({ categories: baseCategories });
-		const wrapper = mount(OpenCookiesProvider, {
+		const wrapper = mount(PolicyStackConsentProvider, {
 			props: { store },
 			slots: {
 				default: () =>

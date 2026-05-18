@@ -16,9 +16,9 @@ export function Sponsor({ index }: { index: string }) {
 							Keep the core <Highlight>free, forever.</Highlight>
 						</h2>
 						<p className="mt-8 max-w-[55ch] text-pretty text-mute">
-							OpenCookies and OpenPolicy are Apache-2.0 and will stay that way — no relicensing, no
-							features held back behind a cloud tier. Sponsorship pays for the time it takes to keep
-							both repos maintained, audited, and worth depending on.
+							PolicyStack Consent and PolicyStack are Apache-2.0 and will stay that way — no
+							relicensing, no features held back behind a cloud tier. Sponsorship pays for the time
+							it takes to keep both repos maintained, audited, and worth depending on.
 						</p>
 					</div>
 					<div className="md:ml-auto">

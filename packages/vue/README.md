@@ -1,20 +1,20 @@
-# `@openpolicy/vue`
+# `@policystack/vue`
 
-> Vue components for rendering [OpenPolicy](https://openpolicy.sh) documents at runtime.
+> Vue components for rendering [PolicyStack](https://policystack.dev) documents at runtime.
 
-`@openpolicy/vue` provides headless Vue components that compile and render policies directly from config.
+`@policystack/vue` provides headless Vue components that compile and render policies directly from config.
 
 ## Install
 
 ```sh
-bun add @openpolicy/vue @openpolicy/sdk
+bun add @policystack/vue @policystack/sdk
 ```
 
 ## Usage
 
 ```ts
-// openpolicy.ts
-import { ContractPrerequisite, defineConfig, LegalBases } from "@openpolicy/sdk";
+// policystack.ts
+import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
 
 export default defineConfig({
 	company: {
@@ -51,14 +51,14 @@ export default defineConfig({
 ```ts
 // App.ts
 import openpolicy from "./openpolicy";
-import { OpenPolicy, PrivacyPolicy } from "@openpolicy/vue";
+import { PolicyStack, PrivacyPolicy } from "@policystack/vue";
 
 export default {
-	components: { OpenPolicy, PrivacyPolicy },
+	components: { PolicyStack, PrivacyPolicy },
 	template: `
-		<OpenPolicy :config="openpolicy">
+		<PolicyStack :config="openpolicy">
 			<PrivacyPolicy />
-		</OpenPolicy>
+		</PolicyStack>
 	`,
 	data() {
 		return { openpolicy };
@@ -68,12 +68,12 @@ export default {
 
 ## Exports
 
-- `OpenPolicy`
+- `PolicyStack`
 - `PrivacyPolicy`
 - `CookiePolicy`
 - `renderDocument`
 
 ## Links
 
-- [GitHub](https://github.com/jamiedavenport/openpolicy)
-- [openpolicy.sh](https://openpolicy.sh)
+- [GitHub](https://github.com/jamiedavenport/policystack)
+- [policystack.dev](https://policystack.dev)

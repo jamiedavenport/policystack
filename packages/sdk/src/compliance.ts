@@ -1,4 +1,4 @@
-import type { JurisdictionId } from "@openpolicy/core";
+import type { JurisdictionId } from "@policystack/core";
 
 export const Compliance = {
 	GDPR: {

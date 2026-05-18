@@ -1,4 +1,4 @@
-import type { OpenPolicyConfig } from "./types";
+import type { PolicyStackConfig } from "./types";
 
 function stableSerialize(value: unknown): string {
 	if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -51,7 +51,10 @@ const COOKIE_HASH_FIELDS = [
 	"consentMechanism",
 ] as const;
 
-function hashSlice(config: OpenPolicyConfig, fields: readonly (keyof OpenPolicyConfig)[]): string {
+function hashSlice(
+	config: PolicyStackConfig,
+	fields: readonly (keyof PolicyStackConfig)[],
+): string {
 	const slice: Record<string, unknown> = {};
 	for (const field of fields) {
 		const value = config[field];
@@ -60,26 +63,26 @@ function hashSlice(config: OpenPolicyConfig, fields: readonly (keyof OpenPolicyC
 	return fnv1a32(stableSerialize(slice));
 }
 
-function hasAnyPrivacyField(config: OpenPolicyConfig): boolean {
+function hasAnyPrivacyField(config: PolicyStackConfig): boolean {
 	return config.data !== undefined || config.children !== undefined;
 }
 
-function shouldHashPrivacy(config: OpenPolicyConfig): boolean {
+function shouldHashPrivacy(config: PolicyStackConfig): boolean {
 	if (config.policies) return config.policies.includes("privacy");
 	return hasAnyPrivacyField(config);
 }
 
-function shouldHashCookie(config: OpenPolicyConfig): boolean {
+function shouldHashCookie(config: PolicyStackConfig): boolean {
 	if (config.policies) return config.policies.includes("cookie");
 	return config.cookies !== undefined;
 }
 
-export function computePrivacyVersion(config: OpenPolicyConfig): string | undefined {
+export function computePrivacyVersion(config: PolicyStackConfig): string | undefined {
 	if (!shouldHashPrivacy(config)) return undefined;
 	return hashSlice(config, PRIVACY_HASH_FIELDS);
 }
 
-export function computeCookieVersion(config: OpenPolicyConfig): string | undefined {
+export function computeCookieVersion(config: PolicyStackConfig): string | undefined {
 	if (!shouldHashCookie(config)) return undefined;
 	return hashSlice(config, COOKIE_HASH_FIELDS);
 }

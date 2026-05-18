@@ -16,7 +16,7 @@ import { parseFile } from "./consent/parser";
 import { DEFAULT_EXCLUDE, DEFAULT_INCLUDE, defaultRules } from "./consent/scan";
 import { applySuppressions } from "./consent/suppress";
 import { CONSENT_REGISTRY } from "./registry";
-import { makeOpenPolicyRule } from "./consent/rules/openpolicy";
+import { makePolicyStackRule } from "./consent/rules/policystack";
 import type {
 	Cookie,
 	Hit,
@@ -49,7 +49,7 @@ export type UnifiedScanOptions = {
 	extensions: string[];
 	/** Extra ignored directory basenames for policy scoping. */
 	ignore: string[];
-	/** Absolute path of `openpolicy.gen.ts` (never a policy input). */
+	/** Absolute path of `policystack.gen.ts` (never a policy input). */
 	genFile: string | null;
 	/** Whether the consent rule set runs (the `consent` plugin option). */
 	consentEnabled: boolean;
@@ -185,7 +185,7 @@ export function createUnifiedScanner(opts: UnifiedScanOptions): UnifiedScanner {
 							return { line: p.line + lineOffset, column: p.column };
 						};
 			extractor = createPolicyExtractor({ filename: file, bindings, locate });
-			rules.push(makeOpenPolicyRule(extractor));
+			rules.push(makePolicyStackRule(extractor));
 		}
 
 		if (rules.length === 0) return { cookies: [], vendors: [], ungated: [] };

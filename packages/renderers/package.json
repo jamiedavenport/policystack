@@ -1,5 +1,5 @@
 {
-	"name": "@openpolicy/renderers",
+	"name": "@policystack/renderers",
 	"version": "0.0.34",
 	"type": "module",
 	"exports": {
@@ -13,8 +13,8 @@
 		"pdfkit": "^0.18.0"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/core": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"@types/pdfkit": "^0.17.5",
 		"vite-plus": "catalog:"
 	}

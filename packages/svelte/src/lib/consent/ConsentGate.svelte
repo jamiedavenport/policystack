@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ConsentExpr } from "@openpolicy/core/consent";
+  import type { ConsentExpr } from "@policystack/core/consent";
   import type { Snippet } from "svelte";
   import { getConsent } from "./context.svelte";
 

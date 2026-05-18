@@ -1,4 +1,4 @@
-import type { Document } from "@openpolicy/core";
+import type { Document } from "@policystack/core";
 import type { ReactNode } from "react";
 import { renderNode } from "./components/defaults";
 import type { PolicyComponents } from "./types";

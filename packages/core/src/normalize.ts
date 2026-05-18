@@ -1,5 +1,5 @@
 import { type HostPackageMeta, readHostPackageMeta } from "./host-package";
-import type { CompanyConfig, ConsentMechanism, OpenPolicyConfig } from "./types";
+import type { CompanyConfig, ConsentMechanism, PolicyStackConfig } from "./types";
 import { isConsentGated } from "./types";
 
 // Derive the consent mechanism from the only deterministic, config-visible
@@ -10,7 +10,7 @@ import { isConsentGated } from "./types";
 // can no longer contradict the wired runtime. `undefined` (no cookies, or
 // nothing gated) makes buildConsent() emit no consent section — matching the
 // pre-derivation "omit the field" behaviour for strictly-necessary cookies.
-export function deriveConsentMechanism(config: OpenPolicyConfig): ConsentMechanism | undefined {
+export function deriveConsentMechanism(config: PolicyStackConfig): ConsentMechanism | undefined {
 	const used = config.cookies?.used;
 	if (!used) return undefined;
 	const anyGated = Object.entries(used)
@@ -44,7 +44,7 @@ export function seedCompany(
 // bridge, buildConsent(), the React parity copy, validate's required-field
 // checks — observes one internally-consistent config regardless of entry path.
 // Idempotent: normalize∘normalize == normalize.
-export function normalizeOpenPolicyConfig(config: OpenPolicyConfig): OpenPolicyConfig {
+export function normalizePolicyStackConfig(config: PolicyStackConfig): PolicyStackConfig {
 	return {
 		...config,
 		company: seedCompany(config.company),

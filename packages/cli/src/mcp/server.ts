@@ -4,12 +4,12 @@ import pkgJson from "../../package.json";
 import { registerTools } from "./tools";
 
 /**
- * Build the `openpolicy mcp` server with its six frozen tools registered, but
+ * Build the `policystack mcp` server with its six frozen tools registered, but
  * NOT connected to a transport. Pure and side-effect-free so the drift test
  * can drive it over an in-memory transport without a subprocess (PS-29).
  */
 export function createMcpServer(): McpServer {
-	const server = new McpServer({ name: "openpolicy", version: pkgJson.version });
+	const server = new McpServer({ name: "policystack", version: pkgJson.version });
 	registerTools(server);
 	return server;
 }

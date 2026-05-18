@@ -8,10 +8,10 @@ import {
 	type ConsentRecordSource,
 	type ConsentStore,
 	type Jurisdiction,
-	type OpenCookiesConfig,
+	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
-} from "@openpolicy/core/consent";
+} from "@policystack/core/consent";
 import {
 	createContext,
 	useCallback,
@@ -21,13 +21,13 @@ import {
 	type ReactNode,
 } from "react";
 
-export type OpenCookiesProviderProps =
-	| { config: OpenCookiesConfig; store?: undefined; children: ReactNode }
+export type PolicyStackConsentProviderProps =
+	| { config: PolicyStackConsentConfig; store?: undefined; children: ReactNode }
 	| { store: ConsentStore; config?: undefined; children: ReactNode };
 
 const StoreContext = createContext<ConsentStore | null>(null);
 
-export function OpenCookiesProvider(props: OpenCookiesProviderProps) {
+export function PolicyStackConsentProvider(props: PolicyStackConsentProviderProps) {
 	const [store] = useState<ConsentStore>(() => {
 		if (props.store) return props.store;
 		return createConsentStore(props.config);
@@ -39,7 +39,7 @@ function useStore(): ConsentStore {
 	const store = useContext(StoreContext);
 	if (!store) {
 		throw new Error(
-			"useConsent / useCategory / ConsentGate must be used inside <OpenCookiesProvider>",
+			"useConsent / useCategory / ConsentGate must be used inside <PolicyStackConsentProvider>",
 		);
 	}
 	return store;

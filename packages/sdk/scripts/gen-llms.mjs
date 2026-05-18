@@ -1,4 +1,4 @@
-// Snapshots the canonical llms.txt that `@openpolicy/sdk` ships (PS-27).
+// Snapshots the canonical llms.txt that `@policystack/sdk` ships (PS-27).
 // Runs after `vp pack` so it reads the same built artifact consumers import.
 // The single source of truth is `renderLlmsTxt()` in src/llms.ts; this only
 // writes its output to disk. `llms.test.ts` guards the snapshot from drift.

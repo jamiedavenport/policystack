@@ -13,8 +13,8 @@ function RouteComponent() {
 				<>
 					Dezelfde <code className="font-mono text-xs">defineConfig()</code> als de rest van de
 					demo, maar de componenten krijgen <code className="font-mono text-xs">locale="nl"</code>.
-					OpenPolicy vertaalt de koppen, tabelheaders en AVG-teksten; de inhoud die u zelf aanlevert
-					(doeleinden, bewaartermijnen, enz.) wordt onveranderd weergegeven.
+					PolicyStack vertaalt de koppen, tabelheaders en AVG-teksten; de inhoud die u zelf
+					aanlevert (doeleinden, bewaartermijnen, enz.) wordt onveranderd weergegeven.
 				</>
 			}
 		/>

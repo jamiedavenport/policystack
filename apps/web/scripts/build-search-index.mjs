@@ -25,9 +25,9 @@ for (const doc of allDocs) {
 	// indexed site (and it strips a trailing `index.html`). Mirror our real
 	// route structure as directories so the indexed URL matches the live URL.
 	// /docs              -> docs/index.html
-	// /docs/openpolicy   -> docs/openpolicy/index.html
-	// /docs/openpolicy/cli/policies/quick-start
-	//                    -> docs/openpolicy/policies/quick-start/index.html
+	// /docs/policy   -> docs/policy/index.html
+	// /docs/policy/cli/policies/quick-start
+	//                    -> docs/policy/policies/quick-start/index.html
 	const dir = doc.slug === "index" ? "docs" : `docs/${doc.slug}`;
 	const html = `<!doctype html>
 <html lang="en">

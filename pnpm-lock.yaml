@@ -55,18 +55,18 @@ importers:
       '@offstage/react':
         specifier: ^0.0.2
         version: 0.0.2(react@19.2.6)
-      '@openpolicy/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@openpolicy/react':
-        specifier: workspace:*
-        version: link:../../packages/react
-      '@openpolicy/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       '@phosphor-icons/react':
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@policystack/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@policystack/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@policystack/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
@@ -166,7 +166,7 @@ importers:
       '@fontsource-variable/geist':
         specifier: ^5.2.8
         version: 5.2.8
-      '@openpolicy/react':
+      '@policystack/react':
         specifier: workspace:*
         version: link:../../packages/react
       '@tanstack/react-router':
@@ -203,10 +203,10 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
     devDependencies:
-      '@openpolicy/sdk':
+      '@policystack/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
-      '@openpolicy/vite':
+      '@policystack/vite':
         specifier: workspace:*
         version: link:../../packages/vite
       '@tailwindcss/vite':
@@ -261,7 +261,7 @@ importers:
       '@angular/core':
         specifier: ^21.0.0
         version: 21.2.13(@angular/compiler@21.2.13)(rxjs@7.8.2)(zone.js@0.15.1)
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
       happy-dom:
@@ -285,7 +285,7 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
-      '@openpolicy/vite':
+      '@policystack/vite':
         specifier: workspace:*
         version: link:../vite
       bundle-require:
@@ -298,13 +298,13 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@openpolicy/sdk':
+      '@policystack/sdk':
         specifier: workspace:*
         version: link:../sdk
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       citty:
@@ -319,7 +319,7 @@ importers:
 
   packages/core:
     devDependencies:
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       happy-dom:
@@ -331,13 +331,13 @@ importers:
 
   packages/react:
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@openpolicy/sdk':
+      '@policystack/sdk':
         specifier: workspace:*
         version: link:../sdk
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@testing-library/react':
@@ -368,10 +368,10 @@ importers:
         specifier: ^0.18.0
         version: 0.18.0
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/pdfkit':
@@ -383,7 +383,7 @@ importers:
 
   packages/scripts:
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
       happy-dom:
@@ -395,10 +395,10 @@ importers:
 
   packages/sdk:
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       vite-plus:
@@ -407,7 +407,7 @@ importers:
 
   packages/solid:
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
       '@solidjs/testing-library':
@@ -431,10 +431,10 @@ importers:
 
   packages/svelte:
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@sveltejs/package':
@@ -461,7 +461,7 @@ importers:
 
   packages/vite:
     dependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
       bundle-require:
@@ -477,10 +477,10 @@ importers:
         specifier: npm:@voidzero-dev/vite-plus-core@0.1.21
         version: '@voidzero-dev/vite-plus-core@0.1.21(@types/node@25.6.2)(esbuild@0.25.12)(jiti@2.7.0)(less@4.6.4)(sass@1.99.0)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.4)'
     devDependencies:
-      '@openpolicy/sdk':
+      '@policystack/sdk':
         specifier: workspace:*
         version: link:../sdk
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       esbuild:
@@ -492,10 +492,10 @@ importers:
 
   packages/vue:
     devDependencies:
-      '@openpolicy/core':
+      '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@openpolicy/tooling':
+      '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@vue/test-utils':

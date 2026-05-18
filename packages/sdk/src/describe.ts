@@ -4,7 +4,7 @@ import {
 	type JurisdictionId,
 	JURISDICTION_TABLE,
 	type LegalBasis,
-} from "@openpolicy/core";
+} from "@policystack/core";
 
 /**
  * One source of truth for the human description of a frozen jurisdiction /

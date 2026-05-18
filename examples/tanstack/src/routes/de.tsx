@@ -13,7 +13,7 @@ function RouteComponent() {
 				<>
 					Dasselbe <code className="font-mono text-xs">defineConfig()</code> wie der Rest der Demo,
 					aber die Komponenten erhalten <code className="font-mono text-xs">locale="de"</code>.
-					OpenPolicy übersetzt die Überschriften, Tabellenkopfzeilen und DSGVO-Texte; die von Ihnen
+					PolicyStack übersetzt die Überschriften, Tabellenkopfzeilen und DSGVO-Texte; die von Ihnen
 					bereitgestellten Inhalte (Zwecke, Aufbewahrungsfristen usw.) werden unverändert
 					übernommen.
 				</>

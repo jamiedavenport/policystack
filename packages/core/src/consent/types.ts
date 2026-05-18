@@ -93,7 +93,7 @@ export type StorageAdapter = {
 	subscribe?(listener: (record: ConsentRecord | null) => void): () => void;
 };
 
-export type OpenCookiesConfig = {
+export type PolicyStackConsentConfig = {
 	categories: Category[];
 	policyVersion?: string;
 	locale?: string;
@@ -107,14 +107,14 @@ export type OpenCookiesConfig = {
 	canWithdraw?: boolean;
 };
 
-// Runtime-only consent knobs toOpenCookiesConfig() CANNOT derive from the
-// policy. Everything else in OpenCookiesConfig (categories, policyVersion,
-// locale, canWithdraw) is derived from the OpenPolicyConfig. This is the only
+// Runtime-only consent knobs toPolicyStackConsentConfig() CANNOT derive from the
+// policy. Everything else in PolicyStackConsentConfig (categories, policyVersion,
+// locale, canWithdraw) is derived from the PolicyStackConfig. This is the only
 // consent surface a user authors by hand, and it lives under
-// OpenPolicyConfig.consent so policy + consent are ONE config. Pick<> keeps it
-// structurally locked to OpenCookiesConfig — change a knob there, this follows.
-export type OpenPolicyConsentConfig = Pick<
-	OpenCookiesConfig,
+// PolicyStackConfig.consent so policy + consent are ONE config. Pick<> keeps it
+// structurally locked to PolicyStackConsentConfig — change a knob there, this follows.
+export type PolicyStackConsentOptions = Pick<
+	PolicyStackConsentConfig,
 	| "adapter"
 	| "jurisdictionResolver"
 	| "request"

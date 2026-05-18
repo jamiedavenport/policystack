@@ -20,7 +20,7 @@ describe("parseFile", () => {
 	});
 
 	it("captures comments with absolute line numbers", () => {
-		const src = "// hi\nconst x = 1;\n// opencookies-ignore-next-line\ndocument.cookie='a';";
+		const src = "// hi\nconst x = 1;\n// policystack-ignore-next-line\ndocument.cookie='a';";
 		const r = parseFile("a.ts", src);
 		expect(r?.comments.map((c) => c.line)).toEqual([1, 3]);
 	});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useConsent } from "@openpolicy/react/consent";
+import { useConsent } from "@policystack/react/consent";
 
 // Persistent re-entry point: lets a visitor reopen the preferences modal after
 // they've already made (or to revise) a choice. Rendered inside the footer's

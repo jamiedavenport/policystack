@@ -21,7 +21,7 @@ export {
 } from "./components/defaults";
 export { PrivacyPolicy } from "./components/PrivacyPolicy";
 // Context / Provider
-export { OpenPolicyProvider as OpenPolicy } from "./context";
+export { PolicyStack } from "./context";
 // Render
 export { renderDocument } from "./render";
 // Types

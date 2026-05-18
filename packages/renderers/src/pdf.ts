@@ -1,5 +1,5 @@
-import type { Document, InlineNode, ListItemNode, TableNode, Visitor } from "@openpolicy/core";
-import { visit } from "@openpolicy/core";
+import type { Document, InlineNode, ListItemNode, TableNode, Visitor } from "@policystack/core";
+import { visit } from "@policystack/core";
 import PDFDocument from "pdfkit";
 
 type PDFKit = InstanceType<typeof PDFDocument>;

@@ -3,7 +3,7 @@ import type { JurisdictionId } from "./jurisdiction-id";
 // bundle never pulls the consent runtime. See packages/core/vite.config.ts:
 // `.` ⊥ `./consent` is the deliberate tree-shake split. Promoting this to a
 // value import would break it.
-import type { OpenPolicyConsentConfig } from "./consent/types";
+import type { PolicyStackConsentOptions } from "./consent/types";
 
 export type OutputFormat = "markdown" | "html" | "pdf";
 
@@ -11,9 +11,9 @@ export type CompileOptions = { formats: OutputFormat[] };
 
 export type PolicyCategory = "privacy" | "cookie";
 
-// Languages OpenPolicy knows how to emit. User-supplied strings (company name,
+// Languages PolicyStack knows how to emit. User-supplied strings (company name,
 // purposes, retention text, etc.) pass through untouched in whatever language
-// the caller wrote them — this union only governs the strings OpenPolicy itself
+// the caller wrote them — this union only governs the strings PolicyStack itself
 // emits (headings, boilerplate, lookup-table labels).
 export type Locale = "en" | "fr" | "de" | "nl" | "es";
 
@@ -165,7 +165,7 @@ export type ConsentMechanism = {
 };
 
 // Internal type consumed by section builders via PolicyInput.
-// Produced by expandOpenPolicyConfig() — not part of the public API.
+// Produced by expandPolicyStackConfig() — not part of the public API.
 export type PrivacyPolicyConfig = {
 	effectiveDate: EffectiveDate;
 	locale: Locale;
@@ -181,7 +181,7 @@ export type PrivacyPolicyConfig = {
 };
 
 // Internal type consumed by section builders via PolicyInput.
-// Produced by expandOpenPolicyConfig() — not part of the public API.
+// Produced by expandPolicyStackConfig() — not part of the public API.
 export type CookiePolicyConfig = {
 	effectiveDate: EffectiveDate;
 	locale: Locale;
@@ -199,12 +199,12 @@ export type PolicyInput =
 	| ({ type: "cookie" } & CookiePolicyConfig);
 
 // Public config passed to defineConfig(). All fields live at the top level.
-export type OpenPolicyConfig = {
+export type PolicyStackConfig = {
 	company: CompanyConfig;
 	effectiveDate: EffectiveDate;
 	jurisdictions: JurisdictionId[];
 
-	// Language for OpenPolicy-emitted strings. Defaults to "en" when omitted.
+	// Language for PolicyStack-emitted strings. Defaults to "en" when omitted.
 	locale?: Locale;
 
 	// Data handling — feeds the privacy policy. Required: every config must
@@ -227,7 +227,7 @@ export type OpenPolicyConfig = {
 	// hashes an explicit field allowlist) so swapping an adapter never churns
 	// privacyVersion/cookieVersion, and ignored by validate()/compile/llms —
 	// this is runtime wiring, not document content.
-	consent?: OpenPolicyConsentConfig;
+	consent?: PolicyStackConsentOptions;
 
 	// Explicit opt-out. Omit to auto-detect based on which fields are present.
 	policies?: PolicyCategory[];
@@ -238,7 +238,7 @@ export type OpenPolicyConfig = {
 	cookieVersion?: string;
 };
 
-export function isOpenPolicyConfig(value: unknown): value is OpenPolicyConfig {
+export function isPolicyStackConfig(value: unknown): value is PolicyStackConfig {
 	if (value === null || typeof value !== "object") return false;
 	const obj = value as Record<string, unknown>;
 	return "company" in obj && "effectiveDate" in obj && !("type" in obj);
@@ -247,5 +247,5 @@ export function isOpenPolicyConfig(value: unknown): value is OpenPolicyConfig {
 // The stable public diagnostic codes and the `Issue` shape live in their own
 // module so the union can be *derived from* a runtime registry (PS-32) instead
 // of hand-maintained twice. Still frozen at 1.0 (§6); re-exported here so the
-// historical `@openpolicy/core` "./types" import path is unchanged (PS-11).
+// historical `@policystack/core` "./types" import path is unchanged (PS-11).
 export type { Issue, IssueCode } from "./issue-codes";

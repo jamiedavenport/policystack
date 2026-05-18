@@ -1,5 +1,5 @@
-import { createConsentStore } from "@openpolicy/core/consent";
-import type { Category, ConsentStore } from "@openpolicy/core/consent";
+import { createConsentStore } from "@policystack/core/consent";
+import type { Category, ConsentStore } from "@policystack/core/consent";
 
 export const flushMicrotasks = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 

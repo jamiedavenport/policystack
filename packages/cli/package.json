@@ -1,15 +1,15 @@
 {
-	"name": "@openpolicy/cli",
+	"name": "@policystack/cli",
 	"version": "0.0.34",
-	"description": "CLI to install OpenPolicy and print a setup prompt for coding agents",
+	"description": "CLI to install PolicyStack and print a setup prompt for coding agents",
 	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jamiedavenport/openpolicy",
+		"url": "https://github.com/jamiedavenport/policystack",
 		"directory": "packages/cli"
 	},
 	"bin": {
-		"openpolicy": "./dist/cli.js"
+		"policystack": "./dist/cli.js"
 	},
 	"files": [
 		"dist",
@@ -25,15 +25,15 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
-		"@openpolicy/vite": "workspace:*",
+		"@policystack/vite": "workspace:*",
 		"bundle-require": "^5.1.0",
 		"esbuild": "^0.25.12",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@openpolicy/core": "workspace:*",
-		"@openpolicy/sdk": "workspace:*",
-		"@openpolicy/tooling": "workspace:*",
+		"@policystack/core": "workspace:*",
+		"@policystack/sdk": "workspace:*",
+		"@policystack/tooling": "workspace:*",
 		"citty": "^0.1.6",
 		"consola": "^3.4.2",
 		"vite-plus": "catalog:"

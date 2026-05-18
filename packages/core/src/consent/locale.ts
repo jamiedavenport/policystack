@@ -1,5 +1,5 @@
 import type { Locale } from "../types";
-import type { OpenCookiesConfig } from "./types";
+import type { PolicyStackConsentConfig } from "./types";
 
 // Canonical locale codes, kept dependency-free on purpose: importing the i18n
 // locale registry would drag the policy dictionaries into the lean consent
@@ -22,7 +22,7 @@ function coerceLocale(input: string): Locale {
 }
 
 // ─── PS-26 warn-and-map migration shim — remove pre-freeze, PS-36 ───
-// OpenCookies historically accepted a free-string `locale` (e.g. "en-GB",
+// PolicyStack Consent historically accepted a free-string `locale` (e.g. "en-GB",
 // "fr_FR", "pt"). PolicyStack 1.0 freezes `Locale` to the closed union. This
 // warns only for an explicitly *configured* free-string `locale` — the thing
 // PS-36 will reject — mapping the primary subtag onto the canonical Locale so
@@ -33,14 +33,14 @@ export function normalizeLocale(input: string): Locale {
 	const primary = input.toLowerCase().split(/[-_]/)[0] ?? "";
 	if (isCanonicalLocale(primary)) {
 		console.warn(
-			`[opencookies] locale "${input}" is not a supported PolicyStack locale; ` +
+			`[policystack] locale "${input}" is not a supported PolicyStack locale; ` +
 				`mapping to "${primary}". Free-string locales are deprecated and will ` +
 				`be rejected when Locale is frozen (PS-36). Use one of: ${CANONICAL_LOCALES.join(", ")}.`,
 		);
 		return primary;
 	}
 	console.warn(
-		`[opencookies] locale "${input}" is not a supported PolicyStack locale; ` +
+		`[policystack] locale "${input}" is not a supported PolicyStack locale; ` +
 			`falling back to "en". Free-string locales are deprecated and will be ` +
 			`rejected when Locale is frozen (PS-36). Use one of: ${CANONICAL_LOCALES.join(", ")}.`,
 	);
@@ -48,7 +48,7 @@ export function normalizeLocale(input: string): Locale {
 }
 // ─── end PS-26 shim ───
 
-export function resolveLocale(config: OpenCookiesConfig): Locale {
+export function resolveLocale(config: PolicyStackConsentConfig): Locale {
 	if (config.locale) return normalizeLocale(config.locale);
 	const nav = (globalThis as { navigator?: { language?: string } }).navigator;
 	return coerceLocale(nav?.language ?? "en");

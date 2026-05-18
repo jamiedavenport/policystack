@@ -1,6 +1,6 @@
 export { CookiePolicy } from "./components/CookiePolicy";
 export { PrivacyPolicy } from "./components/PrivacyPolicy";
-export { OpenPolicy } from "./context";
+export { PolicyStack } from "./context";
 export {
 	DefaultBold,
 	DefaultHeading,

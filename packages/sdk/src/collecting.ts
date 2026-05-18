@@ -7,7 +7,7 @@
  * It is a `unique symbol` so it cannot collide with a real label string and
  * so the type checker treats it nominally.
  */
-export const Ignore: unique symbol = Symbol("@openpolicy/ignore");
+export const Ignore: unique symbol = Symbol("@policystack/ignore");
 
 /**
  * Declares data collected at the point of storage. Returns `value` unchanged
@@ -23,7 +23,7 @@ export const Ignore: unique symbol = Symbol("@openpolicy/ignore");
  *   - keep `value` matching your ORM/table schema exactly,
  *   - describe fields with friendly labels for the policy,
  *   - exclude a field from the policy by setting its label to `Ignore`
- *     (imported from `@openpolicy/sdk`) — every key of `value` must appear
+ *     (imported from `@policystack/sdk`) — every key of `value` must appear
  *     in the label record, so e.g. `hashedPassword: Ignore` is how you hide
  *     a sensitive column.
  *
@@ -32,7 +32,7 @@ export const Ignore: unique symbol = Symbol("@openpolicy/ignore");
  *
  * @example
  * ```ts
- * import { collecting, Ignore } from "@openpolicy/sdk";
+ * import { collecting, Ignore } from "@policystack/sdk";
  *
  * export async function createUser(
  *   name: string,

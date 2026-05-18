@@ -15,29 +15,29 @@ const config = {
 		eyebrow: "BLOG",
 	}),
 
-	"/opencookies": () => ({
+	"/consent": () => ({
 		title: "A headless consent state machine.",
-		description: "policystack.dev/opencookies",
+		description: "policystack.dev/consent",
 		type: "website",
 		eyebrow: "OPENCOOKIES",
 	}),
 
-	"/openpolicy": () => ({
+	"/policy": () => ({
 		title: "Your privacy policy as a typed config.",
-		description: "policystack.dev/openpolicy",
+		description: "policystack.dev/policy",
 		type: "website",
 		eyebrow: "OPENPOLICY",
 	}),
 
-	"/policycloud": () => ({
+	"/cloud": () => ({
 		title: "The hosted control plane for your policies.",
-		description: "policystack.dev/policycloud",
+		description: "policystack.dev/cloud",
 		type: "website",
 		eyebrow: "POLICYCLOUD",
 	}),
 
 	"/docs": () => ({
-		title: "OpenPolicy and OpenCookies documentation.",
+		title: "PolicyStack and PolicyStack Consent documentation.",
 		description: "policystack.dev/docs",
 		type: "website",
 		eyebrow: "DOCS",
@@ -50,9 +50,9 @@ const config = {
 		const doc = allDocs.find((d) => d.slug === splat);
 		if (!doc) return ignore;
 		const eyebrow =
-			doc.product === "openpolicy"
+			doc.product === "policy"
 				? "OPENPOLICY DOCS"
-				: doc.product === "opencookies"
+				: doc.product === "consent"
 					? "OPENCOOKIES DOCS"
 					: "DOCS";
 		return {

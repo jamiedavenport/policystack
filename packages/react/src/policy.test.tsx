@@ -1,5 +1,5 @@
-import type { PrivacyPolicyConfig, SlotName } from "@openpolicy/core";
-import { compile } from "@openpolicy/core";
+import type { PrivacyPolicyConfig, SlotName } from "@policystack/core";
+import { compile } from "@policystack/core";
 import { isValidElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vite-plus/test";
@@ -50,7 +50,7 @@ test("renderDocument returns a React element", () => {
 	expect(isValidElement(result)).toBe(true);
 });
 
-test("renderDocument works with OpenPolicyConfig via compile", () => {
+test("renderDocument works with PolicyStackConfig via compile", () => {
 	const doc = compile({ type: "privacy", ...privacyConfig });
 	const result = renderDocument(doc);
 	expect(result).toBeTruthy();
@@ -113,7 +113,7 @@ test("renderDocument with full overrides emits no host DOM tags", () => {
 });
 
 // PS-15 (§2.4) drift guard: the React override map must expose exactly the
-// canonical slot set from `@openpolicy/core` — no more, no less. If this
+// canonical slot set from `@policystack/core` — no more, no less. If this
 // framework's keys ever diverge, `_keysAreCanonical` collapses to `never` and
 // `vp check` fails.
 type KeysAreCanonical = [keyof PolicyComponents] extends [SlotName]

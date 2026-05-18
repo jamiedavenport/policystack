@@ -11,22 +11,22 @@ import { Highlight } from "./Highlight";
 const PRODUCTS = [
 	{
 		n: "01",
-		to: "/opencookies",
-		slug: "opencookies",
+		to: "/consent",
+		slug: "consent",
 		title: "A headless consent state machine.",
 		body: "Sub-4kb core with adapters for React, Vue, Solid, Svelte, and Angular.",
 	},
 	{
 		n: "02",
-		to: "/openpolicy",
-		slug: "openpolicy",
+		to: "/policy",
+		slug: "policy",
 		title: "Your policy as a typed config.",
 		body: "Define your privacy and cookie policy once in TypeScript. Render anywhere.",
 	},
 	{
 		n: "03",
-		to: "/policycloud",
-		slug: "policycloud",
+		to: "/cloud",
+		slug: "cloud",
 		title: "The hosted control plane.",
 		body: "Centralized versioning, audit trails, and consent analytics across your stack.",
 	},
@@ -34,9 +34,9 @@ const PRODUCTS = [
 
 const QUICK_LINKS = [
 	{ to: "/", label: "Home", hint: "the whole stack" },
-	{ to: "/openpolicy", label: "OpenPolicy", hint: "policy-as-code" },
-	{ to: "/opencookies", label: "OpenCookies", hint: "consent state machine" },
-	{ to: "/policycloud", label: "PolicyCloud", hint: "hosted control plane" },
+	{ to: "/policy", label: "PolicyStack", hint: "policy-as-code" },
+	{ to: "/consent", label: "PolicyStack Consent", hint: "consent state machine" },
+	{ to: "/cloud", label: "PolicyStack Cloud", hint: "hosted control plane" },
 	{ to: "/docs", label: "Documentation", hint: "guides and reference" },
 	{ to: "/blog", label: "Blog", hint: "notes and releases" },
 ] as const;
@@ -93,9 +93,10 @@ function Hero() {
 				</h1>
 
 				<p className="mt-12 max-w-[60ch] text-lg text-pretty text-mute">
-					The page you wanted isn&rsquo;t here. If you followed a link from openpolicy.sh, that site
-					folded into PolicyStack &mdash; everything OpenPolicy lives under this roof now, alongside
-					OpenCookies and PolicyCloud. Otherwise, it&rsquo;s probably a typo or a stale link.
+					The page you wanted isn&rsquo;t here. If you followed a link from policystack.dev, that
+					site folded into PolicyStack &mdash; everything PolicyStack lives under this roof now,
+					alongside PolicyStack Consent and PolicyStack Cloud. Otherwise, it&rsquo;s probably a typo
+					or a stale link.
 				</p>
 
 				<div className="mt-12 max-w-xl border-2 border-black">
@@ -326,20 +327,20 @@ function Help() {
 							Tell us what you were <Highlight>looking for.</Highlight>
 						</h2>
 						<p className="mt-8 max-w-[55ch] text-base text-pretty text-mute">
-							If you landed here from a search or an old openpolicy.sh link that should still work,
-							send a note &mdash; we&rsquo;ll add a redirect.
+							If you landed here from a search or an old policystack.dev link that should still
+							work, send a note &mdash; we&rsquo;ll add a redirect.
 						</p>
 					</div>
 					<div className="flex flex-col items-stretch gap-4 md:ml-auto md:w-72">
 						<a
-							href="mailto:jamie@openpolicy.sh?subject=Broken%20link%20on%20policystack.dev"
+							href="mailto:jamie@policystack.dev?subject=Broken%20link%20on%20policystack.dev"
 							className="inline-flex items-center justify-center gap-2.5 border-2 border-black bg-black px-6 py-3.5 text-sm tracking-wide text-white uppercase hover:bg-white hover:text-black"
 						>
 							<ArrowRightIcon weight="bold" className="size-4 shrink-0" aria-hidden="true" />
 							report a broken link
 						</a>
 						<a
-							href="https://github.com/jamiedavenport/openpolicy/issues"
+							href="https://github.com/jamiedavenport/policystack/issues"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="inline-flex items-center justify-center gap-2.5 border-2 border-black px-6 py-3.5 text-sm tracking-wide uppercase hover:bg-black hover:text-white"

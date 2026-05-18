@@ -1,9 +1,9 @@
-import { type Issue, type OpenPolicyConfig, validate } from "@openpolicy/core";
+import { type Issue, type PolicyStackConfig, validate } from "@policystack/core";
 import { bundleRequire } from "bundle-require";
 import type { ScannerDiagnostic } from "./analyse";
 
 export type ValidatedConfig = {
-	config: OpenPolicyConfig | null;
+	config: PolicyStackConfig | null;
 	issues: Issue[];
 	loadError: Error | null;
 };
@@ -36,11 +36,11 @@ export function applyIssuePolicy(issues: Issue[], policy: IssuePolicy): Issue[] 
 }
 
 /**
- * Loads the user's `openpolicy.ts` via bundle-require, then runs the single
- * `validate()` exported from `@openpolicy/core` against the resolved config.
- * The config imports its scanned values from the on-disk `./openpolicy.gen`
+ * Loads the user's `policystack.ts` via bundle-require, then runs the single
+ * `validate()` exported from `@policystack/core` against the resolved config.
+ * The config imports its scanned values from the on-disk `./policystack.gen`
  * module, so bundle-require resolves them as ordinary relative source — no
- * interception shim is needed. The caller must have written `openpolicy.gen.ts`
+ * interception shim is needed. The caller must have written `policystack.gen.ts`
  * (via `writeGenModule`) before calling this. `validate()` operates on the
  * flat config and emits each code at most once, so no dedupe pass is needed.
  * The raw result is then run through {@link applyIssuePolicy} with the caller's
@@ -57,18 +57,18 @@ export async function loadAndValidateConfig(
 		configFile: string;
 	} & IssuePolicy,
 ): Promise<ValidatedConfig> {
-	let mod: { default?: OpenPolicyConfig };
+	let mod: { default?: PolicyStackConfig };
 	try {
 		const result = await bundleRequire({
 			filepath: args.configFile,
-			// Inline `@openpolicy/*` into the bundled config instead of
+			// Inline `@policystack/*` into the bundled config instead of
 			// externalising it. The config evaluates `defineConfig()` and the
 			// SDK's basis/provision helpers, so the SDK must be resolvable;
 			// bundle-require writes its output next to the config, and the
 			// SDK is a workspace package that isn't present in every ambient
 			// `node_modules` (pnpm doesn't hoist it to the workspace root), so
 			// an externalised import would fail to resolve at runtime.
-			notExternal: [/^@openpolicy\//],
+			notExternal: [/^@policystack\//],
 			esbuildOptions: {
 				platform: "node",
 				// Esbuild prints to stderr by default. Silence it — we surface
@@ -78,7 +78,7 @@ export async function loadAndValidateConfig(
 				logLevel: "silent",
 			},
 		});
-		mod = result.mod as { default?: OpenPolicyConfig };
+		mod = result.mod as { default?: PolicyStackConfig };
 	} catch (err) {
 		return {
 			config: null,
@@ -107,18 +107,18 @@ export async function loadAndValidateConfig(
 }
 
 /**
- * Formats a validation issue for terminal output. Prefixes with `[openpolicy]`
+ * Formats a validation issue for terminal output. Prefixes with `[policystack]`
  * so users can grep the build log for our messages.
  */
 export function formatIssue(issue: Issue): string {
-	return `[openpolicy] ${issue.code}: ${issue.message}`;
+	return `[policystack] ${issue.code}: ${issue.message}`;
 }
 
 /**
  * Formats a located scanner diagnostic for terminal output as
- * `[openpolicy] file:line:col code: message` — same greppable prefix as
+ * `[policystack] file:line:col code: message` — same greppable prefix as
  * {@link formatIssue}, with a clickable `file:line:col` location.
  */
 export function formatScannerDiagnostic(d: ScannerDiagnostic): string {
-	return `[openpolicy] ${d.file}:${d.line}:${d.column} ${d.code}: ${d.message}`;
+	return `[policystack] ${d.file}:${d.line}:${d.column} ${d.code}: ${d.message}`;
 }

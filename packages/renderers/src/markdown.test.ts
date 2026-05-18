@@ -1,5 +1,5 @@
 import { expect, test } from "vite-plus/test";
-import { AST_VERSION, type Document } from "@openpolicy/core";
+import { AST_VERSION, type Document } from "@policystack/core";
 import { renderMarkdown } from "./markdown";
 
 function doc(sections: Document["sections"]): Document {

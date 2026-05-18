@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { DocumentSection } from "@openpolicy/core";
+import type { DocumentSection } from "@policystack/core";
 import type { Snippet } from "svelte";
 
 let {

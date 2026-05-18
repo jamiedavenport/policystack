@@ -2,10 +2,10 @@ import type {
 	ConsentExpr,
 	ConsentState,
 	ConsentStore,
-	OpenCookiesConfig,
+	PolicyStackConsentConfig,
 	Route,
-} from "@openpolicy/core/consent";
-import { createConsentStore } from "@openpolicy/core/consent";
+} from "@policystack/core/consent";
+import { createConsentStore } from "@policystack/core/consent";
 import { readable, type Readable } from "svelte/store";
 
 export type ConsentStoreReadable = Readable<ConsentState> & {
@@ -19,7 +19,7 @@ export type ConsentStoreReadable = Readable<ConsentState> & {
 };
 
 export function createConsentReadable(
-	options: { config: OpenCookiesConfig; store?: undefined } | { store: ConsentStore },
+	options: { config: PolicyStackConsentConfig; store?: undefined } | { store: ConsentStore },
 ): ConsentStoreReadable {
 	const store = options.store ?? createConsentStore(options.config);
 	const readableStore = readable<ConsentState>(store.getState(), (set) => {

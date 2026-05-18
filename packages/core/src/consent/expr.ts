@@ -1,4 +1,4 @@
-import { OpenCookiesError } from "./errors";
+import { PolicyStackConsentError } from "./errors";
 import type { ConsentExpr, ConsentState, EvaluateOptions } from "./types";
 
 export function evaluate(
@@ -19,10 +19,10 @@ export function evaluate(
 			if (lockedKeys.has(node)) return true;
 			if (!knownKeys.has(node)) {
 				if (onUnknownCategory === "throw") {
-					throw new OpenCookiesError("UNKNOWN_CATEGORY", `Unknown category: ${node}`);
+					throw new PolicyStackConsentError("UNKNOWN_CATEGORY", `Unknown category: ${node}`);
 				}
 				if (onUnknownCategory === "warn") {
-					console.warn(`[opencookies] Unknown category: ${node}`);
+					console.warn(`[policystack] Unknown category: ${node}`);
 				}
 				return false;
 			}

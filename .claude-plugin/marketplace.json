@@ -2,7 +2,7 @@
   "name": "policystack",
   "owner": {
     "name": "PolicyStack",
-    "url": "https://github.com/jamiedavenport/openpolicy"
+    "url": "https://github.com/jamiedavenport/policystack"
   },
   "plugins": [
     {
