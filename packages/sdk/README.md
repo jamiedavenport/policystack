@@ -18,7 +18,7 @@ bun add @policystack/sdk
 ### Privacy policy
 
 ```ts
-// openpolicy.ts
+// policystack.ts
 import { ContractPrerequisite, defineConfig, LegalBases, Voluntary } from "@policystack/sdk";
 
 export default defineConfig({
@@ -60,7 +60,7 @@ export default defineConfig({
 ### Cookie policy
 
 ```ts
-// openpolicy.ts
+// policystack.ts
 import { defineConfig, LegalBases } from "@policystack/sdk";
 
 export default defineConfig({
@@ -98,7 +98,7 @@ Full field reference and guides: [openpolicy.sh/docs](https://openpolicy.sh/docs
 
 ## AI Agents
 
-`openpolicy init` writes a type-accurate `openpolicy.llms.txt` into your project and prints a setup prompt — feed it to any coding agent (Claude Code, Cursor, Copilot, etc.).
+`openpolicy init` writes a type-accurate `policystack.llms.txt` into your project and prints a setup prompt — feed it to any coding agent (Claude Code, Cursor, Copilot, etc.).
 
 For Claude Code, install the PolicyStack skill pack — guided procedures for setup, auditing, jurisdiction posture, and data-flow instrumentation, all resolved against the frozen SDK surface:
 

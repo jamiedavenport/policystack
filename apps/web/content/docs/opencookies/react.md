@@ -38,7 +38,7 @@ createRoot(document.getElementById("root")!).render(
 
 Pass a pre-created store with `<OpenCookiesProvider store={store}>` instead — useful for SSR-time hydration of decisions from cookies.
 
-Already using OpenPolicy? Skip the hand-rolled categories array — `toPolicyStackConsentConfig(openpolicy)` from `@policystack/sdk/opencookies` produces this config from your `openpolicy.ts` and defaults `policyVersion` from `cookieVersion` so `triggers.policyVersionChanged` reprompts correct-by-default. See [Cookie banner](/docs/openpolicy/cookies/overview).
+Already using OpenPolicy? Skip the hand-rolled categories array — `toPolicyStackConsentConfig(openpolicy)` from `@policystack/sdk/opencookies` produces this config from your `policystack.ts` and defaults `policyVersion` from `cookieVersion` so `triggers.policyVersionChanged` reprompts correct-by-default. See [Cookie banner](/docs/openpolicy/cookies/overview).
 
 ## API
 

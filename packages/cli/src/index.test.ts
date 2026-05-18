@@ -7,7 +7,7 @@ test("run is a function", () => {
 });
 
 test("mainCommand has correct name", () => {
-	expect((mainCommand.meta as CommandMeta)?.name).toBe("openpolicy");
+	expect((mainCommand.meta as CommandMeta)?.name).toBe("policystack");
 });
 
 test("mainCommand has init subcommand", () => {

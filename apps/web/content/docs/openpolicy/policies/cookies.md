@@ -1,6 +1,6 @@
 ---
 title: Cookie Policy
-description: Generate and render a cookie policy from your openpolicy.ts config
+description: Generate and render a cookie policy from your policystack.ts config
 product: openpolicy
 ---
 
@@ -9,7 +9,7 @@ See the [Quick Start](/docs/openpolicy/policies/quick-start) to add a cookie pol
 Add cookie fields to your config — the cookie policy is auto-detected from the presence of the `cookies` (or `trackingTechnologies`) field:
 
 ```ts
-// openpolicy.ts
+// policystack.ts
 import { defineConfig, LegalBases } from "@policystack/sdk";
 
 effectiveDate: "2026-01-01",

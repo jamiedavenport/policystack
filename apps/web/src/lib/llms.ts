@@ -91,7 +91,7 @@ export function renderLlmsTxt() {
 		"",
 		"## SDK",
 		"",
-		`- [SDK reference (llms.txt)](${SITE}/sdk.txt): Type-generated \`@policystack/sdk\` API surface — feed it to a coding agent to produce a correct openpolicy.ts`,
+		`- [SDK reference (llms.txt)](${SITE}/sdk.txt): Type-generated \`@policystack/sdk\` API surface — feed it to a coding agent to produce a correct policystack.ts`,
 		"",
 		"## Documentation",
 		"",

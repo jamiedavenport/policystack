@@ -179,7 +179,7 @@ export const initCommand = defineCommand({
 		out: {
 			type: "string",
 			description:
-				"Output path for the openpolicy.ts stub (defaults to src/openpolicy.ts if src/ exists)",
+				"Output path for the policystack.ts stub (defaults to src/policystack.ts if src/ exists)",
 		},
 		force: {
 			type: "boolean",

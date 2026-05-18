@@ -81,7 +81,7 @@ test("scaffold_config returns a defineConfig stub", async () => {
 	const client = await connect();
 	const res = await client.callTool({ name: "scaffold_config", arguments: {} });
 	const sc = structured(res);
-	expect(sc.filename).toBe("openpolicy.ts");
+	expect(sc.filename).toBe("policystack.ts");
 	expect(String(sc.contents)).toContain("defineConfig");
 	expect(sc.llmsTxt).toBeUndefined();
 	const withLlms = structured(

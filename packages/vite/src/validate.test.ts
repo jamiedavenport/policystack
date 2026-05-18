@@ -27,19 +27,19 @@ afterEach(async () => {
 });
 
 async function writeConfig(source: string): Promise<string> {
-	const file = join(tmp, "openpolicy.ts");
+	const file = join(tmp, "policystack.ts");
 	await mkdir(dirname(file), { recursive: true });
 	await writeFile(file, source, "utf8");
 	return file;
 }
 
 /**
- * Writes the on-disk `openpolicy.gen.ts` module next to the tmp config, exactly
- * as the Vite plugin would, so configs that import `./openpolicy.gen` resolve
+ * Writes the on-disk `policystack.gen.ts` module next to the tmp config, exactly
+ * as the Vite plugin would, so configs that import `./policystack.gen` resolve
  * the scanned values through ordinary relative source.
  */
 async function writeGen(scanned: Scanned): Promise<void> {
-	await writeFile(join(tmp, "openpolicy.gen.ts"), renderGenModule(scanned), "utf8");
+	await writeFile(join(tmp, "policystack.gen.ts"), renderGenModule(scanned), "utf8");
 }
 
 const VALID_CONFIG = `
@@ -99,13 +99,13 @@ test("surfaces company-contact-phone-recommended warning under us-ca", async () 
 });
 
 test("scanned data from the on-disk gen module flows into validators via spread", async () => {
-	// User config imports `dataCollected` from the generated `./openpolicy.gen`
+	// User config imports `dataCollected` from the generated `./policystack.gen`
 	// module and spreads it, but doesn't add a matching context entry for the
 	// scanned-only category. The scanned key flows through `data.collected` as
 	// ordinary relative source, so the missing-context check fires.
 	const source = `
 import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
-import { dataCollected } from "./openpolicy.gen";
+import { dataCollected } from "./policystack.gen";
 
 export default defineConfig({
 	company: {

@@ -15,13 +15,13 @@ afterEach(() => {
 });
 
 test("resolveLlmsPath sits next to the stub", () => {
-	expect(resolveLlmsPath(join(dir, "src", "openpolicy.ts"))).toBe(
-		join(dir, "src", "openpolicy.llms.txt"),
+	expect(resolveLlmsPath(join(dir, "src", "policystack.ts"))).toBe(
+		join(dir, "src", "policystack.llms.txt"),
 	);
 });
 
 test("writeLlms writes the canonical reference and reports create vs update", async () => {
-	const path = resolveLlmsPath(join(dir, "openpolicy.ts"));
+	const path = resolveLlmsPath(join(dir, "policystack.ts"));
 
 	const first = await writeLlms(path);
 	expect(first.written).toBe(true);

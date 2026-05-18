@@ -115,7 +115,7 @@ function Hero({ heroHtml }: { heroHtml: string }) {
 
 				<div className="mt-24 grid gap-6 md:grid-cols-2 md:items-stretch">
 					<div className="min-w-0 md:h-112">
-						<CodeBlock className="h-full" file="openpolicy.ts" html={heroHtml} />
+						<CodeBlock className="h-full" file="policystack.ts" html={heroHtml} />
 					</div>
 					<div className="min-w-0 md:h-112">
 						<BrowserPreview />
@@ -419,7 +419,7 @@ function ClaudeTerminal() {
 					/>
 					<TerminalStep
 						command="pnpm dlx @policystack/cli init"
-						result="created src/openpolicy.ts"
+						result="created src/policystack.ts"
 					/>
 				</div>
 				<p className="mt-5 text-white/60">
@@ -441,7 +441,7 @@ function ClaudeTerminal() {
 				</p>
 				<p className="mt-4 text-white/70">
 					Banner gates analytics on consent. <span className="text-white">/privacy</span> renders
-					from <span className="text-white/80">openpolicy.ts</span>. Want me to fill in the data
+					from <span className="text-white/80">policystack.ts</span>. Want me to fill in the data
 					block next?
 				</p>
 				<p className="mt-3 flex items-center gap-2 text-white/40">

@@ -37,7 +37,7 @@ afterAll(() => {
 });
 
 async function writeConfig(source: string): Promise<string> {
-	const file = join(tmp, "openpolicy.ts");
+	const file = join(tmp, "policystack.ts");
 	await mkdir(dirname(file), { recursive: true });
 	await writeFile(file, source, "utf8");
 	return file;
@@ -137,7 +137,7 @@ test("--json emits exactly one parseable JSON object to stdout", async () => {
 });
 
 test("missing config file: load error, not ok, no throw", async () => {
-	const missing = join(tmp, "nope", "openpolicy.ts");
+	const missing = join(tmp, "nope", "policystack.ts");
 	const result = await runValidate({ cwd: tmp, config: missing, json: false });
 	expect(result.ok).toBe(false);
 	expect(result.issues).toEqual([]);
@@ -161,9 +161,9 @@ test("missing default export: captured as a load error", async () => {
 	expect(result.loadError).toContain("no default export");
 });
 
-test("default config discovery resolves openpolicy.ts under cwd", async () => {
+test("default config discovery resolves policystack.ts under cwd", async () => {
 	await writeConfig(VALID_CONFIG);
 	const result = await runValidate({ cwd: tmp, json: false });
-	expect(result.config).toBe(join(tmp, "openpolicy.ts"));
+	expect(result.config).toBe(join(tmp, "policystack.ts"));
 	expect(result.ok).toBe(true);
 });

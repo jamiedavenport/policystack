@@ -54,7 +54,7 @@ export async function walkSources(
 	// FROZEN 1.0 CONTRACT (1.md §6 / §7.6): the multi-file merge order is the
 	// default lexicographic sort of absolute source paths. `scanAndMerge`
 	// folds per-file results in this order, so it fixes the array order of
-	// `dataCollected` labels and `thirdParties` in `openpolicy.gen.ts`, which
+	// `dataCollected` labels and `thirdParties` in `policystack.gen.ts`, which
 	// in turn feeds `compilePolicy()`'s deterministic `version` hash
 	// (`@policystack/core` policy-version.ts sorts object keys but preserves
 	// array order). Removing this sort or changing the collation is a

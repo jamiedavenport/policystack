@@ -25,7 +25,7 @@ test("alias resolving to the SDK root id is matched; subpath/non-SDK are not", a
 		"@openpolicy/sdk/foo": "/proj/node_modules/@openpolicy/sdk/dist/foo.js",
 		"@other": "/proj/node_modules/other/index.js",
 	});
-	const m = await createSdkMatcher({ resolve, importer: "/proj/openpolicy.ts", warn: () => {} });
+	const m = await createSdkMatcher({ resolve, importer: "/proj/policystack.ts", warn: () => {} });
 
 	// Canonical specifiers match without any prewarm.
 	expect(m.match("@openpolicy/sdk")).toBe(true);
@@ -41,8 +41,8 @@ test("alias resolving to the SDK root id is matched; subpath/non-SDK are not", a
 
 test("canonical specifier is resolved from the given importer", async () => {
 	const { resolve, calls } = fakeResolve({ "@openpolicy/sdk": SDK_ID });
-	await createSdkMatcher({ resolve, importer: "/proj/openpolicy.ts", warn: () => {} });
-	expect(calls).toContainEqual({ source: "@openpolicy/sdk", importer: "/proj/openpolicy.ts" });
+	await createSdkMatcher({ resolve, importer: "/proj/policystack.ts", warn: () => {} });
+	expect(calls).toContainEqual({ source: "@openpolicy/sdk", importer: "/proj/policystack.ts" });
 });
 
 test("query/fragment suffixes and backslashes are normalised before comparison", async () => {
@@ -57,7 +57,7 @@ test("query/fragment suffixes and backslashes are normalised before comparison",
 			const r = await resolve(source, importer);
 			return r;
 		},
-		importer: "/proj/openpolicy.ts",
+		importer: "/proj/policystack.ts",
 		warn: () => {},
 	});
 	await m.prewarm(["@dev/sdk", "@win/sdk"]);
@@ -68,7 +68,7 @@ test("no resolver → pure dual-scope fallback, warns once", async () => {
 	const warnings: string[] = [];
 	const m = await createSdkMatcher({
 		resolve: null,
-		importer: "/proj/openpolicy.ts",
+		importer: "/proj/policystack.ts",
 		warn: (msg) => warnings.push(msg),
 	});
 	// `resolve: null` is the test-stub path — silent fallback, no warning.
@@ -85,7 +85,7 @@ test("canonical specifier unresolvable → fallback with a one-time warning", as
 	const { resolve } = fakeResolve({ "@other": "/proj/node_modules/other/index.js" });
 	const m = await createSdkMatcher({
 		resolve,
-		importer: "/proj/openpolicy.ts",
+		importer: "/proj/policystack.ts",
 		warn: (msg) => warnings.push(msg),
 	});
 	expect(warnings).toHaveLength(1);
@@ -95,7 +95,7 @@ test("canonical specifier unresolvable → fallback with a one-time warning", as
 
 test("prewarm resolves each distinct specifier exactly once across calls", async () => {
 	const { resolve, calls } = fakeResolve({ "@openpolicy/sdk": SDK_ID, "@/sdk": SDK_ID });
-	const m = await createSdkMatcher({ resolve, importer: "/proj/openpolicy.ts", warn: () => {} });
+	const m = await createSdkMatcher({ resolve, importer: "/proj/policystack.ts", warn: () => {} });
 	const before = calls.length;
 	await m.prewarm(["@/sdk", "@/sdk"]);
 	await m.prewarm(["@/sdk"]); // already memoised — no extra resolve

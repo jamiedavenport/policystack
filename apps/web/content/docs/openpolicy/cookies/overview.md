@@ -8,7 +8,7 @@ The cookie banner, preferences panel, and consent runtime previously shipped as 
 
 > [github.com/jamiedavenport/opencookies](https://github.com/jamiedavenport/opencookies)
 
-OpenCookies and OpenPolicy are designed to work together: the same `cookies` config in your `openpolicy.ts` drives both the cookie _policy_ (the legal document) and the cookie _banner_ (the consent UI).
+OpenCookies and OpenPolicy are designed to work together: the same `cookies` config in your `policystack.ts` drives both the cookie _policy_ (the legal document) and the cookie _banner_ (the consent UI).
 
 ## What stayed in OpenPolicy
 

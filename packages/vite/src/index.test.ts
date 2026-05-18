@@ -101,14 +101,14 @@ type ScannedResult = {
 };
 
 /**
- * Reads the on-disk `openpolicy.gen.ts` the plugin emits and parses the three
+ * Reads the on-disk `policystack.gen.ts` the plugin emits and parses the three
  * scanned exports back out. The values are emitted as compact JSON (valid
  * TypeScript), so each `export const … = <json>;` line round-trips through
  * `JSON.parse`. `root` is where the gen file lands — the project root when
- * there's no `openpolicy.ts`, otherwise the config's directory.
+ * there's no `policystack.ts`, otherwise the config's directory.
  */
 async function readScanned(root: string): Promise<ScannedResult> {
-	const source = await readFile(join(root, "openpolicy.gen.ts"), "utf8");
+	const source = await readFile(join(root, "policystack.gen.ts"), "utf8");
 
 	function parse<T>(name: string): T {
 		const match = source.match(new RegExp(`export const ${name}:[^=]*= (.*);\\n`));
@@ -224,7 +224,7 @@ test("buildStart degrades gracefully when the gen module can't be written", asyn
 	// atomic temp-write/rename fails. The build must not crash and the
 	// last-good file must survive untouched.
 	const lastGood = "// SEEDED LAST-GOOD — must survive a failed write\n";
-	await writeFile(join(tmp, "openpolicy.gen.ts"), lastGood, "utf8");
+	await writeFile(join(tmp, "policystack.gen.ts"), lastGood, "utf8");
 	await chmod(tmp, 0o555);
 
 	const plugin = policyStack();
@@ -236,8 +236,8 @@ test("buildStart degrades gracefully when the gen module can't be written", asyn
 	}
 
 	expect(ctx.errors).toEqual([]);
-	expect(ctx.warnings.some((w) => w.includes("could not write openpolicy.gen.ts"))).toBe(true);
-	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(lastGood);
+	expect(ctx.warnings.some((w) => w.includes("could not write policystack.gen.ts"))).toBe(true);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(lastGood);
 });
 
 test("dev rescan retries the write after a failure (in-memory state not advanced)", async () => {
@@ -251,7 +251,7 @@ test("dev rescan retries the write after a failure (in-memory state not advanced
 
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const before = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -271,10 +271,10 @@ test("dev rescan retries the write after a failure (in-memory state not advanced
 	} finally {
 		await chmod(tmp, 0o755);
 	}
-	expect(stub.loggedWarnings.some((w) => w.includes("could not write openpolicy.gen.ts"))).toBe(
+	expect(stub.loggedWarnings.some((w) => w.includes("could not write policystack.gen.ts"))).toBe(
 		true,
 	);
-	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(before);
 
 	// Because the failed write did NOT advance the in-memory `scanned`, the
 	// next event still sees a change and retries — the write now lands.
@@ -478,7 +478,7 @@ test("dev watcher drops categories when a file is deleted", async () => {
 test("dev watcher ignores events for files outside srcDir", async () => {
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const before = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -487,13 +487,13 @@ test("dev watcher ignores events for files outside srcDir", async () => {
 	await stub.runHandler("change", join(tmp, "other/x.ts"));
 
 	// Event filtered out — the gen module is left untouched.
-	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(before);
 });
 
 test("dev watcher ignores events for files with untracked extensions", async () => {
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const before = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -501,7 +501,7 @@ test("dev watcher ignores events for files with untracked extensions", async () 
 	await touch("src/README.md", `# hello\n`);
 	await stub.runHandler("change", join(tmp, "src/README.md"));
 
-	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(before);
 });
 
 test("dev watcher does not rewrite the gen module when the gen file itself changes", async () => {
@@ -517,14 +517,14 @@ test("dev watcher does not rewrite the gen module when the gen file itself chang
 
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const before = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
 
-	await stub.runHandler("change", join(tmp, "openpolicy.gen.ts"));
+	await stub.runHandler("change", join(tmp, "policystack.gen.ts"));
 
-	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(before);
 });
 
 test("dev watcher leaves the gen module unchanged when the scan output is unchanged", async () => {
@@ -538,7 +538,7 @@ test("dev watcher leaves the gen module unchanged when the scan output is unchan
 
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const before = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const before = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 
 	const stub = createStubServer();
 	await runConfigureServer(plugin, stub.server);
@@ -554,7 +554,7 @@ test("dev watcher leaves the gen module unchanged when the scan output is unchan
 	);
 	await stub.runHandler("change", join(tmp, "src/a.ts"));
 
-	expect(await readFile(join(tmp, "openpolicy.gen.ts"), "utf8")).toBe(before);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(before);
 });
 
 // ---------------------------------------------------------------------------
@@ -630,7 +630,7 @@ test("sharing() calls are scanned and appear in the gen module sharing export", 
 	]);
 
 	// The data-category axis is also surfaced as the ScannedSharingKeys seam.
-	const dts = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 	expect(dts).toContain("interface ScannedSharingKeys");
 	expect(dts).toContain('"Account Information": true');
 });
@@ -905,7 +905,7 @@ function runConfigureServer(
 	throw new Error("plugin has no configureServer hook");
 }
 
-test("buildStart writes openpolicy.gen.ts with scanned keys", async () => {
+test("buildStart writes policystack.gen.ts with scanned keys", async () => {
 	await touch(
 		"src/a.ts",
 		`import { collecting } from "@policystack/sdk";\n` +
@@ -914,7 +914,7 @@ test("buildStart writes openpolicy.gen.ts with scanned keys", async () => {
 	);
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const dts = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 	// Type augmentation.
 	expect(dts).toContain('declare module "@policystack/sdk"');
 	expect(dts).toContain("interface ScannedCollectionKeys");
@@ -946,7 +946,7 @@ test("buildStart includes scanned cookie keys in ScannedCookieKeys", async () =>
 	);
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const dts = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 	expect(dts).toContain("interface ScannedCookieKeys");
 	expect(dts).toContain('"analytics": true');
 	expect(dts).toContain('"marketing": true');
@@ -956,13 +956,13 @@ test("buildStart writes an empty ScannedCollectionKeys interface when no calls a
 	await touch("src/a.ts", "export const noop = 1;\n");
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
-	const dts = await readFile(join(tmp, "openpolicy.gen.ts"), "utf8");
+	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 	expect(dts).toContain("interface ScannedCollectionKeys {");
 	expect(dts).not.toContain('"Account Information"');
 });
 
-test("buildStart emits openpolicy.gen.ts next to openpolicy.ts inside src/", async () => {
-	await touch("src/openpolicy.ts", "export default {} as const;\n");
+test("buildStart emits policystack.gen.ts next to policystack.ts inside src/", async () => {
+	await touch("src/policystack.ts", "export default {} as const;\n");
 	await touch(
 		"src/a.ts",
 		`import { collecting } from "@policystack/sdk";\n` +
@@ -970,12 +970,12 @@ test("buildStart emits openpolicy.gen.ts next to openpolicy.ts inside src/", asy
 	);
 	const plugin = policyStack({ validate: false });
 	await runPluginBuildStart(plugin, tmp);
-	const dts = await readFile(join(tmp, "src/openpolicy.gen.ts"), "utf8");
+	const dts = await readFile(join(tmp, "src/policystack.gen.ts"), "utf8");
 	expect(dts).toContain('"Account Information": true');
 });
 
-test("buildStart emits openpolicy.gen.ts next to openpolicy.ts inside src/lib/", async () => {
-	await touch("src/lib/openpolicy.ts", "export default {} as const;\n");
+test("buildStart emits policystack.gen.ts next to policystack.ts inside src/lib/", async () => {
+	await touch("src/lib/policystack.ts", "export default {} as const;\n");
 	await touch(
 		"src/a.ts",
 		`import { collecting } from "@policystack/sdk";\n` +
@@ -983,14 +983,14 @@ test("buildStart emits openpolicy.gen.ts next to openpolicy.ts inside src/lib/",
 	);
 	const plugin = policyStack({ validate: false });
 	await runPluginBuildStart(plugin, tmp);
-	const dts = await readFile(join(tmp, "src/lib/openpolicy.gen.ts"), "utf8");
+	const dts = await readFile(join(tmp, "src/lib/policystack.gen.ts"), "utf8");
 	expect(dts).toContain('"Account Information": true');
 });
 
 test("validate:false skips config load entirely (stub config does not crash buildStart)", async () => {
 	// A `{}` config would fail every required-field check; with validate
 	// disabled, buildStart must not even load the file.
-	await touch("src/openpolicy.ts", "export default {} as const;\n");
+	await touch("src/policystack.ts", "export default {} as const;\n");
 	const plugin = policyStack({ validate: false });
 	const ctx = await runPluginBuildStart(plugin, tmp);
 	expect(ctx.errors).toEqual([]);
@@ -1001,7 +1001,7 @@ test("vite dev (command: 'serve') does not abort via this.error even if config h
 	// Validation in `vite dev` flows through the dev-server logger inside
 	// `configureServer`, never through PluginContext.error. A stub config
 	// with multiple errors must not throw out of buildStart in serve mode.
-	await touch("src/openpolicy.ts", "export default {} as const;\n");
+	await touch("src/policystack.ts", "export default {} as const;\n");
 	const plugin = policyStack();
 	const ctx = await runPluginBuildStart(plugin, tmp, { command: "serve" });
 	expect(ctx.errors).toEqual([]);

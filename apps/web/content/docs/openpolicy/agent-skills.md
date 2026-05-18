@@ -50,5 +50,5 @@ same mechanism backs [`llms.txt`](/docs/openpolicy/cli). Removing or renaming a
 frozen code is a loud test failure, not a silently stale skill.
 
 You can also point any other agent at the local reference: `openpolicy init`
-writes `openpolicy.llms.txt` into your project — see the
+writes `policystack.llms.txt` into your project — see the
 [CLI page](/docs/openpolicy/cli).

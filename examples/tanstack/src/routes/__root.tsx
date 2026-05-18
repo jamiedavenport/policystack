@@ -14,7 +14,7 @@ function GithubIcon({ className }: { className?: string }) {
 }
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import openpolicy from "../openpolicy";
+import openpolicy from "../policystack";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({

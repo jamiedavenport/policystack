@@ -16,7 +16,7 @@
 			"ignoreDependencies": ["@policystack/tooling"]
 		},
 		"examples/tanstack": {
-			"entry": ["src/openpolicy.ts", "src/lib/collection.ts", "src/lib/stripe.ts"]
+			"entry": ["src/policystack.ts", "src/lib/collection.ts", "src/lib/stripe.ts"]
 		}
 	}
 }

@@ -48,7 +48,7 @@ export type PolicyStackOptions = {
 	};
 
 	/**
-	 * Run `validate()` against the resolved `openpolicy.ts` after each scan.
+	 * Run `validate()` against the resolved `policystack.ts` after each scan.
 	 * Errors fail `vite build`
 	 * (`PluginContext.error`); warnings are reported (`PluginContext.warn`)
 	 * but never block. In dev, both error and warning issues are logged
@@ -83,7 +83,7 @@ export type PolicyStackOptions = {
 	 * the consent scan — existing policy behaviour is unaffected.
 	 *
 	 * This is structural co-location only: the consent walk never contributes
-	 * to `openpolicy.gen.ts` and is independent of `validate()` / `strict` /
+	 * to `policystack.gen.ts` and is independent of `validate()` / `strict` /
 	 * `suppress`. A single unified walk + declared-vs-used cross-check is
 	 * PS-25.
 	 */
@@ -104,23 +104,23 @@ export type PolicyStackOptions = {
 };
 
 /**
- * Name of the generated module emitted next to the user's `openpolicy.ts`.
+ * Name of the generated module emitted next to the user's `policystack.ts`.
  * The user imports it explicitly; it carries the scanned values and the
  * `@policystack/sdk` type augmentation.
  */
-const GEN_FILENAME = "openpolicy.gen.ts";
+const GEN_FILENAME = "policystack.gen.ts";
 
 /**
- * Common locations for the user's `openpolicy.ts` config, in priority order.
- * The plugin emits `openpolicy.gen.ts` alongside the first one that exists so
+ * Common locations for the user's `policystack.ts` config, in priority order.
+ * The plugin emits `policystack.gen.ts` alongside the first one that exists so
  * the generated file sits next to the config in the editor and in git.
  */
 const CONFIG_CANDIDATES = [
-	"openpolicy.ts",
-	"src/openpolicy.ts",
-	"src/lib/openpolicy.ts",
-	"app/openpolicy.ts",
-	"lib/openpolicy.ts",
+	"policystack.ts",
+	"src/policystack.ts",
+	"src/lib/policystack.ts",
+	"app/policystack.ts",
+	"lib/policystack.ts",
 ];
 
 async function findConfig(root: string): Promise<{ dir: string; file: string | null }> {
@@ -135,8 +135,8 @@ async function findConfig(root: string): Promise<{ dir: string; file: string | n
 }
 
 /**
- * Emits the on-disk `openpolicy.gen.ts` module next to the user's
- * `openpolicy.ts`. The module is imported explicitly by the config and carries
+ * Emits the on-disk `policystack.gen.ts` module next to the user's
+ * `policystack.ts`. The module is imported explicitly by the config and carries
  * the scanned values (`dataCollected` / `thirdParties` / `cookies`) plus a
  * `declare module "@policystack/sdk"` augmentation of `ScannedCollectionKeys` /
  * `ScannedCookieKeys`, so `defineConfig` requires every scanned category to
@@ -147,7 +147,7 @@ async function findConfig(root: string): Promise<{ dir: string; file: string | n
  *
  * The write is atomic: content goes to a unique temp sibling and is then
  * `rename`d over the target. A crashed or partial write (ENOSPC, an EACCES
- * mid-write, …) leaves the previously committed `openpolicy.gen.ts` intact —
+ * mid-write, …) leaves the previously committed `policystack.gen.ts` intact —
  * the last-good output is retained rather than truncated. Throws on failure;
  * callers decide whether to warn-and-continue (build) or skip-and-retry (dev).
  */
@@ -172,10 +172,10 @@ async function writeGenModule(targetDir: string, scanned: Scanned): Promise<void
 /**
  * Vite plugin that scans source files for `@policystack/sdk` `collecting()`,
  * `thirdParty()`, and `defineCookie()` calls at the start of each build and
- * emits the discovered data into an on-disk `openpolicy.gen.ts` module next
- * to the user's `openpolicy.ts`.
+ * emits the discovered data into an on-disk `policystack.gen.ts` module next
+ * to the user's `policystack.ts`.
  *
- * The user imports the generated values explicitly from `./openpolicy.gen`,
+ * The user imports the generated values explicitly from `./policystack.gen`,
  * so the scanned data is an ordinary part of the consumer's own source — no
  * virtual-module interception, no `optimizeDeps`/`ssr.noExternal` pins, and
  * HMR is normal file invalidation. The generated module also augments
@@ -234,8 +234,8 @@ export function policyStack(options: PolicyStackOptions = {}): Plugin {
 	}
 
 	/**
-	 * Re-runs the scan and, if anything changed, rewrites `openpolicy.gen.ts`.
-	 * The user's `openpolicy.ts` imports that module, so Vite picks up the
+	 * Re-runs the scan and, if anything changed, rewrites `policystack.gen.ts`.
+	 * The user's `policystack.ts` imports that module, so Vite picks up the
 	 * write through normal file invalidation — no virtual-module poking and no
 	 * manual full-reload.
 	 */
@@ -247,7 +247,7 @@ export function policyStack(options: PolicyStackOptions = {}): Plugin {
 			// Commit the new in-memory state only once the write succeeds. On
 			// failure `scanned` stays put so the `changed` check re-fires on
 			// the next file event and retries — no permanent disk/memory drift,
-			// and the prior `openpolicy.gen.ts` remains as last-good.
+			// and the prior `policystack.gen.ts` remains as last-good.
 			try {
 				await writeGenModule(resolvedConfigDir, next);
 				scanned = next;
@@ -435,7 +435,7 @@ export function policyStack(options: PolicyStackOptions = {}): Plugin {
 			// event — the very case we most need to re-scan on.
 			server.watcher.add(resolvedSrcDir);
 
-			// Watch the config file too so edits to `openpolicy.ts` re-run
+			// Watch the config file too so edits to `policystack.ts` re-run
 			// validation even when no scanned source has changed.
 			if (resolvedConfigFile) server.watcher.add(resolvedConfigFile);
 

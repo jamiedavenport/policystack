@@ -9,7 +9,7 @@
 		"directory": "packages/cli"
 	},
 	"bin": {
-		"openpolicy": "./dist/cli.js"
+		"policystack": "./dist/cli.js"
 	},
 	"files": [
 		"dist",

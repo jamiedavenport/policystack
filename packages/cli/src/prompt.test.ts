@@ -1,17 +1,17 @@
 import { expect, test } from "vite-plus/test";
 import { buildAgentPrompt } from "./prompt";
 
-const base = { stubRel: "src/openpolicy.ts", llmsRel: "src/openpolicy.llms.txt" };
+const base = { stubRel: "src/policystack.ts", llmsRel: "src/policystack.llms.txt" };
 
 test("prompt always points at the SDK reference and the stub", () => {
 	const out = buildAgentPrompt(base);
-	expect(out).toContain("src/openpolicy.llms.txt");
-	expect(out).toContain("src/openpolicy.ts");
+	expect(out).toContain("src/policystack.llms.txt");
+	expect(out).toContain("src/policystack.ts");
 });
 
 test("prompt has both a config step and a provider-wiring step", () => {
 	const out = buildAgentPrompt(base);
-	expect(out).toContain("1. Generate src/openpolicy.ts");
+	expect(out).toContain("1. Generate src/policystack.ts");
 	expect(out).toContain("2. Wire the provider");
 	// One provider for both concerns — never a separate consent provider.
 	expect(out).toContain("Do NOT add a separate consent");
@@ -30,7 +30,7 @@ test("react → PolicyStackProvider snippet from @policystack/react/provider", (
 	expect(out).toContain('from "@policystack/react/provider"');
 	expect(out).toContain("<PolicyStackProvider config={config}>");
 	// import path is derived from the stub's basename
-	expect(out).toContain('import config from "./openpolicy"');
+	expect(out).toContain('import config from "./policystack"');
 });
 
 test("non-react framework stays generic (no react import path)", () => {

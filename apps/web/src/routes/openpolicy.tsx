@@ -8,7 +8,7 @@ import { highlight } from "../lib/shiki";
 import { pageMeta } from "../lib/seo";
 
 const HERO_SNIPPET = `import { PolicyStack, PrivacyPolicy } from "@policystack/react";
-import openpolicy from "@/openpolicy";
+import openpolicy from "@/policystack";
 
 export function PrivacyPolicyPage() {
   return (
@@ -206,7 +206,7 @@ function PolicyStack() {
 				index="03"
 				commands={[
 					{ tag: "bash", html: installHtml },
-					{ tag: "openpolicy.ts", html: useHtml },
+					{ tag: "policystack.ts", html: useHtml },
 				]}
 				next={{ to: "/opencookies", label: "Pair it with OpenCookies for consent state" }}
 			/>

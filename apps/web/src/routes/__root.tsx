@@ -10,7 +10,7 @@ import { PolicyStackProvider } from "@policystack/react/provider";
 import favicon from "../assets/favicon.svg?url";
 import appCss from "../styles.css?url";
 import { SITE_NAME, SITE_URL } from "../lib/seo";
-import openpolicy from "../openpolicy";
+import openpolicy from "../policystack";
 import { NotFound } from "../components/NotFound";
 import { CookieBanner } from "../components/CookieBanner";
 import { CookiePreferences } from "../components/CookiePreferences";

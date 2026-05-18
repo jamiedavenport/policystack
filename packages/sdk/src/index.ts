@@ -89,7 +89,7 @@ type CompanyInput = Omit<CompanyConfig, "name" | "url" | "contact"> & {
 	contact?: Partial<Contact>;
 };
 
-// The shape of an explicit `import * as scanned from "./openpolicy.gen"`
+// The shape of an explicit `import * as scanned from "./policystack.gen"`
 // passed as the second argument. All optional so the generated namespace
 // (which always has every export) is structurally assignable, and so a
 // hand-written partial works in tests.
@@ -121,7 +121,7 @@ type PolicyStackConfigWithGenerics<
 
 /**
  * The canonical config entrypoint. Pass scanned data as the optional second
- * argument — `import * as scanned from "./openpolicy.gen"` — instead of
+ * argument — `import * as scanned from "./policystack.gen"` — instead of
  * spreading `...dataCollected` / `cookies` / `thirdParties` by hand. The
  * static `import` keeps the gen module's `declare module "@policystack/sdk"`
  * augmentation reachable, so scanned categories are still type-required in

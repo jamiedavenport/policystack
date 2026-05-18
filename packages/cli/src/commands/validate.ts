@@ -7,7 +7,7 @@ import consola from "consola";
 import { resolveStubPath } from "../utils/stub";
 
 /**
- * The machine-readable result of `openpolicy validate`. `issues` is the frozen
+ * The machine-readable result of `policystack validate`. `issues` is the frozen
  * `Issue` shape from `@policystack/core` (Phase 2) verbatim — agents parse the
  * stable `code`/`level` and branch on `ok` (which always tracks the exit code:
  * `ok === false` ⇔ exit 1). `loadError` is set instead of `issues` when the
@@ -39,7 +39,7 @@ async function loadConfig(
 	try {
 		const { mod } = await bundleRequire({
 			filepath: file,
-			notExternal: [/^@openpolicy\//],
+			notExternal: [/^@policystack\//],
 			esbuildOptions: {
 				platform: "node",
 				// esbuild logs to stderr by default; silence it so `--json`
@@ -80,7 +80,7 @@ function reportHuman(result: ValidateResult): void {
 }
 
 /**
- * The pure core of `openpolicy validate`: resolve the config path, load it, run
+ * The pure core of `policystack validate`: resolve the config path, load it, run
  * the frozen {@link validate}, and return the {@link ValidateResult}. No I/O
  * side effects (no stdout, no `process.exitCode`) — `runValidate` adds those,
  * and the `policystack mcp` `validate_config` tool (PS-29) reuses *this*
@@ -100,7 +100,7 @@ export async function resolveValidateResult(args: {
 			issues: [],
 			errorCount: 0,
 			warningCount: 0,
-			loadError: `No config found at ${file} — pass a path or run \`openpolicy init\` first.`,
+			loadError: `No config found at ${file} — pass a path or run \`policystack init\` first.`,
 		};
 	}
 	const { config, loadError } = await loadConfig(file);
@@ -147,14 +147,14 @@ export const validateCommand = defineCommand({
 	meta: {
 		name: "validate",
 		description:
-			"Validate an openpolicy config and report issues. Exits non-zero when there are errors; --json emits structured issues for unattended agent loops.",
+			"Validate an policystack config and report issues. Exits non-zero when there are errors; --json emits structured issues for unattended agent loops.",
 	},
 	args: {
 		config: {
 			type: "positional",
 			required: false,
 			description:
-				"Path to the openpolicy config (defaults to src/openpolicy.ts, or openpolicy.ts if there is no src/ directory)",
+				"Path to the policystack config (defaults to src/policystack.ts, or policystack.ts if there is no src/ directory)",
 		},
 		cwd: {
 			type: "string",

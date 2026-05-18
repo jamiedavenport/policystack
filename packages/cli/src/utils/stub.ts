@@ -8,9 +8,9 @@ export function resolveStubPath(cwd: string, outOverride?: string): string {
 	}
 	const srcDir = join(cwd, "src");
 	if (existsSync(srcDir) && statSync(srcDir).isDirectory()) {
-		return join(srcDir, "openpolicy.ts");
+		return join(srcDir, "policystack.ts");
 	}
-	return join(cwd, "openpolicy.ts");
+	return join(cwd, "policystack.ts");
 }
 
 export function getStubContents(today = new Date().toISOString().slice(0, 10)) {
@@ -45,7 +45,7 @@ export default defineConfig({
 	// automatic re-prompt on policy change, AND the consent mechanism (banner /
 	// preference panel / withdrawal) — so consent is never configured by hand.
 	// Import \`LegalBases\` from "@policystack/sdk" to use the values below; pass
-	// a generated \`./openpolicy.gen\` module as defineConfig's second argument
+	// a generated \`./policystack.gen\` module as defineConfig's second argument
 	// to merge in scanned categories.
 	//
 	// cookies: {

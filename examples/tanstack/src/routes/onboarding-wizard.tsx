@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { cookies, dataCollected, thirdParties } from "../openpolicy.gen";
+import { cookies, dataCollected, thirdParties } from "../policystack.gen";
 
 export const Route = createFileRoute("/onboarding-wizard")({
 	component: RouteComponent,

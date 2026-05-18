@@ -15,8 +15,8 @@ export type Scanned = {
 };
 
 /**
- * Renders the full source of the on-disk `openpolicy.gen.ts` module emitted
- * next to the user's `openpolicy.ts`. The module is imported explicitly by the
+ * Renders the full source of the on-disk `policystack.gen.ts` module emitted
+ * next to the user's `policystack.ts`. The module is imported explicitly by the
  * config and carries two things:
  *
  *  1. The scanned runtime values (`dataCollected` / `thirdParties` /

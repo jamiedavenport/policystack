@@ -4,7 +4,7 @@ description: The canonical list of jurisdiction codes OpenPolicy accepts and wha
 product: openpolicy
 ---
 
-OpenPolicy uses ISO-style region codes for the `jurisdictions` field in your `openpolicy.ts`. Every code in the list below is **type-valid** — TypeScript will accept it and the runtime validator won't reject it. Only some of them currently trigger **shipped content** (jurisdiction-specific policy sections and user rights); the rest are reserved for future releases.
+OpenPolicy uses ISO-style region codes for the `jurisdictions` field in your `policystack.ts`. Every code in the list below is **type-valid** — TypeScript will accept it and the runtime validator won't reject it. Only some of them currently trigger **shipped content** (jurisdiction-specific policy sections and user rights); the rest are reserved for future releases.
 
 There is no `"us"` code. US privacy law is state-level — pick the specific state codes that apply to your users (today: `"us-ca"` for California). There are also no regulation-name aliases like `"gdpr"` or `"ccpa"` — use the region code the regulation applies to.
 

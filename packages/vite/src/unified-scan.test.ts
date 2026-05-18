@@ -43,7 +43,7 @@ describe("unified scanner — one walk, two outputs", () => {
 
 		const { scanned, consent } = await scanner(true).fullScan();
 
-		// Policy half (feeds openpolicy.gen.ts)
+		// Policy half (feeds policystack.gen.ts)
 		expect(scanned.dataCollected).toEqual({ Account: ["A"] });
 		// Consent half (ungated tracking import) — same walk
 		expect(consent.vendors.map((v) => v.vendor)).toContain("posthog");

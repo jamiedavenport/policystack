@@ -4,13 +4,13 @@
 // `<PolicyStackProvider>` in src/routes/__root.tsx. The only thing that differs
 // per framework is that provider wiring — the config below is framework-neutral.
 //
-// Scanned data categories, cookies and third parties come from ./openpolicy.gen,
+// Scanned data categories, cookies and third parties come from ./policystack.gen,
 // which the `policyStack()` Vite plugin generates by scanning the source. They
 // are merged in by passing the module as defineConfig's second argument — no
 // hand-spreading. This file is also the project's scanner regression net —
-// keep the `openpolicy.gen` import.
+// keep the `policystack.gen` import.
 import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
-import * as scanned from "./openpolicy.gen";
+import * as scanned from "./policystack.gen";
 
 export default defineConfig(
 	{

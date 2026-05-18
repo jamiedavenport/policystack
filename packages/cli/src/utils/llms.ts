@@ -6,7 +6,7 @@ import { renderLlmsTxt } from "@policystack/sdk";
 // The SDK reference is written next to the stub so a project-relative path in
 // the prompt resolves regardless of where the stub lands (root or src/).
 export function resolveLlmsPath(stubPath: string): string {
-	return join(dirname(stubPath), "openpolicy.llms.txt");
+	return join(dirname(stubPath), "policystack.llms.txt");
 }
 
 type WriteLlmsResult = { path: string; written: boolean };

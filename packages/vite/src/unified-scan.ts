@@ -49,7 +49,7 @@ export type UnifiedScanOptions = {
 	extensions: string[];
 	/** Extra ignored directory basenames for policy scoping. */
 	ignore: string[];
-	/** Absolute path of `openpolicy.gen.ts` (never a policy input). */
+	/** Absolute path of `policystack.gen.ts` (never a policy input). */
 	genFile: string | null;
 	/** Whether the consent rule set runs (the `consent` plugin option). */
 	consentEnabled: boolean;

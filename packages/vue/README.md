@@ -13,7 +13,7 @@ bun add @policystack/vue @policystack/sdk
 ## Usage
 
 ```ts
-// openpolicy.ts
+// policystack.ts
 import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
 
 export default defineConfig({

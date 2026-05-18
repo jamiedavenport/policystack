@@ -20,7 +20,7 @@ import { resolveValidateResult } from "../commands/validate";
 import { getStubContents } from "../utils/stub";
 
 /**
- * The frozen tool surface of `openpolicy mcp` (PS-29). Exactly these six names;
+ * The frozen tool surface of `policystack mcp` (PS-29). Exactly these six names;
  * the drift test pins this list, and every enum below is built at *runtime*
  * from the frozen core tables — never a hand-typed copy — so a §6 union change
  * without a matching MCP update fails CI (the same guarantee PS-27 gave
@@ -56,9 +56,9 @@ export function registerTools(server: McpServer): void {
 	server.registerTool(
 		"validate_config",
 		{
-			title: "Validate an openpolicy config",
+			title: "Validate an policystack config",
 			description:
-				"Run the frozen validate() over the project's openpolicy config and return the structured ValidateResult ({ ok, config, issues, errorCount, warningCount, loadError }). Same result the `openpolicy validate --json` command emits. Use explain_issue for any returned code.",
+				"Run the frozen validate() over the project's policystack config and return the structured ValidateResult ({ ok, config, issues, errorCount, warningCount, loadError }). Same result the `policystack validate --json` command emits. Use explain_issue for any returned code.",
 			inputSchema: {
 				cwd: z
 					.string()
@@ -67,7 +67,7 @@ export function registerTools(server: McpServer): void {
 				config: z
 					.string()
 					.optional()
-					.describe("Path to the config (defaults to src/openpolicy.ts, else openpolicy.ts)"),
+					.describe("Path to the config (defaults to src/policystack.ts, else policystack.ts)"),
 			},
 		},
 		async ({ cwd, config }) => {
@@ -79,9 +79,9 @@ export function registerTools(server: McpServer): void {
 	server.registerTool(
 		"scaffold_config",
 		{
-			title: "Scaffold a starter openpolicy config",
+			title: "Scaffold a starter policystack config",
 			description:
-				"Return the contents of a minimal `defineConfig()` starter (the same stub `openpolicy init` writes). Set includeLlmsTxt to also get the canonical SDK reference to fill it in. Does not write any files.",
+				"Return the contents of a minimal `defineConfig()` starter (the same stub `policystack init` writes). Set includeLlmsTxt to also get the canonical SDK reference to fill it in. Does not write any files.",
 			inputSchema: {
 				includeLlmsTxt: z
 					.boolean()
@@ -91,7 +91,7 @@ export function registerTools(server: McpServer): void {
 		},
 		async ({ includeLlmsTxt }) =>
 			result({
-				filename: "openpolicy.ts",
+				filename: "policystack.ts",
 				contents: getStubContents(),
 				...(includeLlmsTxt ? { llmsTxt: renderLlmsTxt() } : {}),
 			}),

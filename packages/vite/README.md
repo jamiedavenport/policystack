@@ -2,7 +2,7 @@
 
 > Vite plugin that scans source files for [OpenPolicy](https://openpolicy.sh) `collecting()`, `thirdParty()`, `defineCookie()`, and `sharing()` calls and populates the SDK's auto-collected registry at build time.
 
-At `buildStart` the plugin walks your `srcDir`, extracts every `collecting()` / `thirdParty()` / `defineCookie()` / `sharing()` call from `@policystack/sdk`, and emits the merged result (`dataCollected` / `thirdParties` / `cookies` / `sharing`) into the on-disk `openpolicy.gen.ts` your config imports. `sharing(key, recipient, value)` marks personal data _leaving_ to a third party at the egress point — the data-flow edge that feeds the CCPA/CPRA sell/share posture, distinct from `thirdParty()` which only declares that a vendor exists.
+At `buildStart` the plugin walks your `srcDir`, extracts every `collecting()` / `thirdParty()` / `defineCookie()` / `sharing()` call from `@policystack/sdk`, and emits the merged result (`dataCollected` / `thirdParties` / `cookies` / `sharing`) into the on-disk `policystack.gen.ts` your config imports. `sharing(key, recipient, value)` marks personal data _leaving_ to a third party at the egress point — the data-flow edge that feeds the CCPA/CPRA sell/share posture, distinct from `thirdParty()` which only declares that a vendor exists.
 
 ## Install
 
@@ -34,7 +34,7 @@ Astro users: add it the same way under `vite.plugins` in `astro.config.mjs`.
 | `extensions`                  | `string[]`    | `[".ts", ".tsx"]` | File extensions to scan.                                                                                                                        |
 | `ignore`                      | `string[]`    | `[]`              | Extra directory basenames to skip (appended to the built-in list: `node_modules`, `dist`, `.git`, `.next`, `.output`, `.svelte-kit`, `.cache`). |
 | `thirdParties.usePackageJson` | `boolean`     | `false`           | Auto-detect third-party services from `package.json` dependencies against the built-in registry (Stripe, Sentry, PostHog, etc.).                |
-| `validate`                    | `boolean`     | `true`            | Validate the resolved `openpolicy.ts` after each scan (see [Validation](#validation)).                                                          |
+| `validate`                    | `boolean`     | `true`            | Validate the resolved `policystack.ts` after each scan (see [Validation](#validation)).                                                         |
 | `strict`                      | `boolean`     | `false`           | Promote remaining warnings to errors, so they fail `vite build` like real errors.                                                               |
 | `suppress`                    | `IssueCode[]` | `[]`              | Issue codes to drop entirely, at any level (errors included). Applied before `strict`.                                                          |
 

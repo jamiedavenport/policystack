@@ -36,11 +36,11 @@ export function applyIssuePolicy(issues: Issue[], policy: IssuePolicy): Issue[] 
 }
 
 /**
- * Loads the user's `openpolicy.ts` via bundle-require, then runs the single
+ * Loads the user's `policystack.ts` via bundle-require, then runs the single
  * `validate()` exported from `@policystack/core` against the resolved config.
- * The config imports its scanned values from the on-disk `./openpolicy.gen`
+ * The config imports its scanned values from the on-disk `./policystack.gen`
  * module, so bundle-require resolves them as ordinary relative source — no
- * interception shim is needed. The caller must have written `openpolicy.gen.ts`
+ * interception shim is needed. The caller must have written `policystack.gen.ts`
  * (via `writeGenModule`) before calling this. `validate()` operates on the
  * flat config and emits each code at most once, so no dedupe pass is needed.
  * The raw result is then run through {@link applyIssuePolicy} with the caller's

@@ -5,7 +5,7 @@ import type { Scanned } from "./scanned";
 
 /**
  * The §4.3 declared-vs-used cross-check codes (PS-25). The OSS differentiator:
- * the policy declared in `openpolicy.ts` is checked *both ways* against what
+ * the policy declared in `policystack.ts` is checked *both ways* against what
  * the single walk actually found in the code. These live here, not in core's
  * frozen config-only `IssueCode` union — drift needs scanned data + config —
  * but they ride the same `strict` / `suppress` policy so a team can commit an
@@ -87,7 +87,7 @@ export function crossCheck(
 		// used → declared (vendor)
 		if (!declaredVendors.has(name)) {
 			const suggestion = rec
-				? `Add to openpolicy.ts thirdParties:\n` +
+				? `Add to policystack.ts thirdParties:\n` +
 					`    { name: ${JSON.stringify(rec.name)}, purpose: ${JSON.stringify(
 						rec.purpose,
 					)}, policyUrl: ${JSON.stringify(rec.policyUrl)} }`
@@ -191,7 +191,7 @@ export function applyDriftPolicy(
 /**
  * Formats a drift finding for the terminal — same greppable `[policystack]`
  * prefix as `formatIssue`, with an optional `file:line:col` and the
- * actionable "add this to openpolicy.ts" suggestion.
+ * actionable "add this to policystack.ts" suggestion.
  */
 export function formatDrift(f: DriftFinding): string {
 	const loc = f.file && f.line !== undefined ? ` ${f.file}:${f.line}:${f.column ?? 0}` : "";

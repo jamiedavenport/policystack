@@ -3,7 +3,7 @@ import pkgJson from "../package.json";
 
 export const mainCommand = defineCommand({
 	meta: {
-		name: "openpolicy",
+		name: "policystack",
 		version: pkgJson.version,
 		description:
 			"Install PolicyStack and print a setup prompt for coding agents. PolicyStack generates policy documents from your config — it does not provide legal advice. Have a lawyer review your policies before publication. See https://openpolicy.sh/legal-notice",

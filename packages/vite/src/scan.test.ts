@@ -79,7 +79,7 @@ test("returns absolute paths", async () => {
 
 // FROZEN 1.0 CONTRACT (1.md §6 / §7.6). The multi-file merge order is the
 // lexicographic sort of absolute source paths; it determines `dataCollected`
-// / `thirdParties` array order in `openpolicy.gen.ts` and therefore the
+// / `thirdParties` array order in `policystack.gen.ts` and therefore the
 // policy `version` hash. This test pins that order so a future refactor that
 // reorders the walk fails loudly. Do not relax it without a deliberate
 // breaking-change decision.

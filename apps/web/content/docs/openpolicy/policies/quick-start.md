@@ -16,7 +16,7 @@ bunx shadcn@latest add @policystack/privacy-policy
 bunx shadcn@latest add @policystack/cookie-policy
 ```
 
-Each command installs the component, a `policy-components.tsx` base renderer, and an `openpolicy.ts` starter config. Fill out the config then wrap your app with the `<OpenPolicy>` provider:
+Each command installs the component, a `policy-components.tsx` base renderer, and an `policystack.ts` starter config. Fill out the config then wrap your app with the `<OpenPolicy>` provider:
 
 ```tsx
 import { OpenPolicy } from "@policystack/react";
