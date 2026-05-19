@@ -1,5 +1,7 @@
 # @policystack/sdk
 
+## 1.0.1
+
 ## Unreleased (1.0 / PolicyStack — PS-30)
 
 - **Breaking.** `defineConfig(config, scanned?)` takes the generated module as

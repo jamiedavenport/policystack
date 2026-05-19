@@ -1,6 +1,6 @@
 {
 	"name": "@policystack/sdk",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Public API for defining privacy policies with PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {

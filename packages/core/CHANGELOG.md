@@ -1,5 +1,15 @@
 # @policystack/core
 
+## 1.0.1
+
+### Patch Changes
+
+- f3e0778: Fix `TypeError: process.cwd is not a function` in the browser: remove the host
+  `package.json` auto-seed of `company.{name,url,contact.email}`. `defineConfig()`
+  / `normalizePolicyStackConfig()` is now pure and browser-safe. Set
+  `company.name`, `company.url`, and `company.contact.email` explicitly in your
+  PolicyStack config; `validate()` reports any that are missing.
+
 ## Unreleased (1.0 / PolicyStack — PS-30)
 
 - **Breaking.** `consentMechanism` is now **derived** from the cookie posture

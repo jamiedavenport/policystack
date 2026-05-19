@@ -1,6 +1,6 @@
 {
 	"name": "@policystack/angular",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Angular consent service and components for PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {

@@ -1,5 +1,12 @@
 # @policystack/vite
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [f3e0778]
+  - @policystack/core@1.0.1
+
 ## 0.0.34
 
 ### Patch Changes
