@@ -10,7 +10,7 @@ Policy generates privacy policies and cookie policies from TypeScript config fil
 
 - **Render as components** — drop `<PrivacyPolicy />` or `<CookiePolicy />` directly into your React or Vue app
 - **Auto-collect** — scan your source for `collecting()` and `thirdParty()` annotations at build time so the policy stays in sync with the code
-- **Add a cookie banner** — install the shadcn registry component for a consent-aware banner with a preferences panel
+- **Pair with a consent banner** — the same config drives a [Consent](/docs/consent) banner and preferences panel, with no second config
 
 ## Get set up in one command
 

@@ -59,4 +59,4 @@ export function CookiePolicyPage() {
 }
 ```
 
-Looking to add a consent banner? See [Cookie Banner →](/docs/policy/cookies/overview).
+Looking to add a consent banner? The same `cookies` config drives it — see the [Consent docs →](/docs/consent).
