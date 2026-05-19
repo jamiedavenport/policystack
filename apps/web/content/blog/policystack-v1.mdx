@@ -1,0 +1,125 @@
+---
+title: "OpenPolicy and OpenCookies are now PolicyStack 1.0"
+excerpt: "Two projects became one. `@openpolicy/*` and `@opencookies/*` are now `@policystack/*` — one install, one typed config, one provider. 1.0 freezes the public surface: the Document AST, the validator, the jurisdiction table, and the slot contract are stable, and semver finally means something."
+date: "2026-05-19"
+tag: release
+upNext: "PolicyStack Cloud — the optional hosted control plane that sits on top of the OSS pieces."
+---
+
+For most of the last year there were two projects. OpenPolicy compiled a typed config into a privacy policy and a cookie policy. OpenCookies was a headless consent state machine that gated the cookies those policies described. They were designed to fit together, shared a worldview, and shipped on separate version lines anyway — two scopes, two install lines, two configs you had to keep from drifting apart by hand.
+
+1.0 ends that. **OpenPolicy and OpenCookies are now PolicyStack.** One name, one npm scope, one typed config, one provider. And because 1.0 is a _stable_ release rather than another `0.0.x`, the public surface is now frozen and semver actually means something — the rest of this post is what changed and what that promise covers.
+
+## One name
+
+The rename is the visible part. `@openpolicy/*` and `@opencookies/*` are gone; everything ships under `@policystack/*`. The site moved from openpolicy.sh to [policystack.dev](https://policystack.dev). What used to be two projects is now three building blocks under one roof:
+
+- **[PolicyStack](/docs/policy)** — your privacy and cookie policy as a typed config, rendered as components or Markdown.
+- **[PolicyStack Consent](/docs/consent)** — the headless consent state machine. Sub-4kb core, adapters for React, Vue, Solid, Svelte, and Angular, a Vite plugin that fails the build on an ungated cookie.
+- **PolicyStack Cloud** — an optional hosted control plane for versioning, audit trails, and consent analytics across every app in your stack. It sits on top of the OSS pieces; you never need it to use them.
+
+Everything except Cloud stays Apache-2.0.
+
+For an existing app, the migration is the one breaking change you do by hand: a find-and-replace of the npm scope (`@openpolicy/` → `@policystack/`, `@opencookies/` → `@policystack/`) and the provider/import names below. There is no codemod, on purpose — the rename is a search-and-replace you can read in the PR diff, which is exactly the property PolicyStack is trying to preserve everywhere else. Every _other_ thing that broke on the road to 1.0 broke deliberately, and — see below — stops breaking now.
+
+## One config, one provider
+
+The bigger change is structural. OpenCookies folded into `@policystack/core` as a `./consent` subpath. The consent categories the banner enforces are no longer a second config you maintain alongside the policy — they're derived from the same `defineConfig` call that produces the privacy and cookie policy:
+
+```ts file="policystack.ts"
+import { defineConfig, LegalBases, ContractPrerequisite, Voluntary } from "@policystack/sdk";
+
+export default defineConfig({
+	company: { name: "Acme, Inc.", contact: { email: "privacy@acme.com" } },
+	effectiveDate: "2026-01-01",
+	jurisdictions: ["eea", "uk"],
+	data: {
+		collected: {
+			"Account Information": ["Name", "Email address"],
+			"Usage Data": ["Pages visited", "IP address"],
+		},
+		context: {
+			"Account Information": {
+				purpose: "To authenticate users and send service notifications.",
+				lawfulBasis: LegalBases.Contract,
+				retention: "Until account deletion",
+				provision: ContractPrerequisite("We cannot operate your account."),
+			},
+			"Usage Data": {
+				purpose: "To understand product usage and improve the service.",
+				lawfulBasis: LegalBases.LegitimateInterests,
+				retention: "90 days",
+				provision: Voluntary("None — your service is unaffected."),
+			},
+		},
+	},
+	cookies: {
+		used: { essential: true, analytics: true, marketing: false },
+		context: {
+			essential: { lawfulBasis: LegalBases.LegalObligation },
+			analytics: { lawfulBasis: LegalBases.Consent },
+		},
+	},
+});
+```
+
+On the React side there is now a single provider for that single config:
+
+```tsx file="app/providers.tsx"
+import { PolicyStackProvider } from "@policystack/react/provider";
+import config from "@/policystack";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+	return <PolicyStackProvider config={config}>{children}</PolicyStackProvider>;
+}
+```
+
+`<PolicyStackProvider>` supplies the policy context that `<PrivacyPolicy />` and `<CookiePolicy />` read, _and_ — when the config declares `cookies` — the consent store behind `useConsent`, `useCategory`, and `<ConsentGate>`. Declare cookies and you get a consent runtime; omit them and no store is created and `useConsent` correctly throws. The banner's category list and the cookie policy's category list cannot drift apart because there is only one list.
+
+The merge didn't cost tree-shaking. `@policystack/react` keeps three entries — `./policy`, `./consent`, and the new `./provider` that unions them. A page that imports only `@policystack/react/policy` still shakes the entire consent runtime out of its bundle; `/provider` is the deliberate seam for apps that want both.
+
+## What 1.0 actually promises
+
+"Stable" is a claim about what _won't_ move. The pre-1.0 line spent its breaking changes deliberately, getting four shapes right so they could be frozen:
+
+- **The Document AST is locked.** `compilePrivacyPolicy` / `compileCookiePolicy` return a `Document → DocumentSection → ContentNode → InlineNode` tree whose shape is now part of the contract. The Remix and Expo integrations walk that tree by hand; 1.0 means that walker keeps compiling.
+- **One validator, one frozen issue registry.** Three overlapping validators collapsed into a single `validate()` over the flat config, and every diagnostic it can emit is a member of a frozen `IssueCode` union backed by an `ISSUE_CODES` registry. New checks can be added; existing codes won't be renamed or repurposed out from under your CI.
+- **One canonical jurisdiction table.** A single `JurisdictionId` union (eleven members) with one capability table replaced the old parallel `Jurisdiction` types. `eu` is now `eea`; the set is closed and typed, so an unsupported jurisdiction is a compile error, not a silent no-op.
+- **One slot contract.** React, Vue, and Svelte derive their component-override types from one slot definition in core, and the dead `jsx` output format is gone. A custom renderer written against 1.0 has a stable set of slots to implement.
+
+Underneath, the six near-duplicate renderer tree-walkers became one `visit()`, so the Markdown, React, and other renderers can't disagree about how a node renders. None of that is user-visible on its own — it's the structural reason the surface above can stay still. From here, breaking changes follow semver.
+
+## Less to configure
+
+1.0 also derives more so you write less. Things that used to be required fields are now inferred and overridable:
+
+- `consentMechanism` is derived from your cookie posture instead of declared.
+- `company.name`, `company.url`, and `company.contact.email` seed from your `package.json` when you don't pass them.
+- Consent gating is derived from each category's **lawful basis**, not from a magic category key — a category on `LegalBases.Consent` is gated; one on `LegalObligation` isn't, because that's what the law actually keys on.
+- Jurisdiction posture (opt-in vs. opt-out defaults) comes from the jurisdiction table rather than per-field configuration.
+
+The honest version of "minimal config" is the [tanstack example](https://github.com/jamiedavenport/policystack/tree/v1/examples/tanstack): it now declares only what's genuinely essential, because everything else has a defensible default.
+
+## Built for agents
+
+PolicyStack's bet is that a policy you can grep, diff, and test is also a policy a coding agent can read and keep honest. 1.0 makes that explicit, and every piece of it is generated from the same frozen SDK types as the rest of the release, so it can't reference a jurisdiction or diagnostic code that no longer exists:
+
+- **`llms.txt`** ships inside `@policystack/sdk`, is served at [policystack.dev/sdk.txt](https://policystack.dev/sdk.txt), and the CLI writes a local copy and points your agent at it.
+- **An [AI skill pack](/docs/policy/agent-skills)** — a Claude Code plugin with closed-loop procedures for setup, auditing, jurisdiction posture, and instrumentation.
+- **An MCP server** (`policystack mcp`) exposing six frozen tools so an agent can query the SDK instead of guessing at it.
+- **`policystack validate --json`** emits structured issues and a non-zero exit code — the same validator your editor uses, wired for CI and for agents.
+
+We didn't design PolicyStack for AI. We designed it so a human could trust that what's rendered matches what's tested. An agent reading the same typed config is just what falls out.
+
+## The honest caveat
+
+Unchanged at 1.0 and not changing: PolicyStack generates documents and manages consent state. It does not give legal advice. The rendered privacy policy is a document — have counsel review it before you rely on it, in every jurisdiction and every locale you serve. 1.0 makes the tooling stable; it does not make the output a substitute for a lawyer.
+
+## Where to go next
+
+- **[PolicyStack docs](/docs/policy)** — the SDK, the renderer, the Markdown export, the CLI.
+- **[PolicyStack Consent docs](/docs/consent)** — the headless core, storage adapters, script gating, and the framework adapters (React, Vue, Solid, Svelte, Angular).
+- **[Quick start](/docs/policy/cli)** — `bunx @policystack/cli init` installs the right packages for your stack, writes a starter `policystack.ts`, and prints a prompt you can hand to a coding agent.
+- **[GitHub](https://github.com/jamiedavenport/policystack)** — Apache-2.0. The `v1` branch is the 1.0 line. Issues and PRs welcome.
+
+The bet PolicyStack makes is that privacy and consent want to look like everything else in your repo: typed, diffable, testable, owned by engineering rather than a vendor dashboard. For a year that bet was split across two projects on two version lines. 1.0 is the point where it's one library, one config, one frozen surface — and the only thing left to keep honest is your own data practices, which was always the part that mattered.
