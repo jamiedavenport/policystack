@@ -1,4 +1,3 @@
-import { type HostPackageMeta, readHostPackageMeta } from "./host-package";
 import { computeCookieVersion, computePrivacyVersion } from "./policy-version";
 import type { CompanyConfig, ConsentMechanism, PolicyStackConfig } from "./types";
 import { isConsentGated } from "./types";
@@ -20,31 +19,29 @@ export function deriveConsentMechanism(config: PolicyStackConfig): ConsentMechan
 	return anyGated ? { hasBanner: true, hasPreferencePanel: true, canWithdraw: true } : undefined;
 }
 
-// Seed company.{name,url,contact.email} from the host package.json as
-// overridable defaults. An explicit config value always wins; package.json
-// only fills a gap (empty string counts as a gap so the CLI stub's "" reach
-// the seed). legalName/address are NEVER seeded — a package.json cannot supply
-// a registered legal entity name or address.
-export function seedCompany(
-	company: CompanyConfig,
-	meta: HostPackageMeta = readHostPackageMeta(),
-): CompanyConfig {
+// Normalize `company` into the shape downstream consumers (validate(), the
+// policy renderers) require: `name`/`contact.email` are always strings (an
+// omitted/empty value becomes "" so validate()'s `company-name-required` /
+// `company-contact-required` checks fire), `url` stays `string | undefined`.
+// No host package.json is read — normalize() is a pure, browser-safe seam
+// (it runs in the client bundle via defineConfig()).
+export function seedCompany(company: CompanyConfig): CompanyConfig {
 	return {
 		...company,
-		name: company.name || meta.name || "",
-		url: company.url ?? meta.url,
+		name: company.name || "",
+		url: company.url ?? undefined,
 		contact: {
 			...company.contact,
-			email: company.contact?.email || meta.email || "",
+			email: company.contact?.email || "",
 		},
 	};
 }
 
 // The single normalization seam, applied at the defineConfig (sdk) boundary so
 // every downstream consumer — the §4.1 bridge, buildConsent(), the policy
-// renderers — observes one internally-consistent config. It (1) seeds
-// `company` from package.json, (2) derives `consentMechanism` from the cookie
-// posture, then (3) fills `privacyVersion`/`cookieVersion` with stable content
+// renderers — observes one internally-consistent config. It (1) normalizes
+// `company` into its type-safe shape, (2) derives `consentMechanism` from the
+// cookie posture, then (3) fills `privacyVersion`/`cookieVersion` with stable content
 // hashes unless set explicitly. Versions are computed last, after
 // `consentMechanism` is derived, because the cookie hash slice covers it.
 // Idempotent: the hash slices exclude the version fields, so

@@ -14,9 +14,9 @@ import * as scanned from "./policystack.gen";
 
 export default defineConfig(
 	{
-		// Your legal entity — printed verbatim in both policies. `url` is the new
-		// company.url field (rendered in the contact section); `name`/`url`/
-		// `contact.email` would otherwise be seeded from package.json when omitted.
+		// Your legal entity — printed verbatim in both policies. `url` is the
+		// company.url field (rendered in the contact section). Set `name`,
+		// `url`, and `contact.email` explicitly; validate() flags any missing.
 		company: {
 			name: "Acme Inc.",
 			legalName: "Acme Corporation",

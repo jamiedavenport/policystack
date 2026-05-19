@@ -36,13 +36,13 @@ const fixture: PolicyStackConfig = {
 	thirdParties: [],
 };
 
-test("defineConfig preserves input fields (company seeded, consent derived)", () => {
+test("defineConfig preserves input fields (company normalized, consent derived)", () => {
 	const result = defineConfig(fixture);
 	expect(result.effectiveDate).toBe(fixture.effectiveDate);
 	expect(result.jurisdictions).toEqual(fixture.jurisdictions);
 	expect(result.data).toEqual(fixture.data);
 	expect(result.cookies).toEqual(fixture.cookies);
-	// company is seeded (explicit values kept), consentMechanism is derived.
+	// company is normalized (explicit values kept), consentMechanism is derived.
 	expect(result.company.name).toBe("Acme Inc.");
 	expect(result.company.contact.email).toBe("privacy@acme.com");
 });
@@ -164,16 +164,18 @@ test("defineConfig derives consentMechanism from the cookie posture", () => {
 	expect(essentialOnly.consentMechanism).toBeUndefined();
 });
 
-test("defineConfig seeds company from package.json; an explicit value wins", () => {
-	// cwd is packages/sdk under `vp run -r test`; its package.json name is
-	// "@policystack/sdk" and it has no homepage/author.
-	const seeded = defineConfig({
+test("defineConfig normalizes company shape; no host package.json is read", () => {
+	// An omitted `name` normalizes to "" (so validate() flags it) — it is NOT
+	// auto-filled from the host package.json. This keeps defineConfig() pure
+	// and browser-safe (no process.cwd / node:fs in the client bundle).
+	const normalized = defineConfig({
 		...fixture,
 		company: { legalName: "L Corp", address: "1 St", contact: { email: "e@x.com" } },
 	});
-	expect(seeded.company.name).toBe("@policystack/sdk");
-	expect(seeded.company.legalName).toBe("L Corp");
+	expect(normalized.company.name).toBe("");
+	expect(normalized.company.legalName).toBe("L Corp");
 
+	// Explicit values still pass through unchanged.
 	expect(defineConfig(fixture).company.name).toBe("Acme Inc.");
 });
 

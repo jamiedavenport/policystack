@@ -73,15 +73,10 @@ test("deriveConsentMechanism: a disabled gated key is ignored", () => {
 	).toBeUndefined();
 });
 
-// --- seedCompany (meta injected for determinism) ---
+// --- seedCompany (pure: normalize company shape) ---
 
-test("seedCompany: explicit values always win over package.json", () => {
-	expect(
-		seedCompany(
-			{ ...company, url: "https://explicit.example" },
-			{ name: "pkg-name", url: "https://pkg.example", email: "pkg@x.com" },
-		),
-	).toEqual({
+test("seedCompany: explicit values pass through unchanged", () => {
+	expect(seedCompany({ ...company, url: "https://explicit.example" })).toEqual({
 		name: "Acme Inc.",
 		legalName: "Acme Corporation",
 		address: "123 Main St",
@@ -90,25 +85,31 @@ test("seedCompany: explicit values always win over package.json", () => {
 	});
 });
 
-test("seedCompany: empty/absent fields fall back to package.json; legalName/address never seeded", () => {
+test('seedCompany: empty name/email normalize to ""; legalName/address untouched', () => {
 	expect(
-		seedCompany(
-			{ name: "", legalName: "Acme Corporation", address: "123 Main St", contact: { email: "" } },
-			{ name: "acme-app", url: "https://acme.example", email: "dev@acme.example" },
-		),
+		seedCompany({
+			name: "",
+			legalName: "Acme Corporation",
+			address: "123 Main St",
+			contact: { email: "" },
+		}),
 	).toEqual({
-		name: "acme-app",
+		name: "",
 		legalName: "Acme Corporation",
 		address: "123 Main St",
-		url: "https://acme.example",
-		contact: { email: "dev@acme.example" },
+		url: undefined,
+		contact: { email: "" },
 	});
 });
 
-test("seedCompany: no package.json meta and empty fields → empty strings, no url", () => {
-	expect(
-		seedCompany({ name: "", legalName: "L", address: "A", contact: { email: "" } }, {}),
-	).toEqual({ name: "", legalName: "L", address: "A", url: undefined, contact: { email: "" } });
+test("seedCompany: empty fields → empty strings, no url", () => {
+	expect(seedCompany({ name: "", legalName: "L", address: "A", contact: { email: "" } })).toEqual({
+		name: "",
+		legalName: "L",
+		address: "A",
+		url: undefined,
+		contact: { email: "" },
+	});
 });
 
 // --- normalizePolicyStackConfig ---
@@ -152,4 +153,15 @@ test("normalizePolicyStackConfig keeps an explicit version override", () => {
 	expect(normalizePolicyStackConfig({ ...base, privacyVersion: "pinned" }).privacyVersion).toBe(
 		"pinned",
 	);
+});
+
+test("normalize is browser-safe: does not call process.cwd", () => {
+	const orig = process.cwd;
+	// @ts-expect-error simulate a browser global with no cwd
+	process.cwd = undefined;
+	try {
+		expect(() => normalizePolicyStackConfig(base)).not.toThrow();
+	} finally {
+		process.cwd = orig;
+	}
 });

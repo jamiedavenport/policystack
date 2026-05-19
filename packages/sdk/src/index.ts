@@ -120,10 +120,10 @@ type PolicyStackConfigWithGenerics<
  * augmentation reachable, so scanned categories are still type-required in
  * `data.context`. The returned config is normalized by
  * {@link normalizePolicyStackConfig}: `company.{name,url,contact.email}` are
- * seeded from the host package.json (an explicit value always wins),
- * `consentMechanism` is derived from the cookie posture, and
- * `privacyVersion`/`cookieVersion` are filled with stable content hashes
- * unless set explicitly.
+ * set explicitly and only normalized to their type-safe shape (a pure,
+ * browser-safe seam — no host filesystem is read), `consentMechanism` is
+ * derived from the cookie posture, and `privacyVersion`/`cookieVersion` are
+ * filled with stable content hashes unless set explicitly.
  */
 export function defineConfig<
 	Collected extends Record<string, string[]> = Record<string, string[]>,
@@ -134,12 +134,10 @@ export function defineConfig<
 ): PolicyStackConfig {
 	const mergedThirdParties = [...(scanned?.thirdParties ?? []), ...(config.thirdParties ?? [])];
 
-	// The authoring type is structurally a `PolicyStackConfig` except for two
-	// deliberate gaps, both closed before this object is observed:
-	//   - `company` may omit the package.json-seeded fields →
-	//     normalizePolicyStackConfig() seeds them;
-	//   - `cookies.used` is optional → the branch below always materializes it.
-	// This is the single, localized assertion bridging the two.
+	// The authoring type is structurally a `PolicyStackConfig` except for one
+	// deliberate gap, closed before this object is observed: `cookies.used` is
+	// optional → the branch below always materializes it. This is the single,
+	// localized assertion bridging the two.
 	const merged = {
 		...config,
 		data: {
