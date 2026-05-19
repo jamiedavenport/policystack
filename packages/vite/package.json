@@ -3,7 +3,7 @@
 	"version": "0.0.34",
 	"description": "Vite plugin that scans source files for @policystack/sdk collecting()/thirdParty() calls and populates the auto-collected registry at build time",
 	"keywords": [
-		"openpolicy",
+		"policystack",
 		"privacy-policy",
 		"vite-plugin"
 	],

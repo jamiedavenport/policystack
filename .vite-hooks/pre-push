@@ -1,5 +1,5 @@
 # Build before type-checking: packages export from ./dist, so without a build
 # downstream check-types false-negatives after any core change (resolves
-# `@openpolicy/core/*` to stale/missing dist). Mirrors CI ordering.
+# `@policystack/core/*` to stale/missing dist). Mirrors CI ordering.
 # Docs-only pushes can skip with `git push --no-verify`.
 vp run -r build && vp run -r check-types

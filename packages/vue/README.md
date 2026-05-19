@@ -50,18 +50,18 @@ export default defineConfig({
 
 ```ts
 // App.ts
-import openpolicy from "./openpolicy";
+import policystack from "./policystack";
 import { PolicyStack, PrivacyPolicy } from "@policystack/vue";
 
 export default {
 	components: { PolicyStack, PrivacyPolicy },
 	template: `
-		<PolicyStack :config="openpolicy">
+		<PolicyStack :config="policystack">
 			<PrivacyPolicy />
 		</PolicyStack>
 	`,
 	data() {
-		return { openpolicy };
+		return { policystack };
 	},
 };
 ```

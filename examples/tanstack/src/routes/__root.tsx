@@ -14,7 +14,7 @@ function GithubIcon({ className }: { className?: string }) {
 }
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import openpolicy from "../policystack";
+import policystack from "../policystack";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -40,7 +40,7 @@ function RootComponent() {
 			<TooltipProvider>
 				{/* One provider for everything: supplies the policy context AND,
 				    because this config declares `cookies`, the consent store. */}
-				<PolicyStackProvider config={openpolicy}>
+				<PolicyStackProvider config={policystack}>
 					<Outlet />
 				</PolicyStackProvider>
 			</TooltipProvider>

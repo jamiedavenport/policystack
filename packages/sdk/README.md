@@ -98,7 +98,7 @@ Full field reference and guides: [policystack.dev/docs](https://policystack.dev/
 
 ## AI Agents
 
-`openpolicy init` writes a type-accurate `policystack.llms.txt` into your project and prints a setup prompt — feed it to any coding agent (Claude Code, Cursor, Copilot, etc.).
+`policystack init` writes a type-accurate `policystack.llms.txt` into your project and prints a setup prompt — feed it to any coding agent (Claude Code, Cursor, Copilot, etc.).
 
 For Claude Code, install the PolicyStack skill pack — guided procedures for setup, auditing, jurisdiction posture, and data-flow instrumentation, all resolved against the frozen SDK surface:
 

@@ -43,7 +43,7 @@ const demos = [
 		label: "Onboarding Wizard",
 		description:
 			"Walks new users through what the app collects by reading dataCollected, thirdParties, and cookies straight off the config — auto-collected metadata as a runtime value.",
-		code: "const { dataCollected, thirdParties, cookies } = openpolicy",
+		code: "const { dataCollected, thirdParties, cookies } = policystack",
 		badge: "New",
 	},
 	{

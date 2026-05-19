@@ -17,15 +17,15 @@
 	"sideEffects": false,
 	"exports": {
 		"./consent": {
-			"types": "./dist/types/openpolicy-angular.d.ts",
-			"default": "./dist/fesm2022/openpolicy-angular.mjs"
+			"types": "./dist/types/policystack-angular.d.ts",
+			"default": "./dist/fesm2022/policystack-angular.mjs"
 		}
 	},
 	"publishConfig": {
 		"exports": {
 			"./consent": {
-				"types": "./dist/types/openpolicy-angular.d.ts",
-				"default": "./dist/fesm2022/openpolicy-angular.mjs"
+				"types": "./dist/types/policystack-angular.d.ts",
+				"default": "./dist/fesm2022/policystack-angular.mjs"
 			}
 		}
 	},

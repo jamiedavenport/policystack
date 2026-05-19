@@ -19,7 +19,7 @@ Steps to reproduce the behavior:
 **Policy config (if applicable):**
 
 ```ts
-import { defineConfig } from "@openpolicy/sdk";
+import { defineConfig } from "@policystack/sdk";
 
 export default defineConfig({
 	// ...
@@ -47,7 +47,7 @@ paste error here
 ## Environment
 
 - OS:
-- Package(s) affected: <!-- @openpolicy/sdk / @openpolicy/core / @openpolicy/vite / @openpolicy/cli -->
+- Package(s) affected: <!-- @policystack/sdk / @policystack/core / @policystack/vite / @policystack/cli -->
 - Version:
 - Node version (`node --version`):
 - Package manager (`pnpm --version` / `bun --version` / `npm --version`):

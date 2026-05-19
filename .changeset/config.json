@@ -4,17 +4,17 @@
 	"commit": false,
 	"fixed": [
 		[
-			"@openpolicy/sdk",
-			"@openpolicy/core",
-			"@openpolicy/vite",
-			"@openpolicy/cli",
-			"@openpolicy/react",
-			"@openpolicy/vue",
-			"@openpolicy/svelte",
-			"@openpolicy/renderers",
-			"@openpolicy/solid",
-			"@openpolicy/angular",
-			"@openpolicy/scripts"
+			"@policystack/sdk",
+			"@policystack/core",
+			"@policystack/vite",
+			"@policystack/cli",
+			"@policystack/react",
+			"@policystack/vue",
+			"@policystack/svelte",
+			"@policystack/renderers",
+			"@policystack/solid",
+			"@policystack/angular",
+			"@policystack/scripts"
 		]
 	],
 	"linked": [],

@@ -24,22 +24,22 @@
 		},
 		{
 			"source": "/blog/nextjs",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/blog/react",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/blog/sveltekit",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/blog/opencookies",
-			"destination": "https://policystack.dev/opencookies",
+			"destination": "https://policystack.dev/consent",
 			"permanent": false
 		},
 		{
@@ -50,27 +50,27 @@
 		{ "source": "/blog/code-first", "destination": "https://policystack.dev/", "permanent": false },
 		{
 			"source": "/blog/three-levels",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/blog/beyond-the-privacy-policy",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/blog/auto-collect",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/blog/better-auth",
-			"destination": "https://policystack.dev/opencookies",
+			"destination": "https://policystack.dev/consent",
 			"permanent": false
 		},
 		{
 			"source": "/blog/shadcn-registry",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 
@@ -81,69 +81,69 @@
 		},
 		{
 			"source": "/examples",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 
 		{
 			"source": "/framework/react",
-			"destination": "https://policystack.dev/docs/openpolicy/react",
+			"destination": "https://policystack.dev/docs/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/svelte",
-			"destination": "https://policystack.dev/docs/openpolicy/svelte",
+			"destination": "https://policystack.dev/docs/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/vue",
-			"destination": "https://policystack.dev/docs/openpolicy/vue",
+			"destination": "https://policystack.dev/docs/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/astro",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/nextjs",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/nuxt",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/remix",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/framework/tanstack",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 
 		{
 			"source": "/compare/lawyers",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/compare/templates",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/compare/termly",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 		{
 			"source": "/compare/iubenda",
-			"destination": "https://policystack.dev/openpolicy",
+			"destination": "https://policystack.dev/policy",
 			"permanent": false
 		},
 

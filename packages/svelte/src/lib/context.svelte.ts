@@ -2,8 +2,8 @@ import type { PolicyStackConfig } from "@policystack/core";
 import { getContext, setContext } from "svelte";
 import type { PolicyComponents } from "./types";
 
-const CONFIG_KEY = Symbol("openpolicy.config");
-const OVERRIDES_KEY = Symbol("openpolicy.overrides");
+const CONFIG_KEY = Symbol("policystack.config");
+const OVERRIDES_KEY = Symbol("policystack.overrides");
 
 type ConfigGetter = () => PolicyStackConfig | undefined;
 

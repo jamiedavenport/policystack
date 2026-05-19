@@ -33,4 +33,4 @@ PolicyStack turns TypeScript config files into privacy and cookie policies. Defi
 
 # Stargazers
 
-[![RepoStars](https://repostars.dev/api/embed?repo=jamiedavenport%2Fopenpolicy&theme=light)](https://repostars.dev/?repos=jamiedavenport%2Fopenpolicy&theme=light)
+[![RepoStars](https://repostars.dev/api/embed?repo=jamiedavenport%2Fpolicystack&theme=light)](https://repostars.dev/?repos=jamiedavenport%2Fpolicystack&theme=light)

@@ -26,7 +26,7 @@ const config = {
 		title: "Your privacy policy as a typed config.",
 		description: "policystack.dev/policy",
 		type: "website",
-		eyebrow: "OPENPOLICY",
+		eyebrow: "POLICYSTACK",
 	}),
 
 	"/cloud": () => ({
@@ -51,7 +51,7 @@ const config = {
 		if (!doc) return ignore;
 		const eyebrow =
 			doc.product === "policy"
-				? "OPENPOLICY DOCS"
+				? "POLICYSTACK DOCS"
 				: doc.product === "consent"
 					? "OPENCOOKIES DOCS"
 					: "DOCS";

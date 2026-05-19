@@ -75,7 +75,7 @@ build needs the Angular compiler.
   (`compilationMode: "partial"`); `build`/`dev` scripts call `ng-packagr`. The
   existing `tsconfig.json` (`noEmit`) stays for `check-types`/IDE.
 - Publish-from-root, `files:["dist"]`, hand-authored root `exports."./consent"`
-  → `./dist/types/openpolicy-angular.d.ts` + `./dist/fesm2022/openpolicy-angular.mjs`
+  → `./dist/types/policystack-angular.d.ts` + `./dist/fesm2022/policystack-angular.mjs`
   — the same convention as `react`/`vue`/`svelte`. ng-packagr's nested
   `dist/package.json` is inert (auto-excluded from the published tarball by
   ng-packagr's `dist/.npmignore`).
