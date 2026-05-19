@@ -40,7 +40,7 @@ export default defineConfig({
 
 	// ── Cookies & consent ────────────────────────────────────────────────
 	// Uncomment to declare cookies. The single provider (e.g.
-	// \`@policystack/react/provider\`'s PolicyStackProvider) derives the consent
+	// \`@policystack/react/provider\`'s \`PolicyStack\`) derives the consent
 	// runtime from this block — categories, locked vs. consent-gated, the
 	// automatic re-prompt on policy change, AND the consent mechanism (banner /
 	// preference panel / withdrawal) — so consent is never configured by hand.

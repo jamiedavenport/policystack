@@ -1,6 +1,6 @@
 ---
 title: "@policystack/vue/consent"
-description: "Vue 3 adapter — plugin or provider with composables and ConsentGate"
+description: "Vue 3 adapter — one PolicyStack provider, composables, ConsentGate"
 product: consent
 ---
 
@@ -9,48 +9,29 @@ Vue 3 adapter for Consent. Bridges [`@policystack/core/consent`](/docs/consent/c
 ## Install
 
 ```sh
-bun add @policystack/core/consent @policystack/vue/consent
+bun add @policystack/core @policystack/vue
 ```
 
 Peer dependencies: `vue >= 3.4`.
 
 ## Setup
 
-Register the plugin once on your app:
-
-```ts
-import { createApp } from "vue";
-import { PolicyStackConsentPlugin } from "@policystack/vue/consent";
-import App from "./App.vue";
-
-createApp(App)
-	.use(PolicyStackConsentPlugin, {
-		config: {
-			categories: [
-				{ key: "essential", label: "Essential", locked: true },
-				{ key: "analytics", label: "Analytics" },
-				{ key: "marketing", label: "Marketing" },
-			],
-		},
-	})
-	.mount("#app");
-```
-
-Or scope a store to a subtree with the `<PolicyStackConsentProvider>` component:
+There is **one** provider. Wrap your app with `<PolicyStack>` from `@policystack/vue/provider` and pass it your whole `policystack.ts` config — it supplies both the policy context (`<PrivacyPolicy>` / `<CookiePolicy>`) and the consent store. The consent categories (and their locked vs. consent-gated state) are derived from `config.cookies`; there is no separate categories array, plugin, or conversion step.
 
 ```vue
 <script setup lang="ts">
-import { PolicyStackConsentProvider } from "@policystack/vue/consent";
+import { PolicyStack } from "@policystack/vue/provider";
+import config from "./policystack";
 </script>
 
 <template>
-	<PolicyStackConsentProvider :config="{ categories }">
+	<PolicyStack :config="config">
 		<App />
-	</PolicyStackConsentProvider>
+	</PolicyStack>
 </template>
 ```
 
-You can pass a pre-created store to either entry point with `{ store }` instead of `{ config }`.
+`useConsent` / `useCategory` / `<ConsentGate>` (from `@policystack/vue/consent`) read the store from this same provider. A policy-only config (no `cookies`) provides no store, so a consent composable used under it throws — that is a configuration error, not a runtime state.
 
 ## API
 
@@ -144,26 +125,27 @@ export default defineComponent({
 
 ## Nuxt 3
 
-Register the plugin in a Nuxt plugin file:
+Mount the single provider once around your app — e.g. in `app.vue` (or a layout):
 
-```ts
-// plugins/consent.ts
-import { PolicyStackConsentPlugin } from "@policystack/vue/consent";
-import type { Category } from "@policystack/core/consent";
+```vue
+<!-- app.vue -->
+<script setup lang="ts">
+import { PolicyStack } from "@policystack/vue/provider";
+import config from "./policystack";
+</script>
 
-const categories: Category[] = [
-	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics" },
-];
-
-export default defineNuxtPlugin((nuxtApp) => {
-	nuxtApp.vueApp.use(PolicyStackConsentPlugin, { config: { categories } });
-});
+<template>
+	<PolicyStack :config="config">
+		<NuxtLayout>
+			<NuxtPage />
+		</NuxtLayout>
+	</PolicyStack>
+</template>
 ```
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Vue adapter is a thin reactivity wrapper. A working example is in [`examples/vue`](../../examples/vue/).
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Vue adapter is a thin reactivity wrapper.
 
 ## See also
 

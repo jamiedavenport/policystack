@@ -1,3 +1,4 @@
+import { deriveConsentConfig } from "./derive";
 import { evaluate } from "./expr";
 import { applyGPC } from "./gpc";
 import { resolveLocale } from "./locale";
@@ -5,6 +6,7 @@ import { jurisdictionPosture, postureDecisions } from "./posture";
 import { fromUnknown, recordEquals, toRecord } from "./storage/record";
 import { evaluateTriggers } from "./triggers";
 import type { JurisdictionId } from "../jurisdiction-id";
+import type { PolicyStackConfig } from "../types";
 import type {
 	ActionOptions,
 	ConsentExpr,
@@ -20,7 +22,16 @@ import type {
 
 type Listener = (state: ConsentState) => void;
 
-export function createConsentStore(config: PolicyStackConsentConfig): ConsentStore {
+// The single store factory. Pass the whole `PolicyStackConfig` (the common
+// path — the framework `<PolicyStack>` providers do exactly this) and the
+// consent categories + runtime knobs are derived from it via the one canonical
+// `deriveConsentConfig`. A pre-resolved `PolicyStackConsentConfig` (it carries
+// `categories`) is still accepted directly for low-level/advanced use.
+export function createConsentStore(
+	input: PolicyStackConfig | PolicyStackConsentConfig,
+): ConsentStore {
+	const config: PolicyStackConsentConfig =
+		"categories" in input ? input : deriveConsentConfig(input, input.consent);
 	const listeners = new Set<Listener>();
 	const locale = resolveLocale(config);
 

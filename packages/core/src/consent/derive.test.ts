@@ -1,7 +1,7 @@
-import type { JurisdictionResolver } from "@policystack/core/consent";
 import { expect, test } from "vite-plus/test";
-import type { PolicyStackConfig } from "./index";
-import { toPolicyStackConsentConfig, type PolicyStackConsentOptions } from "./consent";
+import type { PolicyStackConfig } from "../types";
+import { deriveConsentConfig } from "./derive";
+import type { JurisdictionResolver, PolicyStackConsentOptions } from "./types";
 
 const policy: PolicyStackConfig = {
 	company: {
@@ -24,12 +24,12 @@ const policy: PolicyStackConfig = {
 };
 
 test("derives categories from cookies.used, dropping disabled entries", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	expect(config.categories.map((c) => c.key)).toEqual(["essential", "analytics"]);
 });
 
 test("locks the essential category", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	const essential = config.categories.find((c) => c.key === "essential");
 	const analytics = config.categories.find((c) => c.key === "analytics");
 	expect(essential?.locked).toBe(true);
@@ -37,18 +37,18 @@ test("locks the essential category", () => {
 });
 
 test("capitalizes the category label", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	expect(config.categories.find((c) => c.key === "analytics")?.label).toBe("Analytics");
 });
 
 test("returns no categories when policy has no cookies block", () => {
-	const config = toPolicyStackConsentConfig({ ...policy, cookies: undefined });
+	const config = deriveConsentConfig({ ...policy, cookies: undefined });
 	expect(config.categories).toEqual([]);
 });
 
 test("passes through overrides without mutating categories", () => {
 	const resolver: JurisdictionResolver = { resolve: () => "eea" };
-	const config = toPolicyStackConsentConfig(policy, {
+	const config = deriveConsentConfig(policy, {
 		policyVersion: "v3",
 		jurisdictionResolver: resolver,
 	});
@@ -58,7 +58,7 @@ test("passes through overrides without mutating categories", () => {
 });
 
 test("override cannot replace categories", () => {
-	const config = toPolicyStackConsentConfig(policy, {
+	const config = deriveConsentConfig(policy, {
 		// @ts-expect-error — categories are derived, not overridable
 		categories: [],
 	});
@@ -66,25 +66,25 @@ test("override cannot replace categories", () => {
 });
 
 test("defaults policyVersion from policy.cookieVersion when no option is provided", () => {
-	const config = toPolicyStackConsentConfig({ ...policy, cookieVersion: "abc12345" });
+	const config = deriveConsentConfig({ ...policy, cookieVersion: "abc12345" });
 	expect(config.policyVersion).toBe("abc12345");
 });
 
 test("explicit policyVersion option overrides policy.cookieVersion", () => {
-	const config = toPolicyStackConsentConfig(
+	const config = deriveConsentConfig(
 		{ ...policy, cookieVersion: "abc12345" },
 		{ policyVersion: "manual-v9" },
 	);
 	expect(config.policyVersion).toBe("manual-v9");
 });
 
-test("policy.privacyVersion is ignored by the bridge", () => {
-	const config = toPolicyStackConsentConfig({ ...policy, privacyVersion: "priv12345" });
+test("policy.privacyVersion is ignored by the derivation", () => {
+	const config = deriveConsentConfig({ ...policy, privacyVersion: "priv12345" });
 	expect(config.policyVersion).toBeUndefined();
 });
 
 test("lawful basis drives locked, not the category key name", () => {
-	const config = toPolicyStackConsentConfig({
+	const config = deriveConsentConfig({
 		...policy,
 		cookies: {
 			used: { essential: true, security: true },
@@ -102,7 +102,7 @@ test("lawful basis drives locked, not the category key name", () => {
 });
 
 test("non-consent lawful bases are all treated as not gated", () => {
-	const config = toPolicyStackConsentConfig({
+	const config = deriveConsentConfig({
 		...policy,
 		cookies: {
 			used: { essential: true, a: true, b: true, c: true, d: true },
@@ -119,7 +119,7 @@ test("non-consent lawful bases are all treated as not gated", () => {
 });
 
 test("carries lawfulBasis onto each derived category", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	expect(config.categories.find((c) => c.key === "essential")?.lawfulBasis).toBe(
 		"legal_obligation",
 	);
@@ -127,7 +127,7 @@ test("carries lawfulBasis onto each derived category", () => {
 });
 
 test("leaves vendor and purpose unset (filled by downstream tickets)", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	for (const cat of config.categories) {
 		expect(cat.vendor).toBeUndefined();
 		expect(cat.purpose).toBeUndefined();
@@ -135,7 +135,7 @@ test("leaves vendor and purpose unset (filled by downstream tickets)", () => {
 });
 
 test("enabled cookie with no context entry is gated with no lawfulBasis", () => {
-	const config = toPolicyStackConsentConfig({
+	const config = deriveConsentConfig({
 		...policy,
 		cookies: { used: { essential: true, analytics: true }, context: {} },
 	});
@@ -145,13 +145,13 @@ test("enabled cookie with no context entry is gated with no lawfulBasis", () => 
 });
 
 test("derives canWithdraw from policy.consentMechanism.canWithdraw", () => {
-	const can = toPolicyStackConsentConfig({
+	const can = deriveConsentConfig({
 		...policy,
 		consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
 	});
 	expect(can.canWithdraw).toBe(true);
 
-	const cannot = toPolicyStackConsentConfig({
+	const cannot = deriveConsentConfig({
 		...policy,
 		consentMechanism: { hasBanner: true, hasPreferencePanel: false, canWithdraw: false },
 	});
@@ -159,12 +159,12 @@ test("derives canWithdraw from policy.consentMechanism.canWithdraw", () => {
 });
 
 test("canWithdraw is unset when no consentMechanism is declared", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	expect(config.canWithdraw).toBeUndefined();
 });
 
 test("explicit canWithdraw option overrides policy.consentMechanism", () => {
-	const config = toPolicyStackConsentConfig(
+	const config = deriveConsentConfig(
 		{
 			...policy,
 			consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
@@ -175,30 +175,30 @@ test("explicit canWithdraw option overrides policy.consentMechanism", () => {
 });
 
 test("defaults triggers.policyVersionChanged on for automatic re-prompt", () => {
-	const config = toPolicyStackConsentConfig({ ...policy, cookieVersion: "abc12345" });
+	const config = deriveConsentConfig({ ...policy, cookieVersion: "abc12345" });
 	expect(config.triggers?.policyVersionChanged).toBe(true);
 });
 
 test("options.triggers merges over the policyVersionChanged default", () => {
-	const config = toPolicyStackConsentConfig(policy, {
+	const config = deriveConsentConfig(policy, {
 		triggers: { policyVersionChanged: false, jurisdictionChanged: true },
 	});
 	expect(config.triggers?.policyVersionChanged).toBe(false);
 	expect(config.triggers?.jurisdictionChanged).toBe(true);
 });
 
-test("carries policy.locale into the PolicyStack Consent config (one shared Locale)", () => {
-	const config = toPolicyStackConsentConfig({ ...policy, locale: "fr" });
+test("carries policy.locale into the consent config (one shared Locale)", () => {
+	const config = deriveConsentConfig({ ...policy, locale: "fr" });
 	expect(config.locale).toBe("fr");
 });
 
 test("explicit options.locale overrides policy.locale", () => {
-	const config = toPolicyStackConsentConfig({ ...policy, locale: "fr" }, { locale: "de" });
+	const config = deriveConsentConfig({ ...policy, locale: "fr" }, { locale: "de" });
 	expect(config.locale).toBe("de");
 });
 
 test("locale is omitted when neither policy nor options provide one", () => {
-	const config = toPolicyStackConsentConfig(policy);
+	const config = deriveConsentConfig(policy);
 	expect(config.locale).toBeUndefined();
 });
 
@@ -209,11 +209,11 @@ test("PolicyStackConfig.consent is the canonical options object (single-config f
 		jurisdictionResolver: resolver,
 		initialRoute: "cookie",
 	};
-	// This is exactly what <PolicyStackProvider> does internally:
-	// toPolicyStackConsentConfig(config, config.consent). PolicyStackConsentOptions
+	// This is exactly what createConsentStore does internally:
+	// deriveConsentConfig(config, config.consent). PolicyStackConsentOptions
 	// must be assignable to the options parameter with no cast.
 	const withConsent: PolicyStackConfig = { ...policy, cookieVersion: "abc12345", consent };
-	const derived = toPolicyStackConsentConfig(withConsent, withConsent.consent);
+	const derived = deriveConsentConfig(withConsent, withConsent.consent);
 	expect(derived.adapter).toBe(consent.adapter);
 	expect(derived.jurisdictionResolver).toBe(resolver);
 	expect(derived.initialRoute).toBe("cookie");

@@ -28,8 +28,8 @@ The four skills then activate automatically when a task matches.
 ## The skills
 
 - **policystack-init** — scaffold Policy in a project: run
-  `@policystack/cli init`, then wire `<PolicyStackProvider>` (it supplies both
-  the policy context and the consent store from one config).
+  `@policystack/cli init`, then wire the single `<PolicyStack>` provider (it
+  supplies both the policy context and the consent store from one config).
 - **policystack-audit** — the closed loop: run `policy validate --json`,
   explain each issue code against the frozen 1.0 diagnostic surface, propose a
   minimal config fix, and re-validate until the config is clean.

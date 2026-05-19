@@ -19,7 +19,7 @@ bunx shadcn@latest add @policystack/cookie-policy
 Each command installs the component, a `policy-components.tsx` base renderer, and an `policystack.ts` starter config. Fill out the config then wrap your app with the `<PolicyStack>` provider:
 
 ```tsx
-import { PolicyStack } from "@policystack/react";
+import { PolicyStack } from "@policystack/react/provider";
 import policy from "@/policy";
 
 export default function RootLayout({ children }) {
@@ -48,7 +48,8 @@ bun add @policystack/react @policystack/sdk
 Wrap your app with the provider, then render whichever components you need:
 
 ```tsx
-import { PolicyStack, PrivacyPolicy, CookiePolicy } from "@policystack/react";
+import { PolicyStack } from "@policystack/react/provider";
+import { PrivacyPolicy, CookiePolicy } from "@policystack/react/policy";
 import policy from "@/policy";
 
 export function PrivacyPolicyPage() {
@@ -68,7 +69,7 @@ The components render unstyled by default. Pass a `components` prop to supply yo
 
 ```tsx
 import { Linking, Pressable, Text, View } from "react-native";
-import { PrivacyPolicy, type PolicyComponents } from "@policystack/react";
+import { PrivacyPolicy, type PolicyComponents } from "@policystack/react/policy";
 import policy from "./policy";
 
 const components: PolicyComponents = {

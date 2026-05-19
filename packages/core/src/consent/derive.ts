@@ -2,22 +2,23 @@ import { isConsentGated } from "../types";
 import type { PolicyStackConfig } from "../types";
 import type { Category, PolicyStackConsentConfig } from "./types";
 
-export type ToConsentConfigOptions = Omit<PolicyStackConsentConfig, "categories">;
+// Everything in PolicyStackConsentConfig bar `categories` — the runtime-only
+// knobs that cannot be derived from the policy. Internal to core: the only way
+// to author these is `PolicyStackConfig.consent` (a strict subset), and the
+// only entry point is `createConsentStore(policyConfig)`.
+type DeriveOptions = Omit<PolicyStackConsentConfig, "categories">;
 
-// Derives a PolicyStackConsentConfig from the policy: categories + `locked` flags come
-// from `cookies.used`/`.context`, version/locale/canWithdraw from the policy.
-// `options` are the runtime-only knobs that cannot be derived.
+// Derives a PolicyStackConsentConfig from the policy: categories + `locked`
+// flags come from `cookies.used`/`.context`, version/locale/canWithdraw from
+// the policy. `options` are the runtime-only knobs that cannot be derived.
 //
-// This is the single canonical derivation. `@policystack/sdk/consent` re-exports
-// it for power users / non-React frameworks; `@policystack/react`'s
-// `<PolicyStackProvider>` calls `toPolicyStackConsentConfig(config, config.consent)`
-// internally. `PolicyStackConsentOptions` (the authored knobs — a `Pick` of
-// `PolicyStackConsentConfig`) is a strict subset of `ToConsentConfigOptions`
-// (everything bar `categories`, which is always derived), so passing
-// `config.consent` here type-checks with no cast.
-export function toPolicyStackConsentConfig(
+// This is the single canonical derivation. It is NOT a public export — the one
+// public path is `createConsentStore(policyConfig)`, which calls this internally
+// so the framework providers (`<PolicyStack>`) and any direct caller all share
+// one copy of the logic with no fork.
+export function deriveConsentConfig(
 	policy: PolicyStackConfig,
-	options?: ToConsentConfigOptions,
+	options?: DeriveOptions,
 ): PolicyStackConsentConfig {
 	const used: Record<string, boolean> = policy.cookies?.used ?? {};
 	const context = policy.cookies?.context ?? {};
@@ -46,7 +47,7 @@ export function toPolicyStackConsentConfig(
 	// individual trigger via `options.triggers`.
 	const triggers = { policyVersionChanged: true, ...options?.triggers };
 	// PS-26: one shared Locale — the policy's canonical Locale flows into the
-	// PolicyStack Consent config so policy text and consent UI agree. An explicit
+	// consent config so policy text and consent UI agree. An explicit
 	// options.locale still wins (same override convention as policyVersion).
 	const locale = options?.locale ?? policy.locale;
 	return {

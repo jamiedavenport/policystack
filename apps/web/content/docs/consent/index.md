@@ -20,40 +20,36 @@ Consent takes the opposite approach. The state machine, expressions, storage, an
 
 ```sh
 # React
-npm install @policystack/core/consent @policystack/react/consent
+npm install @policystack/core @policystack/react
 
 # Vue
-npm install @policystack/core/consent @policystack/vue/consent
+npm install @policystack/core @policystack/vue
 
 # Solid
-npm install @policystack/core/consent @policystack/solid
+npm install @policystack/core @policystack/solid
 
 # Svelte
-npm install @policystack/core/consent @policystack/svelte/consent
+npm install @policystack/core @policystack/svelte
 
 # Angular
-npm install @policystack/core/consent @policystack/angular
+npm install @policystack/core @policystack/angular
 ```
 
 ## Quick start
 
-```tsx
-import { PolicyStackConsentProvider, useConsent, ConsentGate } from "@policystack/react/consent";
+There is **one** provider. Pass it your whole `policystack.ts` config — the consent categories are derived from `config.cookies`, so you never hand-roll a categories array.
 
-const config = {
-	categories: [
-		{ key: "essential", label: "Essential", locked: true },
-		{ key: "analytics", label: "Analytics" },
-		{ key: "marketing", label: "Marketing" },
-	],
-};
+```tsx
+import { PolicyStack } from "@policystack/react/provider";
+import { useConsent, ConsentGate } from "@policystack/react/consent";
+import config from "./policystack";
 
 function App() {
 	return (
-		<PolicyStackConsentProvider config={config}>
+		<PolicyStack config={config}>
 			<YourApp />
 			<CookieBanner />
-		</PolicyStackConsentProvider>
+		</PolicyStack>
 	);
 }
 
@@ -107,9 +103,9 @@ The plugin scans your code for cookie writes and known third-party vendors, and 
 | Package                                               | Description                                                                                         |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | [`@policystack/core/consent`](/docs/consent/core)     | Headless consent store, GPC handling, jurisdiction resolvers, script gating, storage adapters       |
-| [`@policystack/react/consent`](/docs/consent/react)   | React 18+ adapter — `useConsent`, `useCategory`, `<ConsentGate>`                                    |
-| [`@policystack/vue/consent`](/docs/consent/vue)       | Vue 3 adapter — plugin or `<PolicyStackConsentProvider>`, composables, `<ConsentGate>`              |
-| [`@policystack/solid`](/docs/consent/solid)           | Solid adapter — signals-based hooks and provider                                                    |
+| [`@policystack/react/consent`](/docs/consent/react)   | React 18+ adapter — one `<PolicyStack>` provider, `useConsent`, `useCategory`, `<ConsentGate>`      |
+| [`@policystack/vue/consent`](/docs/consent/vue)       | Vue 3 adapter — one `<PolicyStack>` provider, composables, `<ConsentGate>`                          |
+| [`@policystack/solid`](/docs/consent/solid)           | Solid adapter — one `<PolicyStack>` provider, signals-based hooks                                   |
 | [`@policystack/svelte/consent`](/docs/consent/svelte) | Svelte 5 runes adapter (+ Svelte 4 `Readable` fallback at `/stores`)                                |
 | [`@policystack/angular`](/docs/consent/angular)       | Angular 18+ adapter — `providePolicyStackConsent`, `ConsentService`, `injectCategory`, `*ocConsent` |
 | [`@policystack/vite`](/docs/consent/scanner)          | Static AST detection of cookie writes and vendor scripts                                            |

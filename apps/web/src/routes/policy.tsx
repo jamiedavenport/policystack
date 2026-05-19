@@ -7,7 +7,8 @@ import { Sponsor } from "../components/Sponsor";
 import { highlight } from "../lib/shiki";
 import { pageMeta } from "../lib/seo";
 
-const HERO_SNIPPET = `import { PolicyStack, PrivacyPolicy } from "@policystack/react";
+const HERO_SNIPPET = `import { PolicyStack } from "@policystack/react/provider";
+import { PrivacyPolicy } from "@policystack/react/policy";
 import policy from "@/policystack";
 
 export function PrivacyPolicyPage() {

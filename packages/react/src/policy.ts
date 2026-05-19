@@ -19,8 +19,6 @@ export {
 	DefaultUnknown,
 } from "./components/defaults";
 export { PrivacyPolicy } from "./components/PrivacyPolicy";
-// Context / Provider
-export { PolicyStack } from "./context";
 // Render
 export { renderDocument } from "./render";
 // Types

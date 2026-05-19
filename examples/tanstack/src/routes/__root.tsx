@@ -1,7 +1,7 @@
 // src/routes/__root.tsx
 /// <reference types="vite-plus/client" />
 
-import { PolicyStackProvider } from "@policystack/react/provider";
+import { PolicyStack } from "@policystack/react/provider";
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -40,9 +40,9 @@ function RootComponent() {
 			<TooltipProvider>
 				{/* One provider for everything: supplies the policy context AND,
 				    because this config declares `cookies`, the consent store. */}
-				<PolicyStackProvider config={policystack}>
+				<PolicyStack config={policystack}>
 					<Outlet />
-				</PolicyStackProvider>
+				</PolicyStack>
 			</TooltipProvider>
 		</RootDocument>
 	);

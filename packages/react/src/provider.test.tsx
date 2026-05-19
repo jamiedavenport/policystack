@@ -6,7 +6,7 @@ import { useContext, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { ConsentGate, useConsent } from "./consent";
 import { PolicyStackContext } from "./context";
-import { PolicyStackProvider } from "./provider";
+import { PolicyStack } from "./provider";
 
 const company = {
 	name: "Acme Inc.",
@@ -40,46 +40,46 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe("PolicyStackProvider — policy context", () => {
+describe("PolicyStack — policy context", () => {
 	it("always supplies the policy config via context", () => {
 		function Probe() {
 			return <span>{useContext(PolicyStackContext).config?.company.name}</span>;
 		}
 		render(
-			<PolicyStackProvider config={policyOnly}>
+			<PolicyStack config={policyOnly}>
 				<Probe />
-			</PolicyStackProvider>,
+			</PolicyStack>,
 		);
 		expect(screen.getByText("Acme Inc.")).toBeTruthy();
 	});
 
 	it("renders children", () => {
 		render(
-			<PolicyStackProvider config={withCookies}>
+			<PolicyStack config={withCookies}>
 				<div>hello</div>
-			</PolicyStackProvider>,
+			</PolicyStack>,
 		);
 		expect(screen.getByText("hello")).toBeTruthy();
 	});
 });
 
-describe("PolicyStackProvider — policy-only (no cookie categories)", () => {
+describe("PolicyStack — policy-only (no cookie categories)", () => {
 	it("does not spin up a consent store; useConsent throws its provider error", () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});
 		expect(() =>
 			renderHook(() => useConsent(), {
 				wrapper: ({ children }: { children: ReactNode }) => (
-					<PolicyStackProvider config={policyOnly}>{children}</PolicyStackProvider>
+					<PolicyStack config={policyOnly}>{children}</PolicyStack>
 				),
 			}),
 		).toThrow(/must be used inside/);
 	});
 });
 
-describe("PolicyStackProvider — consent store derived from the one config", () => {
+describe("PolicyStack — consent store derived from the one config", () => {
 	function wrapper(config: PolicyStackConfig) {
 		return ({ children }: { children: ReactNode }) => (
-			<PolicyStackProvider config={config}>{children}</PolicyStackProvider>
+			<PolicyStack config={config}>{children}</PolicyStack>
 		);
 	}
 
@@ -107,9 +107,9 @@ describe("PolicyStackProvider — consent store derived from the one config", ()
 			);
 		};
 		render(
-			<PolicyStackProvider config={withCookies}>
+			<PolicyStack config={withCookies}>
 				<Harness />
-			</PolicyStackProvider>,
+			</PolicyStack>,
 		);
 		expect(screen.queryByText("analytics-on")).toBeNull();
 		act(() => {

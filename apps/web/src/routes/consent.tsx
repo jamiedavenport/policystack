@@ -6,27 +6,21 @@ import { Highlight } from "../components/Highlight";
 import { Sponsor } from "../components/Sponsor";
 import { pageMeta } from "../lib/seo";
 
-const HERO_SNIPPET = `import {
-  PolicyStackConsentProvider,
-  ConsentGate,
-} from "@policystack/react/consent";
+const HERO_SNIPPET = `import { PolicyStack } from "@policystack/react/provider";
+import { ConsentGate } from "@policystack/react/consent";
+import config from "./policystack";
 
-const config = {
-  categories: [
-    { key: "essential", label: "Essential", locked: true },
-    { key: "analytics", label: "Analytics" },
-    { key: "marketing", label: "Marketing" },
-  ],
-};
-
+// One config. <PolicyStack> derives the consent categories
+// (essential locked, analytics/marketing gated) from config.cookies —
+// no separate categories array, no conversion step.
 export function App() {
   return (
-    <PolicyStackConsentProvider config={config}>
+    <PolicyStack config={config}>
       <YourApp />
       <ConsentGate requires="analytics">
         <GoogleAnalytics />
       </ConsentGate>
-    </PolicyStackConsentProvider>
+    </PolicyStack>
   );
 }`;
 

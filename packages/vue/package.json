@@ -24,6 +24,10 @@
 			"import": "./dist/consent.js",
 			"types": "./dist/consent.d.ts"
 		},
+		"./provider": {
+			"import": "./dist/provider.js",
+			"types": "./dist/provider.d.ts"
+		},
 		"./package.json": "./package.json"
 	},
 	"publishConfig": {

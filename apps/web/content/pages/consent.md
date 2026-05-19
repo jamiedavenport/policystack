@@ -5,24 +5,20 @@
 Tiny core. Adapters for every major framework. A Vite plugin that yells at you when a script sets a cookie behind a category the user hasn't accepted yet.
 
 ```tsx
-import { PolicyStackConsentProvider, ConsentGate } from "@policystack/react/consent";
+import { PolicyStack } from "@policystack/react/provider";
+import { ConsentGate } from "@policystack/react/consent";
+import config from "./policystack";
 
-const config = {
-	categories: [
-		{ key: "essential", label: "Essential", locked: true },
-		{ key: "analytics", label: "Analytics" },
-		{ key: "marketing", label: "Marketing" },
-	],
-};
-
+// One config. <PolicyStack> derives the consent categories from
+// config.cookies — no separate categories array, no conversion step.
 export function App() {
 	return (
-		<PolicyStackConsentProvider config={config}>
+		<PolicyStack config={config}>
 			<YourApp />
 			<ConsentGate requires="analytics">
 				<GoogleAnalytics />
 			</ConsentGate>
-		</PolicyStackConsentProvider>
+		</PolicyStack>
 	);
 }
 ```
@@ -51,7 +47,7 @@ The Vite plugin patches `document.cookie` in dev and refuses writes that fall ou
 ## Install
 
 ```bash
-pnpm add @policystack/core/consent @policystack/react/consent
+pnpm add @policystack/core @policystack/react
 ```
 
 ```tsx

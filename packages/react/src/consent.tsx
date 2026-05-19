@@ -1,45 +1,27 @@
 "use client";
 
-import {
-	createConsentStore,
-	type Category,
-	type ConsentExpr,
-	type ConsentRecord,
-	type ConsentRecordSource,
-	type ConsentStore,
-	type JurisdictionId,
-	type PolicyStackConsentConfig,
-	type RepromptReason,
-	type Route,
+import type {
+	Category,
+	ConsentExpr,
+	ConsentRecord,
+	ConsentRecordSource,
+	ConsentStore,
+	JurisdictionId,
+	RepromptReason,
+	Route,
 } from "@policystack/core/consent";
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useState,
-	useSyncExternalStore,
-	type ReactNode,
-} from "react";
+import { useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
+import { PolicyStackContext } from "./context";
 
-export type PolicyStackConsentProviderProps =
-	| { config: PolicyStackConsentConfig; store?: undefined; children: ReactNode }
-	| { store: ConsentStore; config?: undefined; children: ReactNode };
-
-const StoreContext = createContext<ConsentStore | null>(null);
-
-export function PolicyStackConsentProvider(props: PolicyStackConsentProviderProps) {
-	const [store] = useState<ConsentStore>(() => {
-		if (props.store) return props.store;
-		return createConsentStore(props.config);
-	});
-	return <StoreContext.Provider value={store}>{props.children}</StoreContext.Provider>;
-}
-
+// The consent hooks read the single store off the shared PolicyStack context —
+// there is no separate consent provider. The store is `null` when the
+// `<PolicyStack>` config declared no cookie categories (a policy-only config),
+// in which case using a consent hook is a configuration error.
 function useStore(): ConsentStore {
-	const store = useContext(StoreContext);
+	const { store } = useContext(PolicyStackContext);
 	if (!store) {
 		throw new Error(
-			"useConsent / useCategory / ConsentGate must be used inside <PolicyStackConsentProvider>",
+			"useConsent / useCategory / ConsentGate must be used inside <PolicyStack>, and the config must declare cookie categories",
 		);
 	}
 	return store;

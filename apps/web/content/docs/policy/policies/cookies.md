@@ -46,7 +46,8 @@ The consent mechanism (banner / preference panel / withdrawal) is **derived** fr
 Then render it:
 
 ```tsx
-import { PolicyStack, CookiePolicy } from "@policystack/react";
+import { PolicyStack } from "@policystack/react/provider";
+import { CookiePolicy } from "@policystack/react/policy";
 import policy from "@/policy";
 
 export function CookiePolicyPage() {

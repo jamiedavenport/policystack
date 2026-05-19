@@ -5,7 +5,7 @@ import { Databuddy } from "@databuddy/sdk/react";
 import { OffstageProvider } from "@offstage/react";
 import { ArrowRightIcon, ArrowUpRightIcon } from "@phosphor-icons/react";
 import { ConsentGate } from "@policystack/react/consent";
-import { PolicyStackProvider } from "@policystack/react/provider";
+import { PolicyStack } from "@policystack/react/provider";
 
 import favicon from "../assets/favicon.svg?url";
 import appCss from "../styles.css?url";
@@ -67,7 +67,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body className="bg-canvas font-sans text-ink">
-				<PolicyStackProvider config={policy}>
+				<PolicyStack config={policy}>
 					<div id="app" className="isolate flex min-h-dvh flex-col">
 						<SiteHeader />
 						<main className="flex-1">{children ?? <Outlet />}</main>
@@ -85,7 +85,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						</OffstageProvider>
 						<Databuddy clientId="831fa430-6fdb-4fe2-ab59-867bdc90847a" />
 					</ConsentGate>
-				</PolicyStackProvider>
+				</PolicyStack>
 				<TanStackDevtools
 					config={{ position: "bottom-right" }}
 					plugins={[

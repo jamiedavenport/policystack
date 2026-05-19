@@ -26,16 +26,16 @@ function providerSection(stubRel: string, framework?: Framework): string {
 	if (framework === "react") {
 		const importName = stubRel.replace(/^.*\//, "").replace(/\.tsx?$/, "");
 		return [
-			`2. Wire the provider. There is ONE provider for everything: import \`PolicyStackProvider\` from \`@policystack/react/provider\` and mount it at the root of your app (the outermost component / root layout) so it wraps the whole tree, passing it the config from ${stubRel}:`,
+			`2. Wire the provider. There is ONE provider for everything: import \`PolicyStack\` from \`@policystack/react/provider\` and mount it at the root of your app (the outermost component / root layout) so it wraps the whole tree, passing it the config from ${stubRel}:`,
 			"",
-			`    import { PolicyStackProvider } from "@policystack/react/provider";`,
+			`    import { PolicyStack } from "@policystack/react/provider";`,
 			`    import config from "./${importName}";`,
 			"",
-			`    <PolicyStackProvider config={config}>`,
+			`    <PolicyStack config={config}>`,
 			`      {/* the rest of your app */}`,
-			`    </PolicyStackProvider>`,
+			`    </PolicyStack>`,
 			"",
-			"Do NOT add a separate consent/cookies provider — `PolicyStackProvider` mounts the consent store automatically when the config declares `cookies`.",
+			"Do NOT add a separate consent/cookies provider — `PolicyStack` mounts the consent store automatically when the config declares `cookies`.",
 		].join("\n");
 	}
 	return `2. Wire the provider. There is ONE PolicyStack provider for your framework that supplies both the policy context and the consent store. Mount it once at the root of your app (the outermost component / root layout) so it wraps the whole tree, and pass it the config exported from ${stubRel}. Do NOT add a separate consent/cookies provider — consent is derived from the config's \`cookies\` and mounted by that same provider.`;

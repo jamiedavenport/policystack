@@ -48,7 +48,7 @@ test("getStubContents ships a commented cookies skeleton; no consentMechanism", 
 	const out = getStubContents("2026-04-22");
 	expect(out).toContain("Cookies & consent");
 	expect(out).toContain("// cookies: {");
-	expect(out).toContain("PolicyStackProvider");
+	expect(out).toContain("PolicyStack");
 	// consentMechanism is derived from the cookie posture — never authored,
 	// so it appears nowhere in the stub (not even commented).
 	expect(out).not.toContain("consentMechanism");

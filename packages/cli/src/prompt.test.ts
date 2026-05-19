@@ -24,11 +24,11 @@ test("no framework → framework-generic wording, no react hard-coding", () => {
 	expect(out).not.toContain("@policystack/react/provider");
 });
 
-test("react → PolicyStackProvider snippet from @policystack/react/provider", () => {
+test("react → PolicyStack snippet from @policystack/react/provider", () => {
 	const out = buildAgentPrompt({ ...base, framework: "react" });
-	expect(out).toContain("PolicyStackProvider");
+	expect(out).toContain('import { PolicyStack } from "@policystack/react/provider";');
 	expect(out).toContain('from "@policystack/react/provider"');
-	expect(out).toContain("<PolicyStackProvider config={config}>");
+	expect(out).toContain("<PolicyStack config={config}>");
 	// import path is derived from the stub's basename
 	expect(out).toContain('import config from "./policystack"');
 });

@@ -91,6 +91,6 @@ test("runInit prints a react provider-wiring prompt when react is a dep", async 
 	}
 	const out = chunks.join("");
 	expect(out).toContain("2. Wire the provider");
-	expect(out).toContain("PolicyStackProvider");
+	expect(out).toContain("<PolicyStack config={config}>");
 	expect(out).toContain("@policystack/react/provider");
 });

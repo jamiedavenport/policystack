@@ -427,13 +427,13 @@ function ClaudeTerminal() {
 					<span className="text-white/80">src/App.tsx</span>
 				</p>
 				<pre className="mt-2 border-l-2 border-emerald-400/40 pl-4 text-white/85">
-					{`+ import { PolicyStackConsentProvider } from "@policystack/react/consent";
+					{`+ import { PolicyStack } from "@policystack/react/provider";
 + import { CookieBanner } from "./CookieBanner";
 +
-+ <PolicyStackConsentProvider config={cookieConfig}>
++ <PolicyStack config={config}>
 +   <App />
 +   <CookieBanner />
-+ </PolicyStackConsentProvider>`}
++ </PolicyStack>`}
 				</pre>
 				<p className="mt-5 text-white/60">
 					<span className="text-emerald-400">●</span> Write{" "}

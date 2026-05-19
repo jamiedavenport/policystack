@@ -22,24 +22,19 @@ Policy still generates the **cookie policy** — the legal document describing t
 
 ## Wire them together
 
-`@policystack/sdk/consent` exports `toPolicyStackConsentConfig(policy)` which translates `policy.cookies.used` into an `PolicyStackConsentConfig` — the `categories` array, with `essential` automatically locked and labels capitalized. You don't hand-roll the category list a second time next to your banner.
+There is no separate consent config and no conversion step. The single `<PolicyStack>` provider takes your whole `policystack.ts` config and derives the consent categories from `policy.cookies.used` — with `essential` automatically locked and labels capitalized. You don't hand-roll the category list a second time next to your banner.
 
 ```tsx
-import { PolicyStackConsentProvider } from "@policystack/react/consent";
-import { toPolicyStackConsentConfig } from "@policystack/sdk/consent";
+import { PolicyStack } from "@policystack/react/provider";
 import policy from "./policy";
 
 export function Root({ children }: { children: React.ReactNode }) {
-	return (
-		<PolicyStackConsentProvider config={toPolicyStackConsentConfig(policy)}>
-			{children}
-		</PolicyStackConsentProvider>
-	);
+	return <PolicyStack config={policy}>{children}</PolicyStack>;
 }
 ```
 
-The bridge also defaults `PolicyStackConsentConfig.policyVersion` from `policy.cookieVersion` — so `triggers.policyVersionChanged` reprompts consent when (and only when) the cookie slice of your config actually changes. Pass `options` to override anything: `toPolicyStackConsentConfig(policy, { policyVersion: "v3", storage: customStorage })`.
+The provider also defaults the consent `policyVersion` from `policy.cookieVersion` — so `triggers.policyVersionChanged` reprompts consent when (and only when) the cookie slice of your config actually changes. Author any runtime-only overrides (storage adapter, jurisdiction resolver, GPC, triggers) under `policy.consent`.
 
-The bridge uses a type-only import from `@policystack/core/consent`, declared as an optional peer dependency. If you don't render a banner, you pay nothing.
+A policy-only config (no `cookies`) creates no consent store — if you don't declare cookies, you pay nothing and the consent hooks stay inert.
 
 For everything else — categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating — see the [Consent docs](/docs/consent).

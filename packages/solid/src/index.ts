@@ -8,6 +8,7 @@ import {
 	type Accessor,
 	type JSX,
 } from "solid-js";
+import type { PolicyStackConfig } from "@policystack/core";
 import {
 	createConsentStore,
 	type Category,
@@ -17,7 +18,6 @@ import {
 	type ConsentState,
 	type ConsentStore,
 	type JurisdictionId,
-	type PolicyStackConsentConfig,
 	type RepromptReason,
 	type Route,
 } from "@policystack/core/consent";
@@ -30,7 +30,8 @@ type Bound = {
 const Ctx = createContext<Bound | null>(null);
 
 const NOT_PROVIDED_MESSAGE =
-	"useConsent / useCategory / ConsentGate must be used inside <PolicyStackConsentProvider>";
+	"useConsent / useCategory / ConsentGate must be used inside <PolicyStack>, " +
+	"and the config must declare cookie categories";
 
 function useBound(): Bound {
 	const ctx = useContext(Ctx);
@@ -38,13 +39,31 @@ function useBound(): Bound {
 	return ctx;
 }
 
-export type PolicyStackConsentProviderProps = (
-	| { config: PolicyStackConsentConfig; store?: undefined }
-	| { store: ConsentStore; config?: undefined }
-) & { children?: JSX.Element };
+export type PolicyStackProps = {
+	config: PolicyStackConfig;
+	children?: JSX.Element;
+};
 
-export function PolicyStackConsentProvider(props: PolicyStackConsentProviderProps): JSX.Element {
-	const store = props.store ?? createConsentStore(props.config!);
+/**
+ * The single PolicyStack provider. Pass the one `PolicyStackConfig` and the
+ * consent composables (`useConsent` / `useCategory` / `ConsentGate`) read the
+ * store from it. The cookies → consent-categories derivation happens inside
+ * `createConsentStore` (`@policystack/core/consent`); there is no separate
+ * conversion step. A policy-only config (no cookie categories) provides no
+ * store, so the consent composables correctly throw if used.
+ */
+export function PolicyStack(props: PolicyStackProps): JSX.Element {
+	const store = createConsentStore(props.config);
+	// Empty category set ⇒ policy-only config: expose no store so the consent
+	// composables throw their guard instead of silently no-op-ing.
+	if (store.getState().categories.length === 0) {
+		return createComponent(Ctx.Provider, {
+			value: null,
+			get children() {
+				return props.children;
+			},
+		});
+	}
 	const [state, setState] = createSignal<ConsentState>(store.getState(), { equals: false });
 	const unsubscribe = store.subscribe(setState);
 	onCleanup(unsubscribe);
@@ -157,7 +176,6 @@ export type {
 	ConsentState,
 	ConsentStore,
 	JurisdictionId,
-	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,
 };

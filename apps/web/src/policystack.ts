@@ -57,8 +57,9 @@ export default defineConfig({
 	// Runtime-only consent wiring. The banner's categories + locked flags are
 	// derived from `cookies` above (analytics is Consent ⇒ a real toggle;
 	// essential stays locked); only the storage adapter and jurisdiction
-	// resolver are authored here. <PolicyStackProvider> reads this and spins
-	// up the consent store — no separate config, no toPolicyStackConsentConfig call.
+	// resolver are authored here. The single <PolicyStack> provider reads this
+	// whole config and spins up the consent store — no separate config, no
+	// conversion step.
 	consent: {
 		adapter: localStorageAdapter(),
 		jurisdictionResolver: timezoneResolver(),

@@ -1,7 +1,7 @@
 // The canonical PolicyStack config. One `defineConfig()` is the single source
 // of truth: it generates the privacy + cookie policy documents AND derives the
 // consent runtime (categories, gating, re-prompt) consumed by
-// `<PolicyStackProvider>` in src/routes/__root.tsx. The only thing that differs
+// `<PolicyStack>` in src/routes/__root.tsx. The only thing that differs
 // per framework is that provider wiring — the config below is framework-neutral.
 //
 // Scanned data categories, cookies and third parties come from ./policystack.gen,

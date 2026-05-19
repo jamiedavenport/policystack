@@ -66,17 +66,17 @@ export default defineConfig({
 On the React side there is now a single provider for that single config:
 
 ```tsx file="app/providers.tsx"
-import { PolicyStackProvider } from "@policystack/react/provider";
+import { PolicyStack } from "@policystack/react/provider";
 import config from "@/policystack";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-	return <PolicyStackProvider config={config}>{children}</PolicyStackProvider>;
+	return <PolicyStack config={config}>{children}</PolicyStack>;
 }
 ```
 
-`<PolicyStackProvider>` supplies the policy context that `<PrivacyPolicy />` and `<CookiePolicy />` read, _and_ — when the config declares `cookies` — the consent store behind `useConsent`, `useCategory`, and `<ConsentGate>`. Declare cookies and you get a consent runtime; omit them and no store is created and `useConsent` correctly throws. The banner's category list and the cookie policy's category list cannot drift apart because there is only one list.
+`<PolicyStack>` supplies the policy context that `<PrivacyPolicy />` and `<CookiePolicy />` read, _and_ — when the config declares `cookies` — the consent store behind `useConsent`, `useCategory`, and `<ConsentGate>`. Declare cookies and you get a consent runtime; omit them and no store is created and `useConsent` correctly throws. The banner's category list and the cookie policy's category list cannot drift apart because there is only one list, and the cookies → categories derivation now lives inside `createConsentStore` — there is no separate conversion step to call.
 
-The merge didn't cost tree-shaking. `@policystack/react` keeps three entries — `./policy`, `./consent`, and the new `./provider` that unions them. A page that imports only `@policystack/react/policy` still shakes the entire consent runtime out of its bundle; `/provider` is the deliberate seam for apps that want both.
+The merge didn't cost tree-shaking. `@policystack/react` keeps three entries — `./policy`, `./consent`, and `./provider`. `./policy` and `./consent` only ever read a tiny shared context, so a page that imports only `@policystack/react/policy` still shakes the entire consent runtime out of its bundle; `/provider` is the single `<PolicyStack>` and the only place `createConsentStore` is pulled in.
 
 ## What 1.0 actually promises
 

@@ -9,36 +9,28 @@ React adapter for Consent. Wraps [`@policystack/core/consent`](/docs/consent/cor
 ## Install
 
 ```sh
-bun add @policystack/core/consent @policystack/react/consent
+bun add @policystack/core @policystack/react
 ```
 
 Peer dependencies: `react >= 18`.
 
 ## Setup
 
-Wrap your app with `<PolicyStackConsentProvider>`:
+There is **one** provider. Wrap your app with `<PolicyStack>` from `@policystack/react/provider` and pass it your whole `policystack.ts` config — it supplies both the policy context (`<PrivacyPolicy>` / `<CookiePolicy>`) and the consent store. The consent categories (and their locked vs. consent-gated state) are derived from `config.cookies`; there is no separate categories array and no conversion step.
 
 ```tsx
-import { PolicyStackConsentProvider } from "@policystack/react/consent";
-import type { Category } from "@policystack/core/consent";
+import { PolicyStack } from "@policystack/react/provider";
 import { createRoot } from "react-dom/client";
-
-const categories: Category[] = [
-	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics" },
-	{ key: "marketing", label: "Marketing" },
-];
+import config from "./policystack";
 
 createRoot(document.getElementById("root")!).render(
-	<PolicyStackConsentProvider config={{ categories }}>
+	<PolicyStack config={config}>
 		<App />
-	</PolicyStackConsentProvider>,
+	</PolicyStack>,
 );
 ```
 
-Pass a pre-created store with `<PolicyStackConsentProvider store={store}>` instead — useful for SSR-time hydration of decisions from cookies.
-
-Already using PolicyStack? Skip the hand-rolled categories array — `toPolicyStackConsentConfig(policy)` from `@policystack/sdk/consent` produces this config from your `policystack.ts` and defaults `policyVersion` from `cookieVersion` so `triggers.policyVersionChanged` reprompts correct-by-default. See [Cookie banner](/docs/policy/cookies/overview).
+`useConsent` / `useCategory` / `<ConsentGate>` (from `@policystack/react/consent`) read the store from this same provider. A policy-only config (no `cookies`) creates no store, so a consent hook used under it throws — that is a configuration error, not a runtime state.
 
 ## API
 
@@ -101,23 +93,16 @@ The `requires` shape is a `ConsentExpr` from core: a category key, `{ and: [...]
 
 ## Next.js
 
-Mark the provider as a client component and mount it in your root layout:
+`<PolicyStack>` is already a client component (`"use client"`). Mount it in your root layout:
 
 ```tsx
 // app/providers.tsx
 "use client";
-import { PolicyStackConsentProvider } from "@policystack/react/consent";
-import type { Category } from "@policystack/core/consent";
-
-const categories: Category[] = [
-	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics" },
-];
+import { PolicyStack } from "@policystack/react/provider";
+import config from "../policystack";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-	return (
-		<PolicyStackConsentProvider config={{ categories }}>{children}</PolicyStackConsentProvider>
-	);
+	return <PolicyStack config={config}>{children}</PolicyStack>;
 }
 ```
 
@@ -136,11 +121,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-For SSR-resolved decisions, build the store on the server with the cookie/header storage adapter and pass it via `store={store}` instead of `config={config}`.
+For SSR-resolved decisions, author a storage adapter (and jurisdiction resolver) under `config.consent` — the cookie/header adapters from [`@policystack/core/consent`](/docs/consent/core) restore decisions at init. Nothing else changes; the same one config drives it.
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the React adapter is a thin reactivity wrapper. A working example is in [`examples/react`](../../examples/react/).
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the React adapter is a thin reactivity wrapper.
 
 ## See also
 

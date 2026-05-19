@@ -5,7 +5,8 @@
 Define your policy once in TypeScript. Render it as React components, generate Markdown, ship a consent banner — all driven from the same source of truth.
 
 ```ts
-import { PolicyStack, PrivacyPolicy } from "@policystack/react";
+import { PolicyStack } from "@policystack/react/provider";
+import { PrivacyPolicy } from "@policystack/react/policy";
 import policy from "@/policy";
 
 export function PrivacyPolicyPage() {

@@ -1,13 +1,9 @@
-// The canonical derivation now lives in @policystack/core/consent so
-// @policystack/sdk and @policystack/react import one copy (no react → sdk edge,
-// no forked parity test). This file stays as the stable public
-// `@policystack/sdk/consent` entry point — re-exporting the bridge plus the
-// authored-knobs type so SDK power users and the single-config provider flow
-// are unaffected. The single-config flow is: author `PolicyStackConfig.consent`
-// and pass the whole config to `<PolicyStackProvider>`, which calls
-// `toPolicyStackConsentConfig(config, config.consent)` internally.
-export {
-	toPolicyStackConsentConfig,
-	type ToConsentConfigOptions,
-	type PolicyStackConsentOptions,
-} from "@policystack/core/consent";
+// The stable public `@policystack/sdk/consent` entry point. The cookies →
+// consent-categories derivation is no longer a separate exported step: it lives
+// inside `@policystack/core`'s `createConsentStore`, which the single
+// `<PolicyStack>` provider (React/Vue/Solid) calls with the whole
+// `PolicyStackConfig`. This entry now exposes only the one hand-authored
+// surface — `PolicyStackConsentOptions`, the runtime-only knobs that live under
+// `PolicyStackConfig.consent` (storage adapter, jurisdiction resolver, GPC,
+// triggers, …) and cannot be derived from the policy.
+export type { PolicyStackConsentOptions } from "@policystack/core/consent";

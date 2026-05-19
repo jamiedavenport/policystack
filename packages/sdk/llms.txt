@@ -134,13 +134,16 @@ separately:
 - `config.locale` → the consent UI locale (policy text and banner agree)
 
 Authoring: put runtime-only wiring (storage adapter, jurisdiction resolver,
-GPC, …) in the optional `consent` block, then pass the whole config to one
-provider — `<PolicyStackProvider config={config}>` from
-`@policystack/react/provider`. It supplies both the policy context and the
-consent store; `<PrivacyPolicy>`/`<CookiePolicy>`, `useConsent`,
-`ConsentGate` all work underneath it. For non-React frameworks (or advanced
-composition), `toPolicyStackConsentConfig(config, config.consent)` from
-`@policystack/sdk/consent` is the same derivation as a standalone primitive.
+GPC, …) in the optional `consent` block, then pass the whole config to the
+single provider — `<PolicyStack config={config}>` from
+`@policystack/react/provider` (and the same-named provider in
+`@policystack/vue`/`@policystack/solid`). It supplies both the policy
+context and the consent store from one context; `<PrivacyPolicy>`/
+`<CookiePolicy>` (from `@policystack/react/policy`) and `useConsent`/
+`ConsentGate` (from `@policystack/react/consent`) all read from it. The
+cookies → consent-categories derivation happens inside `createConsentStore`
+(`@policystack/core/consent`) when given the whole config — there is no
+separate user-facing conversion step.
 
 ## Helper exports (from `@policystack/sdk`)
 

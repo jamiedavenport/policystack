@@ -3,39 +3,37 @@ import {
 	defineComponent,
 	inject,
 	onScopeDispose,
-	provide,
 	shallowRef,
-	type App,
 	type ComputedRef,
-	type InjectionKey,
 	type PropType,
 	type Ref,
 	type SlotsType,
 } from "vue";
-import {
-	createConsentStore,
-	type Category,
-	type ConsentExpr,
-	type ConsentRecord,
-	type ConsentRecordSource,
-	type ConsentState,
-	type ConsentStore,
-	type JurisdictionId,
-	type PolicyStackConsentConfig,
-	type RepromptReason,
-	type Route,
+import type {
+	Category,
+	ConsentExpr,
+	ConsentRecord,
+	ConsentRecordSource,
+	ConsentState,
+	ConsentStore,
+	JurisdictionId,
+	RepromptReason,
+	Route,
 } from "@policystack/core/consent";
-
-const StoreKey: InjectionKey<ConsentStore> = Symbol("policystack-consent-store");
+import { PolicyStackContextKey } from "./context";
 
 const NOT_PROVIDED_MESSAGE =
-	"useConsent / useCategory / ConsentGate must be used after `app.use(PolicyStackConsentPlugin, { config })` " +
-	"or inside <PolicyStackConsentProvider>";
+	"useConsent / useCategory / ConsentGate must be used inside <PolicyStack>, " +
+	"and the config must declare cookie categories";
 
+// The consent composables read the single store off the shared PolicyStack
+// injection — there is no separate consent provider. The store is `null` when
+// the `<PolicyStack>` config declared no cookie categories (a policy-only
+// config), in which case using a consent composable is a configuration error.
 function injectStore(): ConsentStore {
-	const store = inject(StoreKey, null);
-	if (!store) throw new Error(NOT_PROVIDED_MESSAGE);
-	return store;
+	const ctx = inject(PolicyStackContextKey, null);
+	if (!ctx?.store) throw new Error(NOT_PROVIDED_MESSAGE);
+	return ctx.store;
 }
 
 function useStoreState(store: ConsentStore): Ref<ConsentState> {
@@ -46,45 +44,6 @@ function useStoreState(store: ConsentStore): Ref<ConsentState> {
 	onScopeDispose(unsubscribe);
 	return state;
 }
-
-export type PolicyStackConsentPluginOptions =
-	| { config: PolicyStackConsentConfig; store?: undefined }
-	| { store: ConsentStore; config?: undefined };
-
-export const PolicyStackConsentPlugin = {
-	install(app: App, options: PolicyStackConsentPluginOptions): void {
-		const store = resolveStore(options);
-		app.provide(StoreKey, store);
-	},
-};
-
-function resolveStore(options: PolicyStackConsentPluginOptions): ConsentStore {
-	if (options.store) return options.store;
-	return createConsentStore(options.config);
-}
-
-export const PolicyStackConsentProvider = defineComponent({
-	name: "PolicyStackConsentProvider",
-	props: {
-		config: {
-			type: Object as PropType<PolicyStackConsentConfig>,
-			default: undefined,
-		},
-		store: {
-			type: Object as PropType<ConsentStore>,
-			default: undefined,
-		},
-	},
-	slots: Object as SlotsType<{ default?: () => unknown }>,
-	setup(props, { slots }) {
-		if (!props.store && !props.config) {
-			throw new Error("<PolicyStackConsentProvider> requires either a `config` or a `store` prop");
-		}
-		const store = props.store ?? createConsentStore(props.config!);
-		provide(StoreKey, store);
-		return () => slots.default?.();
-	},
-});
 
 export type UseConsentResult = {
 	route: ComputedRef<Route>;
@@ -173,7 +132,6 @@ export type {
 	ConsentState,
 	ConsentStore,
 	JurisdictionId,
-	PolicyStackConsentConfig,
 	RepromptReason,
 	Route,
 };

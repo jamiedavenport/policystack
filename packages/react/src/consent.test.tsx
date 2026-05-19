@@ -1,22 +1,42 @@
 // @vitest-environment happy-dom
-import { createConsentStore, type Category } from "@policystack/core/consent";
+import type { PolicyStackConfig } from "@policystack/core";
 import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { ConsentGate, PolicyStackConsentProvider, useCategory, useConsent } from "./consent";
+import { ConsentGate, useCategory, useConsent } from "./consent";
+import { PolicyStack } from "./provider";
 
-const baseCategories: Category[] = [
+// Cookie posture that derives to the same three categories the old hand-rolled
+// `baseCategories` array used: essential (locked, legal obligation), analytics
+// and marketing (consent-gated).
+const policyConfig: PolicyStackConfig = {
+	company: {
+		name: "Acme Inc.",
+		legalName: "Acme Corporation",
+		address: "123 Main St, Springfield, USA",
+		contact: { email: "privacy@acme.com" },
+	},
+	effectiveDate: "2026-01-01",
+	jurisdictions: ["eea"],
+	data: { collected: {}, context: {} },
+	cookies: {
+		used: { essential: true, analytics: true, marketing: true },
+		context: {
+			essential: { lawfulBasis: "legal_obligation" },
+			analytics: { lawfulBasis: "consent" },
+			marketing: { lawfulBasis: "consent" },
+		},
+	},
+};
+
+const expectedCategories = [
 	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics" },
-	{ key: "marketing", label: "Marketing" },
+	{ key: "analytics", label: "Analytics", locked: false },
+	{ key: "marketing", label: "Marketing", locked: false },
 ];
 
 function Wrapper({ children }: { children: ReactNode }) {
-	return (
-		<PolicyStackConsentProvider config={{ categories: baseCategories }}>
-			{children}
-		</PolicyStackConsentProvider>
-	);
+	return <PolicyStack config={policyConfig}>{children}</PolicyStack>;
 }
 
 afterEach(() => {
@@ -24,8 +44,8 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe("PolicyStackConsentProvider", () => {
-	it("provides a store created from config", () => {
+describe("consent hooks read the single PolicyStack context", () => {
+	it("derives the store from the one config", () => {
 		const { result } = renderHook(() => useConsent(), { wrapper: Wrapper });
 		expect(result.current.route).toBe("cookie");
 		expect(result.current.decisions).toEqual({
@@ -35,20 +55,9 @@ describe("PolicyStackConsentProvider", () => {
 		});
 	});
 
-	it("uses a pre-created store when provided", () => {
-		const store = createConsentStore({ categories: baseCategories });
-		store.toggle("analytics");
-		const { result } = renderHook(() => useConsent(), {
-			wrapper: ({ children }) => (
-				<PolicyStackConsentProvider store={store}>{children}</PolicyStackConsentProvider>
-			),
-		});
-		expect(result.current.decisions.analytics).toBe(true);
-	});
-
-	it("throws when hooks are used outside the provider", () => {
+	it("throws when hooks are used outside <PolicyStack>", () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});
-		expect(() => renderHook(() => useConsent())).toThrow(/PolicyStackConsentProvider/);
+		expect(() => renderHook(() => useConsent())).toThrow(/must be used inside <PolicyStack>/);
 	});
 });
 
@@ -57,7 +66,7 @@ describe("useConsent", () => {
 		const { result } = renderHook(() => useConsent(), { wrapper: Wrapper });
 		expect(result.current).toMatchObject({
 			route: "cookie",
-			categories: baseCategories,
+			categories: expectedCategories,
 			jurisdiction: null,
 		});
 		for (const key of [
@@ -154,16 +163,24 @@ describe("useCategory", () => {
 			renders.marketing++;
 			return <span data-testid="m">{String(m.granted)}</span>;
 		}
-		const store = createConsentStore({ categories: baseCategories });
+		function ToggleMarketing() {
+			const { toggle } = useConsent();
+			return (
+				<button type="button" onClick={() => toggle("marketing")}>
+					toggle-marketing
+				</button>
+			);
+		}
 		render(
-			<PolicyStackConsentProvider store={store}>
+			<PolicyStack config={policyConfig}>
 				<ProbeAnalytics />
 				<ProbeMarketing />
-			</PolicyStackConsentProvider>,
+				<ToggleMarketing />
+			</PolicyStack>,
 		);
 		const before = { ...renders };
 		act(() => {
-			store.toggle("marketing");
+			screen.getByText("toggle-marketing").click();
 		});
 		expect(renders.analytics).toBe(before.analytics);
 		expect(renders.marketing).toBeGreaterThan(before.marketing);
@@ -171,26 +188,42 @@ describe("useCategory", () => {
 });
 
 describe("ConsentGate", () => {
-	it("renders children when expression evaluates true", () => {
-		const store = createConsentStore({ categories: baseCategories });
-		store.acceptAll();
-		render(
-			<PolicyStackConsentProvider store={store}>
-				<ConsentGate requires="analytics">
-					<span data-testid="child">visible</span>
-				</ConsentGate>
-			</PolicyStackConsentProvider>,
+	function GateHarness({ children }: { children: ReactNode }) {
+		const { acceptAll } = useConsent();
+		return (
+			<>
+				<button type="button" onClick={() => acceptAll()}>
+					accept-all
+				</button>
+				{children}
+			</>
 		);
+	}
+
+	it("renders children when expression evaluates true", () => {
+		render(
+			<PolicyStack config={policyConfig}>
+				<GateHarness>
+					<ConsentGate requires="analytics">
+						<span data-testid="child">visible</span>
+					</ConsentGate>
+				</GateHarness>
+			</PolicyStack>,
+		);
+		expect(screen.queryByTestId("child")).toBeNull();
+		act(() => {
+			screen.getByText("accept-all").click();
+		});
 		expect(screen.getByTestId("child").textContent).toBe("visible");
 	});
 
 	it("renders fallback when expression is false", () => {
 		render(
-			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
+			<PolicyStack config={policyConfig}>
 				<ConsentGate requires="analytics" fallback={<span data-testid="fb">nope</span>}>
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</PolicyStackConsentProvider>,
+			</PolicyStack>,
 		);
 		expect(screen.queryByTestId("child")).toBeNull();
 		expect(screen.getByTestId("fb").textContent).toBe("nope");
@@ -198,51 +231,47 @@ describe("ConsentGate", () => {
 
 	it("renders nothing when no fallback and gate is closed", () => {
 		const { container } = render(
-			<PolicyStackConsentProvider config={{ categories: baseCategories }}>
+			<PolicyStack config={policyConfig}>
 				<ConsentGate requires="analytics">
 					<span data-testid="child">visible</span>
 				</ConsentGate>
-			</PolicyStackConsentProvider>,
+			</PolicyStack>,
 		);
 		expect(container.textContent).toBe("");
 	});
 
-	it("updates when state crosses the truth boundary", () => {
-		const store = createConsentStore({ categories: baseCategories });
+	it("evaluates compound expressions via the shared evaluator", () => {
+		function ToggleBoth() {
+			const { toggle } = useConsent();
+			return (
+				<>
+					<button type="button" onClick={() => toggle("analytics")}>
+						tog-a
+					</button>
+					<button type="button" onClick={() => toggle("marketing")}>
+						tog-m
+					</button>
+				</>
+			);
+		}
 		render(
-			<PolicyStackConsentProvider store={store}>
-				<ConsentGate requires="analytics" fallback={<span data-testid="fb">nope</span>}>
-					<span data-testid="child">visible</span>
-				</ConsentGate>
-			</PolicyStackConsentProvider>,
-		);
-		expect(screen.queryByTestId("child")).toBeNull();
-		act(() => {
-			store.toggle("analytics");
-		});
-		expect(screen.getByTestId("child").textContent).toBe("visible");
-		expect(screen.queryByTestId("fb")).toBeNull();
-	});
-
-	it("evaluates compound expressions via OP-296's evaluator", () => {
-		const store = createConsentStore({ categories: baseCategories });
-		render(
-			<PolicyStackConsentProvider store={store}>
+			<PolicyStack config={policyConfig}>
+				<ToggleBoth />
 				<ConsentGate
 					requires={{ and: ["analytics", "marketing"] }}
 					fallback={<span data-testid="fb">need both</span>}
 				>
 					<span data-testid="child">both granted</span>
 				</ConsentGate>
-			</PolicyStackConsentProvider>,
+			</PolicyStack>,
 		);
 		expect(screen.queryByTestId("child")).toBeNull();
 		act(() => {
-			store.toggle("analytics");
+			screen.getByText("tog-a").click();
 		});
 		expect(screen.queryByTestId("child")).toBeNull();
 		act(() => {
-			store.toggle("marketing");
+			screen.getByText("tog-m").click();
 		});
 		expect(screen.getByTestId("child").textContent).toBe("both granted");
 	});

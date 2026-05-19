@@ -65,7 +65,7 @@ function initSkill(): string {
 		.join(", ");
 	return `${frontmatter(
 		"policystack-init",
-		"Scaffold PolicyStack in a project: run the @policystack/cli installer, then wire <PolicyStackProvider> (policy + consent). Use when adding a privacy/cookie policy or a consent banner to a web app.",
+		"Scaffold PolicyStack in a project: run the @policystack/cli installer, then wire the single <PolicyStack> provider (policy + consent). Use when adding a privacy/cookie policy or a consent banner to a web app.",
 	)}
 ${GENERATED_BANNER}
 
@@ -110,11 +110,11 @@ Wrap the app root **once** with the single provider — it supplies both the
 policy context and the consent store (derived from the same config):
 
 \`\`\`tsx
-import { PolicyStackProvider } from "@policystack/react/provider";
+import { PolicyStack } from "@policystack/react/provider";
 import config from "./policystack";
 
 export function App({ children }: { children: React.ReactNode }) {
-	return <PolicyStackProvider config={config}>{children}</PolicyStackProvider>;
+	return <PolicyStack config={config}>{children}</PolicyStack>;
 }
 \`\`\`
 

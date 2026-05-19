@@ -1,6 +1,6 @@
 ---
 title: "@policystack/solid"
-description: "Solid adapter — signals-based hooks and provider"
+description: "Solid adapter — one PolicyStack provider, signals-based hooks"
 product: consent
 ---
 
@@ -9,37 +9,31 @@ Solid adapter for Consent. Built on Solid's signals — fine-grained reactivity 
 ## Install
 
 ```sh
-bun add @policystack/core/consent @policystack/solid
+bun add @policystack/core @policystack/solid
 ```
 
 Peer dependencies: `solid-js >= 1.8`.
 
 ## Setup
 
-Wrap your app with `<PolicyStackConsentProvider>`:
+There is **one** provider. Wrap your app with `<PolicyStack>` and pass it your whole `policystack.ts` config — the consent categories (and their locked vs. consent-gated state) are derived from `config.cookies`; there is no separate categories array, no conversion step.
 
 ```tsx
-import { PolicyStackConsentProvider } from "@policystack/solid";
-import type { Category } from "@policystack/core/consent";
+import { PolicyStack } from "@policystack/solid/consent";
 import { render } from "solid-js/web";
-
-const categories: Category[] = [
-	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics" },
-	{ key: "marketing", label: "Marketing" },
-];
+import config from "./policystack";
 
 render(
 	() => (
-		<PolicyStackConsentProvider config={{ categories }}>
+		<PolicyStack config={config}>
 			<App />
-		</PolicyStackConsentProvider>
+		</PolicyStack>
 	),
 	document.getElementById("root")!,
 );
 ```
 
-You can pass a pre-created store with `<PolicyStackConsentProvider store={store}>` instead.
+`useConsent` / `useCategory` / `<ConsentGate>` read the store from this same provider. A policy-only config (no `cookies`) provides no store, so a consent hook used under it throws — that is a configuration error, not a runtime state.
 
 ## API
 
@@ -48,7 +42,7 @@ You can pass a pre-created store with `<PolicyStackConsentProvider store={store}
 Returns an object of accessors (call as functions) plus action methods.
 
 ```tsx
-import { useConsent } from "@policystack/solid";
+import { useConsent } from "@policystack/solid/consent";
 import { Show } from "solid-js";
 
 function Banner() {
@@ -70,7 +64,7 @@ function Banner() {
 Granular per-category access.
 
 ```tsx
-import { useCategory } from "@policystack/solid";
+import { useCategory } from "@policystack/solid/consent";
 
 function AnalyticsToggle() {
 	const analytics = useCategory("analytics");
@@ -88,7 +82,7 @@ function AnalyticsToggle() {
 Renders `children` when an expression is satisfied; renders `fallback` otherwise.
 
 ```tsx
-import { ConsentGate } from "@policystack/solid";
+import { ConsentGate } from "@policystack/solid/consent";
 
 <ConsentGate requires="analytics" fallback={<EnablePrompt />}>
   <Chart />
@@ -101,27 +95,27 @@ import { ConsentGate } from "@policystack/solid";
 
 ## SolidStart (SSR)
 
-`<PolicyStackConsentProvider>` works in SolidStart — call it from your `app.tsx` root:
+`<PolicyStack>` works in SolidStart — call it from your `app.tsx` root:
 
 ```tsx
 // src/app.tsx
-import { PolicyStackConsentProvider } from "@policystack/solid";
+import { PolicyStack } from "@policystack/solid/consent";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-import { categories } from "./cookies";
+import config from "./policystack";
 
 export default function App() {
 	return (
-		<PolicyStackConsentProvider config={{ categories }}>
+		<PolicyStack config={config}>
 			<Router>
 				<FileRoutes />
 			</Router>
-		</PolicyStackConsentProvider>
+		</PolicyStack>
 	);
 }
 ```
 
-Pass a pre-built store via `<PolicyStackConsentProvider store={store}>` if you need SSR-time hydration of decisions from cookies.
+For SSR-resolved decisions, author a storage adapter under `config.consent` — the cookie/header adapters from [`@policystack/core/consent`](/docs/consent/core) restore decisions at init. The same one config drives it.
 
 ## Bundling
 
@@ -129,7 +123,7 @@ This package ships source via the `solid` export condition, so consumers using `
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Solid adapter is a thin reactivity wrapper. A working example is in [`examples/solid`](../../examples/solid/).
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Solid adapter is a thin reactivity wrapper.
 
 ## See also
 

@@ -49,7 +49,8 @@ Set `automatedDecisionMaking: []` to declare that you don't use automated decisi
 Then render it:
 
 ```tsx
-import { PolicyStack, PrivacyPolicy } from "@policystack/react";
+import { PolicyStack } from "@policystack/react/provider";
+import { PrivacyPolicy } from "@policystack/react/policy";
 import policy from "@/policy";
 
 export function PrivacyPolicyPage() {

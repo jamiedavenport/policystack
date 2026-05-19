@@ -105,10 +105,10 @@ export type PolicyStackConsentConfig = {
 	canWithdraw?: boolean;
 };
 
-// Runtime-only consent knobs toPolicyStackConsentConfig() CANNOT derive from the
-// policy. Everything else in PolicyStackConsentConfig (categories, policyVersion,
-// locale, canWithdraw) is derived from the PolicyStackConfig. This is the only
-// consent surface a user authors by hand, and it lives under
+// Runtime-only consent knobs that CANNOT be derived from the policy. Everything
+// else in PolicyStackConsentConfig (categories, policyVersion, locale,
+// canWithdraw) is derived from the PolicyStackConfig by createConsentStore.
+// This is the only consent surface a user authors by hand, and it lives under
 // PolicyStackConfig.consent so policy + consent are ONE config. Pick<> keeps it
 // structurally locked to PolicyStackConsentConfig — change a knob there, this follows.
 export type PolicyStackConsentOptions = Pick<
