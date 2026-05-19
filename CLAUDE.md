@@ -31,8 +31,13 @@ Run `vp help` for the full list and `vp <command> --help` for specifics.
 
 ## Project Structure
 
-Packages are still published under the `@policystack/*` scope (the `@policystack/*`
-rename is planned, not yet done).
+All packages are named `@policystack/*` in-repo (the OpenPolicy/OpenCookies →
+PolicyStack rename is complete). Nothing has been published to npm under that
+scope yet — the first publish happens as part of the 1.0.0 cut (PS-38). Old
+`@openpolicy/*` / `@opencookies/*` deprecation shims were dropped, not shipped.
+The only remaining old-scope references in code are the intentional dual-scope
+SDK-specifier seams in `packages/vite` (`sdk-specifier.ts` / `sdk-resolver.ts`),
+removed at freeze.
 
 - `packages/core` — `@policystack/core`: compilation engine **and** the consent
   runtime (exposed via the `./consent` subpath; PolicyStack Consent was folded in here).

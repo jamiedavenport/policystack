@@ -346,13 +346,13 @@ importers:
 
   packages/renderers:
     dependencies:
+      '@policystack/core':
+        specifier: workspace:*
+        version: link:../core
       pdfkit:
         specifier: ^0.18.0
         version: 0.18.0
     devDependencies:
-      '@policystack/core':
-        specifier: workspace:*
-        version: link:../core
       '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

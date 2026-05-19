@@ -1,0 +1,100 @@
+---
+title: "PolicyStack speaks French, German, Dutch, and Spanish"
+excerpt: "PolicyStack lifts privacy and cookie policies out of English-only. One config, five locales, no string-key lookup — TypeScript is the lookup, and tsc fails the build if a translation is missing a key."
+date: "2026-05-14"
+tag: release
+---
+
+PolicyStack compiles privacy policies and cookie policies in **English, French, German, Dutch, and Spanish**. The same typed config emits in any of the five locales — and only the PolicyStack-emitted strings (around 125 of them: headings, table headers, GDPR/CCPA boilerplate, formatted dates) switch language. Your company name, processing purposes, retention text, and third-party descriptions pass through exactly as you wrote them.
+
+## Why this matters
+
+EU regulators expect privacy disclosures in a language the data subject can actually read. Article 12 of the GDPR is explicit about "concise, transparent, intelligible and easily accessible form, using clear and plain language." A French SaaS company serving French users on an English-only privacy page is a finding waiting to happen. The usual workaround — paste the rendered output into DeepL, edit by hand, hope nothing drifts when the config changes next quarter — is the same consent-as-vendor-dashboard anti-pattern PolicyStack exists to eliminate. The whole point of a typed policy config is that the policy can't drift from the code. Translations need the same guarantee.
+
+## How it works
+
+There is no `t("some.key")` lookup. There is no i18n runtime. The compiler holds one dictionary per locale — `packages/core/src/i18n/en.ts`, `fr.ts`, `de.ts`, `nl.ts`, `es.ts` — and a `Dictionary` type that every dictionary must satisfy. Section builders receive a typed `t` object and access strings via property paths:
+
+```ts
+t.privacy.introduction.heading();
+t.privacy.introduction.body({ companyName, effectiveDate, versionSuffix });
+```
+
+If a locale is missing a key — or a refactor adds a new string that hasn't been translated yet — `tsc` fails. There is no silent fallback to English at runtime, because there is no runtime to fall back in. TypeScript is the lookup.
+
+## The two ways to opt in
+
+Either set `locale` once on the config and every render uses it:
+
+```ts file="policystack.ts"
+import { defineConfig } from "@policystack/sdk";
+
+export default defineConfig({
+	company: { name: "Acme, Inc." },
+	effectiveDate: "2026-01-01",
+	jurisdictions: ["eea"],
+	locale: "fr",
+	data: {
+		/* ... */
+	},
+});
+```
+
+Or pass `locale` as a prop on the React policy component to override per render. The same config can drive a language switcher, an English fallback, or a side-by-side bilingual page:
+
+```tsx file="app/privacy/page.tsx"
+import { PolicyStack } from "@policystack/react/provider";
+import { PrivacyPolicy } from "@policystack/react/policy";
+import config from "@/policystack";
+
+export function PrivacyPolicyPage() {
+	return (
+		<PolicyStack config={config}>
+			<PrivacyPolicy /> {/* uses config.locale */}
+			<PrivacyPolicy locale="fr" /> {/* override → French */}
+		</PolicyStack>
+	);
+}
+```
+
+`locale` is optional everywhere it appears. A config with no `locale` set compiles and renders in English.
+
+## Dates render in the locale's long form
+
+`effectiveDate` runs through `Intl.DateTimeFormat` with the locale's BCP-47 tag, pinned to UTC so the same input produces the same output on a build server in São Paulo or Frankfurt. `"2026-01-01"` becomes:
+
+- English — `January 1, 2026`
+- French — `1 janvier 2026`
+- German — `1. Januar 2026`
+- Dutch — `1 januari 2026`
+- Spanish — `1 de enero de 2026`
+
+The UTC pin matters more than it sounds. Without it, a build that happens to run after 5pm Pacific produces a different-string-but-same-day output than a build that runs at noon, and the version hash flips for no good reason.
+
+## Version hashes are per-locale
+
+`locale` feeds into both `computePrivacyVersion` and `computeCookieVersion`, so a French build and an English build of the same config produce distinct 8-character hashes. This is intentional: the consent store (`@policystack/core/consent`) re-prompts the first time it sees a new cookie policy version, so a user who is served a translated policy after seeing the English one gets a fresh prompt. See [Cookie policy](/docs/policy).
+
+## The compliance caveat
+
+The translated GDPR/CCPA/UK-GDPR paragraphs in `fr.ts`, `de.ts`, `nl.ts`, and `es.ts` are first-pass legal text. They use the standard EU regulatory register for each language — `"responsable du traitement"`, `"Verantwortlicher"`, `"verwerkingsverantwoordelijke"`, `"responsable del tratamiento"` — but they have not been audited by counsel in each jurisdiction. Have a native-speaking compliance reviewer sign off on the rendered output before relying on a non-English locale in production. This is the same posture PolicyStack takes for English: the rendered document is exactly that — a document, not legal advice.
+
+If you spot an error in one of the dictionaries, the file lives at `packages/core/src/i18n/<locale>.ts`. PRs welcome.
+
+## What does not translate
+
+A handful of strings stay English by design — they're not user-facing policy content:
+
+- `reason:` audit metadata on heading nodes (e.g. `"Required by GDPR Article 13(1)(c)"`) — threaded into the document tree for compliance tooling, never rendered to end users.
+- Validator messages — surface in build logs to the developer integrating PolicyStack.
+- Section IDs (`"introduction"`, `"data-collected"`, …) — stable identifiers used by tests and framework integrations.
+- Renderer format output (markdown syntax, HTML tags, PDF bullet glyphs) — already locale-agnostic.
+- Internal `Error` messages thrown when configs are malformed — developer-facing.
+
+## Where to go next
+
+- **[Internationalization docs](/docs/policy)** — the reference for the `locale` field, the React `locale` prop, supported locales, and the compliance caveat.
+- **[Policy](/policy)** — the typed-config-as-policy building block.
+- **[GitHub](https://github.com/jamiedavenport/policystack)** — Apache-2.0. Translation corrections, additional locales, and locale-aware framework adapters all welcome.
+
+The bet PolicyStack makes is that privacy disclosures want to look like everything else in your repo: typed, diffable, testable, owned by engineering. Translations were the one place that bet broke down. PolicyStack closes the gap.

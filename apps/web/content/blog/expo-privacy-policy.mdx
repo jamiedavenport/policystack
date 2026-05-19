@@ -7,14 +7,14 @@ tag: engineering
 
 The privacy policy in a mobile app usually shows up as one of three things: a `WebView` pointing at the marketing site, a hardcoded markdown file rendered through `react-native-markdown-display`, or a single deeply-nested `<Text>` component a junior dev was asked to fix on a Friday. All three drift the moment you add an SDK, and none of them feel native — there's a flash of white, the scroll gestures are wrong, the typography doesn't match.
 
-OpenPolicy ships a different shape for this. The policy is a typed TypeScript config. The renderer walks a document tree and hands each node to a React component you provide — and on Expo / React Native, those components are just `View`, `Text`, and `Linking`. There is no WebView, no markdown parser at runtime, and no network. The full working example is at [terms-sh/expo-example](https://github.com/terms-sh/expo-example); this post walks through the moving parts.
+PolicyStack Policy ships a different shape for this. The policy is a typed TypeScript config. The renderer walks a document tree and hands each node to a React component you provide — and on Expo / React Native, those components are just `View`, `Text`, and `Linking`. There is no WebView, no markdown parser at runtime, and no network. This post walks through the moving parts.
 
 ## What you get on Expo
 
 Two packages, plus your own components:
 
 - **`@policystack/sdk`** — the config types and helpers (`defineConfig`, `LegalBases`, `Retention`, `Providers`, `Compliance`). Pure TypeScript; no native modules.
-- **`@policystack/react`** — `<OpenPolicy>` and `<PrivacyPolicy>`. The renderer is platform-agnostic: it builds a document tree from your config and dispatches each node (`Section`, `Heading`, `Paragraph`, `Table`, `Link`, …) to a React component. On the web that component is a `<p>`. On Expo it's a `<Text>`. Same renderer, different leaves.
+- **`@policystack/react`** — `<PolicyStack>` and `<PrivacyPolicy>`. The renderer is platform-agnostic: it builds a document tree from your config and dispatches each node (`Section`, `Heading`, `Paragraph`, `Table`, `Link`, …) to a React component. On the web that component is a `<p>`. On Expo it's a `<Text>`. Same renderer, different leaves.
 - **A `PolicyComponents` map you write once.** Maybe 80 lines. It's the bridge from the document tree to React Native primitives, and it's the only file in this setup that's specific to mobile.
 
 The point is that the rendered policy is composed entirely of native components. No `WebView` cold-start, no JS markdown parser shipped to the device, no third-party SaaS embed. The policy text lives in your JS bundle and renders as fast as any other screen.
@@ -29,9 +29,9 @@ That's it for runtime. There's no Expo config plugin to register, no native modu
 
 ## Define the policy
 
-The whole policy is one file at the project root. Here's the example app's [`openpolicy.ts`](https://github.com/terms-sh/expo-example/blob/main/openpolicy.ts):
+The whole policy is one file at the project root. Here's a `policystack.ts`:
 
-```ts file="openpolicy.ts"
+```ts file="policystack.ts"
 import {
 	Compliance,
 	defineConfig,
@@ -86,11 +86,11 @@ That config is all the policy "content" the app needs. Everything else is presen
 
 ## Map the document tree to React Native
 
-This is the only mobile-specific file. `<PrivacyPolicy>` accepts a `components` prop — for each node type the renderer might emit, you provide a component. Anything you don't override falls back to a sensible default. Here's the shape from the example's [`components/PolicyComponents.tsx`](https://github.com/terms-sh/expo-example/blob/main/components/PolicyComponents.tsx):
+This is the only mobile-specific file. `<PrivacyPolicy>` accepts a `components` prop — for each node type the renderer might emit, you provide a component. Anything you don't override falls back to a sensible default. Here's the shape from `components/PolicyComponents.tsx`:
 
 ```tsx file="components/PolicyComponents.tsx"
 import { Linking, StyleSheet, Text, View } from "react-native";
-import type { PolicyComponents } from "@policystack/react";
+import type { PolicyComponents } from "@policystack/react/policy";
 
 const HEADING_SIZES: Record<1 | 2 | 3 | 4 | 5 | 6, number> = {
 	1: 28,
@@ -144,12 +144,13 @@ The full overridable surface is `Root`, `Section`, `Heading`, `Paragraph`, `List
 
 ## Mount the screen
 
-The screen itself is a thin wrapper. It owns the `SafeAreaView`, the `ScrollView`, and the page title; everything below the title comes from the renderer. From the example's [`PrivacyPolicyScreen.tsx`](https://github.com/terms-sh/expo-example/blob/main/screens/PrivacyPolicyScreen.tsx):
+The screen itself is a thin wrapper. It owns the `SafeAreaView`, the `ScrollView`, and the page title; everything below the title comes from the renderer. From `screens/PrivacyPolicyScreen.tsx`:
 
 ```tsx file="screens/PrivacyPolicyScreen.tsx"
-import { OpenPolicy, PrivacyPolicy } from "@policystack/react";
+import { PolicyStack } from "@policystack/react/provider";
+import { PrivacyPolicy } from "@policystack/react/policy";
 import { SafeAreaView, ScrollView, StyleSheet, Text } from "react-native";
-import openpolicy from "../openpolicy";
+import config from "../policystack";
 import policyComponents from "../components/PolicyComponents";
 
 export default function PrivacyPolicyScreen() {
@@ -157,16 +158,16 @@ export default function PrivacyPolicyScreen() {
 		<SafeAreaView style={styles.safe}>
 			<ScrollView contentContainerStyle={styles.content}>
 				<Text style={styles.title}>Privacy Policy</Text>
-				<OpenPolicy config={openpolicy}>
+				<PolicyStack config={config}>
 					<PrivacyPolicy components={policyComponents} />
-				</OpenPolicy>
+				</PolicyStack>
 			</ScrollView>
 		</SafeAreaView>
 	);
 }
 ```
 
-Two things to note. First, `<OpenPolicy>` is a context provider — every `<PrivacyPolicy>` (or `<CookiePolicy>`, when you add one) below it reads the same compiled document tree, so you can split the policy across screens or tabs without recomputing. Second, `ScrollView` is fine for the lengths a real policy ends up at; if you stretch into the kind of policy that's tens of thousands of words, you'd swap in a `FlatList` reading the document tree's top-level sections, but that's a known optimisation rather than a starting point.
+Two things to note. First, `<PolicyStack>` is the single context provider — every `<PrivacyPolicy>` (or `<CookiePolicy>`, when you add one) below it reads the same compiled document tree, so you can split the policy across screens or tabs without recomputing. Second, `ScrollView` is fine for the lengths a real policy ends up at; if you stretch into the kind of policy that's tens of thousands of words, you'd swap in a `FlatList` reading the document tree's top-level sections, but that's a known optimisation rather than a starting point.
 
 Wire the screen into `App.tsx` like any other route:
 
@@ -203,8 +204,8 @@ The hardest part of a code-first policy isn't the initial setup. It's the inevit
 The shape that works: hand the maintenance to your coding agent on a schedule. A prompt that's been working for me:
 
 ```text file="prompt to claude code" tag="bash"
-Read openpolicy.ts and package.json. Compare the dependencies in
-package.json against thirdParties in openpolicy.ts.
+Read policystack.ts and package.json. Compare the dependencies in
+package.json against thirdParties in policystack.ts.
 
 For any new SDK in package.json that's likely a third party data
 recipient (analytics, error tracking, payments, push, ads, attribution),
@@ -236,6 +237,5 @@ Compared to the three things mobile apps usually do:
 
 You've got a typed policy compiled into your bundle, rendered with native components, and a workflow for keeping it accurate as the app grows. A few adjacent pieces:
 
-- **[The full Expo example](https://github.com/terms-sh/expo-example)** — the working app this post is based on. Fork it, point `openpolicy.ts` at your company, replace the `PolicyComponents` styles with your own design tokens.
-- **[OpenPolicy](/openpolicy)** — product page with the rest of the renderer surface (cookie policy, per-section overrides, Markdown export for your docs site).
-- **[Ship a privacy policy with your TanStack app](/blog/tanstack-privacy-policy)** — the same primitives applied to the web side. If you ship both an app and a web app, the same `openpolicy.ts` drives both — one source of truth, two sets of leaf components.
+- **[Policy docs](/docs/policy)** — the rest of the renderer surface (cookie policy, per-section overrides, Markdown export for your docs site).
+- **[Ship a privacy policy with your TanStack app](/blog/tanstack-privacy-policy)** — the same primitives applied to the web side. If you ship both an app and a web app, the same `policystack.ts` drives both — one source of truth, two sets of leaf components.

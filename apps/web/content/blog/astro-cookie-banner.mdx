@@ -1,29 +1,29 @@
 ---
 title: "Ship a cookie banner in your Astro site without a framework"
-excerpt: "Astro renders the markup at build time; ~40 lines of vanilla JavaScript wire it to OpenCookies' headless state machine. No React, no hydration island, no third-party iframe — just progressive enhancement and a banner that's part of your design system."
+excerpt: "Astro renders the markup at build time; ~40 lines of vanilla JavaScript wire it to PolicyStack Consent's headless state machine. No React, no hydration island, no third-party iframe — just progressive enhancement and a banner that's part of your design system."
 date: "2026-05-10"
 tag: engineering
 ---
 
 Astro is the awkward case for cookie banners. Most consent libraries assume you brought a framework — they ship a React component, a Vue plugin, a Svelte action — and the banner is the one part of your site that drags an entire runtime onto a page that was otherwise pure HTML. The alternative is a third-party SaaS embed that paints over your design system and flashes in on every page load.
 
-OpenCookies takes a different shape, and that shape happens to fit Astro perfectly. The runtime is a sub-4kb headless state machine — categories, decisions, jurisdiction, GPC, persistence — with no bundled UI. The markup is whatever you write. On Astro that means the banner template lives in an `.astro` component, gets server-rendered like the rest of your site, and a small `<script>` tag wires it to the store at runtime. No island, no hydration, no framework adapter. The full working example is at [opencookies/examples/astro](https://github.com/jamiedavenport/opencookies/tree/main/examples/astro); this post walks through it.
+PolicyStack Consent takes a different shape, and that shape happens to fit Astro perfectly. The runtime is a sub-4kb headless state machine — categories, decisions, jurisdiction, GPC, persistence — with no bundled UI. The markup is whatever you write. On Astro that means the banner template lives in an `.astro` component, gets server-rendered like the rest of your site, and a small `<script>` tag wires it to the store at runtime. No island, no hydration, no framework adapter. This post walks through it; the [Consent docs](/docs/consent) cover the rest of the surface.
 
 ## What this looks like in Astro
 
 Astro's component model is a good match for headless consent. A `.astro` file has two halves:
 
 - **The frontmatter and template** run at build time (or on the server, if you're using SSR). This is where the banner's HTML lives — categories, copy, buttons, the preferences modal. You write it like any other Astro component, with Tailwind or your own CSS.
-- **A `<script>` tag** at the bottom is hoisted, bundled, and shipped as a normal ES module. This is where `@opencookies/core` lives. It reads the markup the template produced, subscribes to the store, and toggles `hidden` attributes when state changes.
+- **A `<script>` tag** at the bottom is hoisted, bundled, and shipped as a normal ES module. This is where `@policystack/core/consent` lives. It reads the markup the template produced, subscribes to the store, and toggles `hidden` attributes when state changes.
 
 The result: the banner's HTML is on the page from the first byte. The script has one job — flip a `hidden` attribute and wire up clicks. There is no framework runtime to download, nothing to hydrate, no FOUC where the banner pops in half a second after the page renders.
 
 ## Install
 
-You only need `@opencookies/core` — no framework adapter:
+You only need `@policystack/core` — no framework adapter:
 
 ```bash file="terminal" tag="bash"
-bun add @opencookies/core
+bun add @policystack/core
 ```
 
 That's the whole runtime dependency.
@@ -33,7 +33,7 @@ That's the whole runtime dependency.
 The categories are referenced from two places — the SSR template (to render the checkboxes) and the runtime script (to construct the store). Defining them in a shared module means you can change them in one place and the build will fail if either side falls out of sync:
 
 ```ts file="src/lib/cookie-categories.ts"
-import type { Category } from "@opencookies/core";
+import type { Category } from "@policystack/core/consent";
 
 export const categories: Category[] = [
 	{
@@ -59,7 +59,7 @@ export const categories: Category[] = [
 
 ## The banner component
 
-`src/components/CookieBanner.astro` is one file with three layers: the bottom-of-page banner, a centred preferences modal, and the script that drives both. The template uses data attributes (`data-opencookies-banner`, `data-action="all"`) so the script has stable hooks without relying on class names you might restyle later.
+`src/components/CookieBanner.astro` is one file with three layers: the bottom-of-page banner, a centred preferences modal, and the script that drives both. The template uses data attributes (`data-policystack-banner`, `data-action="all"`) so the script has stable hooks without relying on class names you might restyle later.
 
 ```astro file="src/components/CookieBanner.astro"
 ---
@@ -67,7 +67,7 @@ import { categories } from "../lib/cookie-categories";
 ---
 
 <div
-  data-opencookies-banner
+  data-policystack-banner
   hidden
   class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white shadow-lg"
 >
@@ -84,7 +84,7 @@ import { categories } from "../lib/cookie-categories";
 </div>
 
 <div
-  data-opencookies-prefs
+  data-policystack-prefs
   hidden
   class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4"
 >
@@ -125,8 +125,8 @@ Astro's `<script>` tags are bundled by Vite, so this looks like a normal module 
 
 ```astro file="src/components/CookieBanner.astro"
 <script>
-  import { createConsentStore, timezoneResolver } from "@opencookies/core";
-  import { localStorageAdapter } from "@opencookies/core/storage/local-storage";
+  import { createConsentStore, timezoneResolver } from "@policystack/core/consent";
+  import { localStorageAdapter } from "@policystack/core/consent/storage/local-storage";
   import { categories } from "../lib/cookie-categories";
 
   const store = createConsentStore({
@@ -135,8 +135,8 @@ Astro's `<script>` tags are bundled by Vite, so this looks like a normal module 
     jurisdictionResolver: timezoneResolver(),
   });
 
-  const banner = document.querySelector<HTMLElement>("[data-opencookies-banner]")!;
-  const prefs = document.querySelector<HTMLElement>("[data-opencookies-prefs]")!;
+  const banner = document.querySelector<HTMLElement>("[data-policystack-banner]")!;
+  const prefs = document.querySelector<HTMLElement>("[data-policystack-prefs]")!;
   const checkboxes = prefs.querySelectorAll<HTMLInputElement>("input[data-category]");
 
   const render = (state: ReturnType<typeof store.getState>) => {
@@ -165,11 +165,11 @@ Astro's `<script>` tags are bundled by Vite, so this looks like a normal module 
   prefs.querySelector('[data-action="save"]')!
     .addEventListener("click", () => store.save());
 
-  window.addEventListener("opencookies:open", () => store.setRoute("cookie"));
+  window.addEventListener("policystack:open", () => store.setRoute("cookie"));
 </script>
 ```
 
-That's the whole adapter. `store.subscribe(render)` calls `render` whenever state changes; `render` flips the two `hidden` attributes and ticks the checkboxes. The buttons forward clicks to the store. The `opencookies:open` custom event at the end is how you reopen the banner from a footer link — more on that below.
+That's the whole adapter. `store.subscribe(render)` calls `render` whenever state changes; `render` flips the two `hidden` attributes and ticks the checkboxes. The buttons forward clicks to the store. The `policystack:open` custom event at the end is how you reopen the banner from a footer link — more on that below.
 
 `route` is the store's view of which surface should be visible — `"cookie"` for the banner, `"preferences"` for the modal, and a hidden state once a decision is on file. The store handles the transitions; the script just mirrors them into the DOM.
 
@@ -185,17 +185,17 @@ import CookieBanner from "../components/CookieBanner.astro";
 <html lang="en">
   <body>
     <header>
-      <h1>OpenCookies + Astro</h1>
-      <button type="button" data-opencookies-open>Cookie settings</button>
+      <h1>PolicyStack Consent + Astro</h1>
+      <button type="button" data-policystack-open>Cookie settings</button>
     </header>
     <main><!-- ... --></main>
 
     <CookieBanner />
 
     <script>
-      document.querySelectorAll("[data-opencookies-open]").forEach((el) => {
+      document.querySelectorAll("[data-policystack-open]").forEach((el) => {
         el.addEventListener("click", () =>
-          window.dispatchEvent(new CustomEvent("opencookies:open")),
+          window.dispatchEvent(new CustomEvent("policystack:open")),
         );
       });
     </script>
@@ -203,7 +203,7 @@ import CookieBanner from "../components/CookieBanner.astro";
 </html>
 ```
 
-Any element with `data-opencookies-open` becomes a re-open trigger — footer links, settings pages, the "Privacy" item in your account menu. The page-level script dispatches a custom event; the banner's script is already listening for it. The banner component doesn't need to know who its triggers are, and the rest of your site doesn't need to import the store.
+Any element with `data-policystack-open` becomes a re-open trigger — footer links, settings pages, the "Privacy" item in your account menu. The page-level script dispatches a custom event; the banner's script is already listening for it. The banner component doesn't need to know who its triggers are, and the rest of your site doesn't need to import the store.
 
 ## Persistence and jurisdiction
 
@@ -211,16 +211,16 @@ The two pieces the store cares about beyond categories are **where decisions liv
 
 **Storage adapters** decide how the consent record survives a refresh:
 
-- `@opencookies/core/storage/local-storage` — browser localStorage with cross-tab sync. The right default for a static or client-rendered Astro site: zero network, the user's other tabs see the change immediately.
-- `@opencookies/core/storage/cookie` — `document.cookie` with a configurable name, domain, and Max-Age. Pick this when you want the record to span subdomains, or when you're using Astro SSR and want the server to read consent on the request (e.g. to omit the analytics script tag entirely on SSR for users who declined).
-- `@opencookies/core/storage/server` — header-based reader for SSR runtimes (Astro on Cloudflare, Vercel, Netlify). Build the store on the server, hydrate the user's existing decision before the first paint, avoid the banner-flash where someone who clicked "accept" two weeks ago still sees the banner for half a second on every visit.
+- `@policystack/core/consent/storage/local-storage` — browser localStorage with cross-tab sync. The right default for a static or client-rendered Astro site: zero network, the user's other tabs see the change immediately.
+- `@policystack/core/consent/storage/cookie` — `document.cookie` with a configurable name, domain, and Max-Age. Pick this when you want the record to span subdomains, or when you're using Astro SSR and want the server to read consent on the request (e.g. to omit the analytics script tag entirely on SSR for users who declined).
+- `@policystack/core/consent/storage/server` — header-based reader for SSR runtimes (Astro on Cloudflare, Vercel, Netlify). Build the store on the server, hydrate the user's existing decision before the first paint, avoid the banner-flash where someone who clicked "accept" two weeks ago still sees the banner for half a second on every visit.
 
 Custom backends — IndexedDB, your own database — implement the `StorageAdapter` interface (`read`, `write`, `clear`, optional `subscribe`). The adapter is just a port; the store doesn't care.
 
 **Jurisdiction resolvers** decide what region's defaults apply before the user clicks anything. The example uses `timezoneResolver()` because it's zero-network and runs on the client — a sensible default for a static Astro site. Three others ship:
 
 - `headerResolver()` — reads country headers set by your edge (`x-vercel-ip-country`, `cf-ipcountry`). The most accurate option, server-only. Reach for it if you're running Astro SSR on an edge runtime.
-- `manualResolver("eu" | "us-ca" | …)` — pin to a fixed value. Useful in tests and Storybook so you can render the EU and California variants of the banner deterministically.
+- `manualResolver("eea" | "us-ca" | …)` — pin to a fixed value. Useful in tests and Storybook so you can render the EEA and California variants of the banner deterministically.
 - `clientGeoResolver({ endpoint })` — fetches from a geo endpoint you operate. Slowest of the four; reach for it only when the others won't do.
 
 Why this matters: GDPR demands opt-in (categories default to denied, banner shows on first visit), CCPA/CPRA demands a "Do Not Sell or Share" affordance and respects Global Privacy Control as a legally binding signal in California, and most other regions sit somewhere in between. The store reads the resolver once on init, applies the right defaults, and exposes `state.jurisdiction` so your banner copy can branch on it.
@@ -230,8 +230,8 @@ Why this matters: GDPR demands opt-in (categories default to denied, banner show
 The banner being correct is half the job. The other half is making sure the analytics SDK doesn't fire before the user clicks. `gateScript()` from core stubs the global (`gtag`, `fbq`, etc.) before the script loads, queues calls made before consent, and replays them once the script is on the page and consent is granted:
 
 ```ts file="src/lib/analytics.ts"
-import { defineScript, gateScript, createConsentStore } from "@opencookies/core";
-import { localStorageAdapter } from "@opencookies/core/storage/local-storage";
+import { defineScript, gateScript, createConsentStore } from "@policystack/core/consent";
+import { localStorageAdapter } from "@policystack/core/consent/storage/local-storage";
 import { categories } from "./cookie-categories";
 
 const store = createConsentStore({
@@ -255,27 +255,63 @@ const ga4 = defineScript({
 gateScript(store, ga4);
 ```
 
-Import this from a page-level `<script>` tag (or your `BaseLayout.astro`) and the script will only attach to the document once `analytics` is granted. The `@opencookies/scripts` package ships pre-built `defineScript` factories for GA4, Meta Pixel, PostHog, Segment, GTM, and Hotjar if you'd rather not hand-roll it.
+Import this from a page-level `<script>` tag (or your `BaseLayout.astro`) and the script will only attach to the document once `analytics` is granted. The `@policystack/scripts` package ships pre-built `defineScript` factories for GA4, Meta Pixel, PostHog, Segment, GTM, and Hotjar if you'd rather not hand-roll it.
 
 If you want to share the same store between the banner and the analytics module, lift the `createConsentStore` call into `src/lib/cookie-store.ts` and import it from both places — the example keeps them separate for clarity, but a single store is the more common shape.
 
 ## Optional: catch ungated cookies at dev time
 
-Astro uses Vite under the hood, so the `@opencookies/vite` plugin works the same way it does for any other Vite project. It's a separate, opt-in safety net — it doesn't affect the runtime, it just watches your source for cookie writes and vendor calls that aren't wrapped in a consent gate, and tells you about them while you're typing.
+Astro uses Vite under the hood, so the `@policystack/vite` plugin works the same way it does for any other Vite project. It's a separate, opt-in safety net — it doesn't affect the runtime, it just watches your source for cookie writes and vendor calls that aren't wrapped in a consent gate, and tells you about them while you're typing.
+
+One thing to know up front: the scanner reads a single `policystack.ts` config to learn which categories exist — it doesn't take the categories inline. This consent-only post has no policy config yet, so add a minimal one. It only needs to declare the cookie categories you're using:
 
 ```bash file="terminal" tag="bash"
-bun add -D @opencookies/vite
+bun add -D @policystack/vite @policystack/sdk
 ```
+
+```ts file="policystack.ts"
+import { defineConfig, LegalBases, Voluntary } from "@policystack/sdk";
+
+export default defineConfig({
+	company: {
+		name: "Acme, Inc.",
+		contact: { email: "privacy@acme.com" },
+	},
+	effectiveDate: "2026-05-10",
+	jurisdictions: ["eea"],
+	data: {
+		collected: { "Usage Data": ["Pages visited", "IP address"] },
+		context: {
+			"Usage Data": {
+				purpose: "To understand how the site is used",
+				lawfulBasis: LegalBases.LegitimateInterests,
+				retention: "90 days",
+				provision: Voluntary("None — the site works without analytics."),
+			},
+		},
+	},
+	cookies: {
+		// The scanner derives the consent categories from this block.
+		used: { essential: true, analytics: true, marketing: true },
+		context: {
+			essential: { lawfulBasis: LegalBases.LegalObligation },
+			analytics: { lawfulBasis: LegalBases.Consent },
+			marketing: { lawfulBasis: LegalBases.Consent },
+		},
+	},
+});
+```
+
+Then add the plugin to your Astro config. Pick `mode: "warn"` for a non-blocking dev warning, `"error"` to fail the build in CI, or `"off"` to disable the scan:
 
 ```ts file="astro.config.mjs"
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
-import { openCookies } from "@opencookies/vite";
-import { categories } from "./src/lib/cookie-categories";
+import { policyStack } from "@policystack/vite";
 
 export default defineConfig({
 	vite: {
-		plugins: [openCookies({ config: { categories } }), tailwindcss()],
+		plugins: [policyStack({ consent: { mode: "warn" } }), tailwindcss()],
 	},
 });
 ```
@@ -283,12 +319,12 @@ export default defineConfig({
 On every dev start and HMR update it runs a static scan and reports:
 
 ```text file="terminal" tag="text"
-[opencookies] 1 ungated finding
+[policystack] 0 cookies, 1 vendors, 1 ungated
 
-src/components/upsell.astro:42:5
-  rule:    no-ungated-cookie
-  fix:     gate this script with gateScript() or move into a consent-gated effect
-  suppress: // opencookies-disable-next-line no-ungated-cookie
+[policystack] ungated hotjar (analytics) call via global at src/components/upsell.astro:42:5
+  Rule: vendor-imports
+  Fix: wrap call sites in <ConsentGate category="…"> or guard with store.has("category")
+  Suppress: // policystack-ignore-next-line
 ```
 
 In dev that's a yellow warning. In CI it's a non-zero exit. The bug pattern this kills is the one where someone copies a Hotjar snippet into a layout file three weeks before an audit and nobody notices — because the build passes, the tests pass, and the banner that looks correct in the browser is still letting Hotjar fire on first paint regardless of what the user clicked.
@@ -297,7 +333,7 @@ You can add this on day one or on the day before your first audit; the runtime d
 
 ## Why this shape fits Astro
 
-Astro's whole pitch is "ship less JavaScript by default." A consent library that pulls in a framework runtime to render two divs and a checkbox column is at odds with that. OpenCookies' split between consent logic and consent UI lines up cleanly with how Astro components are already structured:
+Astro's whole pitch is "ship less JavaScript by default." A consent library that pulls in a framework runtime to render two divs and a checkbox column is at odds with that. PolicyStack Consent's split between consent logic and consent UI lines up cleanly with how Astro components are already structured:
 
 - **The markup is server-rendered**, so the banner is on the page from the first byte. No flash, no island boot, no `client:load` directive.
 - **The script is a normal ES module**, bundled by Vite and ~4kb on the wire. No React, no Vue, no Svelte runtime — just a state machine and your event listeners.
@@ -308,9 +344,10 @@ Astro's whole pitch is "ship less JavaScript by default." A consent library that
 
 You've got a banner that lives in your `.astro` components, a state machine that handles the parts you'd otherwise get wrong, and — if you want it — a build-time check that fails the PR when someone forgets the gate. A few adjacent pieces:
 
-- **[OpenPolicy](/openpolicy)** — the policy half. The same pattern, applied to your privacy and cookie policies: TypeScript config, framework-agnostic renderer, Vite plugin that scans for undeclared third parties. The categories you defined here are the categories that show up in the rendered cookie policy.
-- **[Astro example](https://github.com/jamiedavenport/opencookies/tree/main/examples/astro)** — the working version of everything in this post. Clone it, run `bun install && bun run dev`, and you've got a banner you can iterate on.
-- **[Open source](https://github.com/jamiedavenport/opencookies)** — Apache-2.0, pre-1.0 but actively developed. Issues and PRs welcome.
-- **[PolicyCloud](/policycloud)** — the hosted control plane. Versioning and audit trails for consent records, a PR bot that flags when a category is added without policy updates.
+- **[Policy](/policy)** — the policy half. The same pattern, applied to your privacy and cookie policies: TypeScript config, framework-agnostic renderer, Vite plugin that scans for undeclared third parties. The categories you defined here are the categories that show up in the rendered cookie policy.
+- **[TanStack example](https://github.com/jamiedavenport/policystack/tree/v1/examples/tanstack)** — the canonical end-to-end example. It wires Policy and Consent together in a real app; clone it, run `bun install && bun run dev`, and you've got a working reference to iterate on.
+- **[Consent docs](/docs/consent)** — the full reference for the headless store, storage adapters, jurisdiction resolvers, and the script-gating API used in this post.
+- **[Open source](https://github.com/jamiedavenport/policystack)** — Apache-2.0, frozen 1.0 surface. Issues and PRs welcome.
+- **[Cloud](/cloud)** — the hosted control plane. Versioning and audit trails for consent records, a PR bot that flags when a category is added without policy updates.
 
-If you'd rather hand the wiring to your coding agent: point Claude Code or Cursor at the OpenCookies repo and ask for "an Astro cookie banner using `@opencookies/core` directly, categories essential/analytics/marketing, localStorage persistence, timezone resolver, matching the styles in `src/components`." Because OpenCookies ships primitives instead of UI, the agent reads your existing components, picks up your tokens, and produces a banner that looks like it was always there.
+If you'd rather hand the wiring to your coding agent: point Claude Code or Cursor at the [PolicyStack repo](https://github.com/jamiedavenport/policystack) and the [Consent docs](/docs/consent), and ask for "an Astro cookie banner using `@policystack/core/consent` directly, categories essential/analytics/marketing, localStorage persistence, timezone resolver, matching the styles in `src/components`." Because PolicyStack ships primitives instead of UI, the agent reads your existing components, picks up your tokens, and produces a banner that looks like it was always there.

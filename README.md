@@ -1,12 +1,50 @@
 [![PolicyStack](./images/banner.png)](https://policystack.dev)
 
-# Overview
+# PolicyStack
 
-PolicyStack turns TypeScript config files into privacy and cookie policies. Define your policy once and render it directly as React components. Includes a consent-aware cookie banner powered by a shadcn registry component.
+Open-source, AI-first primitives for adding privacy policies and consent to your app. One typed config drives your privacy policy, your cookie policy, and the consent that gates the cookies they describe — all rendered directly into your React/Vue/Svelte/Solid/Angular app, never a third-party iframe.
 
 - [Homepage](https://policystack.dev)
-- [Blog](https://policystack.dev/blog)
 - [Documentation](https://policystack.dev/docs)
+- [Blog](https://policystack.dev/blog)
+
+## Three building blocks
+
+- **[Policy](https://policystack.dev/docs/policy)** — your privacy and cookie policy as a typed config, rendered as components or Markdown. A Vite plugin compiles it at build time and scans for undeclared third parties.
+- **[Consent](https://policystack.dev/docs/consent)** — a headless consent state machine. Sub-4kb core, adapters for React, Vue, Solid, Svelte, and Angular, and a Vite plugin that fails the build on an ungated cookie. No bundled UI — you build the banner with your own components.
+- **Cloud** — an optional hosted control plane for versioning, audit trails, and consent analytics. It sits on top of the OSS pieces; you never need it to use them.
+
+Everything except Cloud is Apache-2.0.
+
+## Quick start
+
+```bash
+bunx @policystack/cli init
+```
+
+`init` installs the right packages for your stack, writes a starter `policystack.ts`, and prints a prompt you can hand to a coding agent. See the [quick start](https://policystack.dev/docs/policy/cli) for the full walkthrough.
+
+## Packages
+
+All packages publish under the `@policystack/*` scope and version together.
+
+| Package                  | What it is                                                 |
+| ------------------------ | ---------------------------------------------------------- |
+| `@policystack/sdk`       | Public API — `defineConfig()`, `renderLlmsTxt()`           |
+| `@policystack/core`      | Compilation engine + consent runtime (`./consent` subpath) |
+| `@policystack/vite`      | Vite plugin + opt-in consent scanner                       |
+| `@policystack/cli`       | Install / configure / validate CLI                         |
+| `@policystack/renderers` | Shared Markdown / HTML / PDF render layer                  |
+| `@policystack/scripts`   | Consent-gated third-party script loaders                   |
+| `@policystack/react`     | React adapters — `./policy`, `./consent`, `./provider`     |
+| `@policystack/vue`       | Vue adapters — `./policy`, `./consent`                     |
+| `@policystack/svelte`    | Svelte adapters — `./policy`, `./consent`                  |
+| `@policystack/solid`     | Solid adapter — `./consent`                                |
+| `@policystack/angular`   | Angular adapter — `./consent`                              |
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, the monorepo layout, and the release flow. Apache-2.0 — issues and PRs welcome.
 
 > **Not legal advice.** PolicyStack generates policy documents from your config. It does not provide legal advice. Have a lawyer review your policies before publication. See the [legal notice](https://policystack.dev/legal-notice).
 

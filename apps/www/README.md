@@ -4,4 +4,8 @@ This workspace used to host the Astro site at **openpolicy.sh**. OpenPolicy has 
 
 The Vercel project attached to the `openpolicy.sh` domain continues to deploy from here — Vercel evaluates `vercel.json` `redirects` before any build output, so no server runtime is needed.
 
-See [`/MIGRATION.md`](../../MIGRATION.md) for the full redirect table, the rationale behind the 301-vs-302 split, and the flip-day checklist. When a 302 (307) target gets a real canonical post on PolicyStack, promote its entry in both `MIGRATION.md` and `vercel.json` to `"permanent": true`.
+`vercel.json` is the single source of truth for the redirect table and the
+301-vs-302 split: a `"permanent": true` entry is a canonical move (the new URL
+is the real home), a temporary one is a placeholder until the canonical
+PolicyStack page exists. When a temporary target gets a real canonical post on
+PolicyStack, promote its `vercel.json` entry to `"permanent": true`.

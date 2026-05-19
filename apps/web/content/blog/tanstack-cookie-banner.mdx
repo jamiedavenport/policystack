@@ -7,35 +7,37 @@ tag: engineering
 
 Cookie banners have a deserved reputation as the worst part of the web. The default options are a pre-styled iframe that flashes in on every page load, a third-party script that ignores your design system, or a hand-rolled `useState` that forgets every refresh and silently fails the audit.
 
-OpenCookies takes a different shape. The runtime is a sub-4kb headless state machine — categories, decisions, jurisdiction, GPC, persistence — with framework adapters for React, Vue, Solid, Svelte, and Angular. There is no bundled UI. You build the banner with the same primitives you build everything else with. This post walks through dropping it into a TanStack Start project end-to-end.
+PolicyStack Consent takes a different shape. The runtime is a sub-4kb headless state machine — categories, decisions, jurisdiction, GPC, persistence — with framework adapters for React, Vue, Solid, Svelte, and Angular. There is no bundled UI. You build the banner with the same primitives you build everything else with. This post walks through dropping it into a TanStack Start project end-to-end.
 
 ## What you actually get
 
 Two required pieces, plus one optional one:
 
-- **The state machine.** `@opencookies/core` holds the consent record, exposes actions (`acceptAll`, `acceptNecessary`, `toggle`, `save`), and persists to localStorage, cookies, or your own adapter. It resolves the visitor's jurisdiction, honours Global Privacy Control where the law requires it, and re-prompts when the policy version changes or you add a category.
-- **The reactivity layer.** `@opencookies/react` wraps the store in `useSyncExternalStore` so concurrent React stays happy. You get `useConsent()`, `useCategory(key)`, and a `<ConsentGate>` that conditionally renders by consent expression — `"analytics"`, `{ and: ["analytics", "marketing"] }`, `{ not: "marketing" }`.
-- **An optional build-time check.** `@opencookies/vite` is a dev-only safety net — it runs a static scanner on every dev start and HMR update, flagging cookie writes and vendor calls that aren't gated. Skip it entirely if you don't want it; everything else works on its own. Add it later when you want the class of bug where someone copies a Hotjar snippet into a layout file to stop compiling.
+- **The state machine.** `@policystack/core/consent` holds the consent record, exposes actions (`acceptAll`, `acceptNecessary`, `toggle`, `save`), and persists to localStorage, cookies, or your own adapter. It resolves the visitor's jurisdiction, honours Global Privacy Control where the law requires it, and re-prompts when the policy version changes or you add a category.
+- **The reactivity layer.** `@policystack/react/consent` wraps the store in `useSyncExternalStore` so concurrent React stays happy. You get `useConsent()`, `useCategory(key)`, and a `<ConsentGate>` that conditionally renders by consent expression — `"analytics"`, `{ and: ["analytics", "marketing"] }`, `{ not: "marketing" }`.
+- **An optional build-time check.** `@policystack/vite` is a dev-only safety net — it runs a static scanner on every dev start and HMR update, flagging cookie writes and vendor calls that aren't gated. Skip it entirely if you don't want it; everything else works on its own. Add it later when you want the class of bug where someone copies a Hotjar snippet into a layout file to stop compiling.
 
 The point of the split is that the visual banner — the bit you actually see — is just your components. No theme to override, no `!important` to fight, no FOUC while a third-party script boots. It looks like the rest of your app because it is the rest of your app.
 
 ## The fast path: hand it to your coding agent
 
-Because OpenCookies ships primitives instead of UI, you can describe the banner you want and let Claude Code or Cursor write it. There's no theme system to learn — the agent reads your existing components, picks up your Tailwind tokens or CSS variables, and produces a banner that matches. A prompt that works well:
+Because PolicyStack Consent ships primitives instead of UI, you can describe the banner you want and let Claude Code or Cursor write it. There's no theme system to learn — the agent reads your existing components, picks up your Tailwind tokens or CSS variables, and produces a banner that matches. A prompt that works well:
 
 ```text file="prompt to your agent" tag="text"
-Read the OpenCookies docs first:
-  https://github.com/jamiedavenport/opencookies
+Read the PolicyStack docs first:
+  https://github.com/jamiedavenport/policystack
 The package READMEs in /packages/{core,react,vite,scripts} cover
 the full API — fetch them before writing any code.
 
 Then add a cookie consent banner to this TanStack Start app using
-@opencookies/core, @opencookies/react, and @opencookies/vite.
+@policystack/core, @policystack/react, and @policystack/vite.
 
-- Categories: essential (locked), analytics, marketing.
+- Define one policystack.ts with defineConfig — its cookies block
+  is the single source of consent categories
+  (essential locked, analytics, marketing).
 - Persist with the localStorage adapter.
 - Resolve jurisdiction with the timezone resolver.
-- Wrap the app in OpenCookiesProvider in __root.tsx.
+- Wrap the app in <PolicyStack config={config}> in __root.tsx.
 - Build the banner with my existing button + dialog primitives —
   match the visual style of the components already in src/components.
 - Optionally add the Vite plugin in warn mode for dev, error mode
@@ -48,25 +50,57 @@ What you get back is a banner wired to the store and rendered with your componen
 ## Install
 
 ```bash file="terminal" tag="bash"
-bun add @opencookies/core @opencookies/react
+bun add @policystack/sdk @policystack/core @policystack/react
 ```
 
-`core` is the state machine. `react` is the adapter — hooks plus `<ConsentGate>`. That's everything you need at runtime; the rest of this post wires those two packages up. The optional `@opencookies/vite` build-time check has its own section at the end.
+`sdk` gives you `defineConfig` for the single `policystack.ts`. `core` is the state machine. `react` is the adapter — hooks plus `<ConsentGate>` plus the provider. That's everything you need at runtime; the rest of this post wires those packages up. The optional `@policystack/vite` build-time check has its own section at the end.
 
 ## Mount the provider
 
-Wrap the app once at the root. In TanStack Start that's the `__root` route:
+Everything starts from one config file. In V1 there's a single `policystack.ts` built with `defineConfig` from `@policystack/sdk` — its `cookies` block is the single source of consent categories. There's no separate `categories: Category[]` array to keep in sync:
+
+```ts file="policystack.ts"
+import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
+
+export default defineConfig({
+	company: {
+		name: "Acme Inc.",
+		legalName: "Acme Corporation",
+		address: "123 Main St, Springfield, USA",
+		contact: { email: "privacy@acme.com" },
+	},
+	effectiveDate: "2026-03-03",
+	jurisdictions: ["eea", "us-ca"],
+	data: {
+		collected: { "Usage Data": ["Pages visited", "IP address"] },
+		context: {
+			"Usage Data": {
+				purpose: "To understand product usage and improve the service",
+				lawfulBasis: LegalBases.LegitimateInterests,
+				retention: "90 days",
+				provision: ContractPrerequisite("We cannot deliver or secure the service."),
+			},
+		},
+	},
+	cookies: {
+		// Each enabled key becomes a consent category; its lawful basis decides
+		// locked vs. gated — LegalObligation ⇒ always on, Consent ⇒ opt-in.
+		used: { essential: true, analytics: true, marketing: true },
+		context: {
+			essential: { lawfulBasis: LegalBases.LegalObligation },
+			analytics: { lawfulBasis: LegalBases.Consent },
+			marketing: { lawfulBasis: LegalBases.Consent },
+		},
+	},
+});
+```
+
+Then wrap the app once at the root. In TanStack Start that's the `__root` route. There is one provider for the whole config — `<PolicyStack>` from `@policystack/react/provider` — and it derives the consent categories from the config's `cookies` block automatically:
 
 ```tsx file="src/routes/__root.tsx"
-import { OpenCookiesProvider } from "@opencookies/react";
-import type { Category } from "@opencookies/core";
+import { PolicyStack } from "@policystack/react/provider";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-
-const categories: Category[] = [
-	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics" },
-	{ key: "marketing", label: "Marketing" },
-];
+import config from "@/policystack";
 
 export const Route = createRootRoute({
 	component: RootComponent,
@@ -74,51 +108,49 @@ export const Route = createRootRoute({
 
 function RootComponent() {
 	return (
-		<OpenCookiesProvider config={{ categories }}>
+		<PolicyStack config={config}>
 			<Outlet />
-		</OpenCookiesProvider>
+		</PolicyStack>
 	);
 }
 ```
 
-`locked: true` means essential is always granted and the user can't toggle it off — that's the cookies your app needs to function (session, CSRF, the consent record itself). Anything else is opt-in.
+The `essential` cookies are always granted and the user can't toggle them off — that's the cookies your app needs to function (session, CSRF, the consent record itself). Anything else is opt-in.
 
 ## Persist decisions and resolve jurisdiction
 
-The provider's `config` shorthand is fine for a client-only app, but the moment you want SSR-resolved decisions, region-aware defaults, or anything other than localStorage you'll want to build the store yourself with `createConsentStore` and pass it in via `store={store}`. Two pieces matter: the storage adapter (where decisions live) and the jurisdiction resolver (where the visitor lives).
+The defaults are fine for a client-only app, but the moment you want SSR-resolved decisions, region-aware defaults, or anything other than localStorage you'll reach for the runtime knobs. These live under a `consent` block on the same flat config — there's no second config object. Two pieces matter: the storage adapter (where decisions live) and the jurisdiction resolver (where the visitor lives).
 
-```ts file="src/lib/consent-store.ts"
-import { createConsentStore, timezoneResolver } from "@opencookies/core";
-import { localStorageAdapter } from "@opencookies/core/storage/local-storage";
+```ts file="policystack.ts"
+import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
+import { timezoneResolver } from "@policystack/core/consent";
+import { localStorageAdapter } from "@policystack/core/consent/storage/local-storage";
 
-export const store = createConsentStore({
-	categories: [
-		{ key: "essential", label: "Essential", locked: true },
-		{ key: "analytics", label: "Analytics" },
-		{ key: "marketing", label: "Marketing" },
-	],
-	adapter: localStorageAdapter(),
-	jurisdictionResolver: timezoneResolver(),
+export default defineConfig({
+	// …company, effectiveDate, jurisdictions, data, cookies as above…
+	consent: {
+		adapter: localStorageAdapter(),
+		jurisdictionResolver: timezoneResolver(),
+	},
 });
 ```
 
-Then mount it:
+The provider reads the whole config, so `<PolicyStack config={config}>` at the root picks the adapter and resolver up automatically — nothing else changes in `__root.tsx`. If you need the store outside React (SSR, tests), build it from the same config object with `createConsentStore`:
 
-```tsx file="src/routes/__root.tsx"
-import { OpenCookiesProvider } from "@opencookies/react";
-import { store } from "@/lib/consent-store";
+```ts file="src/lib/consent-store.ts"
+import { createConsentStore } from "@policystack/core/consent";
+import config from "@/policystack";
 
-// ...
-<OpenCookiesProvider store={store}>
-	<Outlet />
-</OpenCookiesProvider>;
+export const store = createConsentStore(config);
 ```
+
+`createConsentStore(config)` takes the whole config and reads the `cookies` block for categories and the `consent` block for the runtime knobs. (The advanced explicit form — `createConsentStore({ categories, adapter, jurisdictionResolver, ... })` — still exists, but prefer the single-config form.)
 
 **Storage adapters** decide where the consent record gets written and how it survives a refresh. Three ship in the box:
 
-- `@opencookies/core/storage/local-storage` — browser localStorage with cross-tab sync. The right default for a client-rendered SPA: zero network, the user's other tabs see the change immediately.
-- `@opencookies/core/storage/cookie` — `document.cookie` with configurable name, domain, and Max-Age. Pick this when the server needs to read consent on the request (e.g. to omit the analytics script tag entirely on SSR for users who declined) or when you want the record to span subdomains.
-- `@opencookies/core/storage/server` — header-based reader for SSR runtimes. You build the store on the server with this adapter, hydrate the user's existing decision before the first paint, and avoid the banner-flash where someone who clicked "accept" two weeks ago still sees the banner for half a second on every visit.
+- `@policystack/core/consent/storage/local-storage` — browser localStorage with cross-tab sync. The right default for a client-rendered SPA: zero network, the user's other tabs see the change immediately.
+- `@policystack/core/consent/storage/cookie` — `document.cookie` with configurable name, domain, and Max-Age. Pick this when the server needs to read consent on the request (e.g. to omit the analytics script tag entirely on SSR for users who declined) or when you want the record to span subdomains.
+- `@policystack/core/consent/storage/server` — header-based reader for SSR runtimes. You build the store on the server with this adapter, hydrate the user's existing decision before the first paint, and avoid the banner-flash where someone who clicked "accept" two weeks ago still sees the banner for half a second on every visit.
 
 Custom backends — IndexedDB, your own database, an auth-tied per-user record — implement the `StorageAdapter` interface (`read`, `write`, `clear`, optional `subscribe`). The adapter is just a port; the store doesn't care.
 
@@ -126,7 +158,7 @@ Custom backends — IndexedDB, your own database, an auth-tied per-user record �
 
 - `headerResolver()` — reads country headers set by your edge (Vercel `x-vercel-ip-country`, Cloudflare `cf-ipcountry`, etc.). The most accurate option, server-only.
 - `timezoneResolver()` — derives the region from the browser's IANA timezone. Zero network, decent accuracy, runs on the client. Good first choice for a client-rendered app.
-- `manualResolver("eu" | "us-ca" | …)` — pin the jurisdiction to a fixed value. Useful in tests and Storybook so you can render the EU and California variants of the banner deterministically.
+- `manualResolver("eea" | "us-ca" | …)` — pin the jurisdiction to a fixed value. Useful in tests and Storybook so you can render the EEA and California variants of the banner deterministically.
 - `clientGeoResolver({ endpoint })` — fetches from a geo endpoint you operate. Slowest of the four; reach for it only when the others won't do.
 
 Why this matters: GDPR demands opt-in (categories default to denied, banner shows on first visit), CCPA/CPRA demands a "Do Not Sell or Share" affordance and respects Global Privacy Control as a legally binding signal in California, and most other regions sit somewhere in between. The store reads the resolver once on init, applies the right defaults, and exposes `state.jurisdiction` so your banner copy can branch on it. Core also exports `GPC_LEGALLY_REQUIRED_JURISDICTIONS` so you can scope GPC to the US states where it's legally binding instead of treating every visitor's browser signal as a binding opt-out.
@@ -136,7 +168,7 @@ Why this matters: GDPR demands opt-in (categories default to denied, banner show
 `useConsent()` is the primary hook. It returns the current state plus actions:
 
 ```tsx file="src/components/cookie-banner.tsx"
-import { useConsent } from "@opencookies/react";
+import { useConsent } from "@policystack/react/consent";
 
 export function CookieBanner() {
 	const { route, acceptAll, acceptNecessary, setRoute } = useConsent();
@@ -169,7 +201,7 @@ export function CookieBanner() {
 The preferences panel is a second component reading `useCategory(key)` for each non-locked category:
 
 ```tsx file="src/components/cookie-preferences.tsx"
-import { useConsent, useCategory } from "@opencookies/react";
+import { useConsent, useCategory } from "@policystack/react/consent";
 
 function Toggle({ k, label }: { k: "analytics" | "marketing"; label: string }) {
 	const { granted, toggle } = useCategory(k);
@@ -212,7 +244,7 @@ export function CookiePreferences() {
 For inline UI that depends on consent — an analytics chart, a personalised promo — use the gate component. It accepts a single category key or a `ConsentExpr`, and renders `fallback` when the expression isn't satisfied:
 
 ```tsx file="src/routes/dashboard.tsx"
-import { ConsentGate } from "@opencookies/react";
+import { ConsentGate } from "@policystack/react/consent";
 
 function EnableAnalyticsPrompt() {
 	return <p className="text-sm text-mute">Enable analytics to see this chart.</p>;
@@ -234,7 +266,7 @@ The expression syntax composes: `{ and: ["analytics", "marketing"] }` for both, 
 Inline UI is the easy half. The hard half is the analytics SDK that wants to load on first paint and read every page navigation. `gateScript()` from core handles that — it stubs the global (`gtag`, `fbq`, etc.) before the script loads, queues calls made before consent, and replays them once the script is on the page and consent is granted:
 
 ```ts file="src/lib/analytics.ts"
-import { defineScript, gateScript } from "@opencookies/core";
+import { defineScript, gateScript } from "@policystack/core/consent";
 import { store } from "@/lib/consent-store";
 
 const ga4 = defineScript({
@@ -253,7 +285,7 @@ const ga4 = defineScript({
 gateScript(store, ga4);
 ```
 
-`gateScript` is a free function rather than a method on the store, so script-gating code that you don't use gets tree-shaken out of the bundle. The `@opencookies/scripts` package ships pre-built `defineScript` factories for GA4, Meta Pixel, PostHog, Segment, GTM, and Hotjar if you'd rather not hand-roll it — the factory takes the credentials, you pass the result to `gateScript`.
+`gateScript` is a free function rather than a method on the store, so script-gating code that you don't use gets tree-shaken out of the bundle. The `@policystack/scripts` package ships pre-built `defineScript` factories for GA4, Meta Pixel, PostHog, Segment, GTM, and Hotjar if you'd rather not hand-roll it — the factory takes the credentials, you pass the result to `gateScript`.
 
 For SSR-rendered apps, the gating happens at the boundary where the script would load on the client; the rest of the app renders normally on the server.
 
@@ -264,13 +296,13 @@ Everything above is the runtime — the banner, the gates, the script gating, th
 If that sounds useful, install it as a dev dependency:
 
 ```bash file="terminal" tag="bash"
-bun add -D @opencookies/vite
+bun add -D @policystack/vite
 ```
 
-Then add `openCookies` to your plugin list. Like most source-scanning plugins, it has to come **before** `tanstackStart()` so it sees the raw input:
+Then add `policyStack` to your plugin list. It reads the single `policystack.ts` config — there's no categories prop to keep in sync. Like most source-scanning plugins, it has to come **before** `tanstackStart()` so it sees the raw input:
 
 ```ts file="vite.config.ts"
-import { openCookies } from "@opencookies/vite";
+import { policyStack } from "@policystack/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
@@ -279,14 +311,10 @@ import tsConfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
 	plugins: [
 		tsConfigPaths(),
-		openCookies({
-			config: {
-				categories: [
-					{ key: "essential", label: "Essential", locked: true },
-					{ key: "analytics", label: "Analytics" },
-					{ key: "marketing", label: "Marketing" },
-				],
-			},
+		policyStack({
+			srcDir: "./src",
+			thirdParties: { usePackageJson: true },
+			consent: { mode: "warn" },
 		}),
 		tanstackStart(),
 		viteReact(),
@@ -297,12 +325,12 @@ export default defineConfig({
 On every dev start and HMR update it runs the scanner across your source and reports:
 
 ```text file="terminal" tag="text"
-[opencookies] 1 ungated finding
+[policystack] 0 cookies, 1 vendors, 1 ungated
 
-src/components/upsell.tsx:42:5
-  rule:    no-ungated-cookie
-  fix:     wrap in <ConsentGate requires="marketing"> or move into a gated effect
-  suppress: // opencookies-disable-next-line no-ungated-cookie
+[policystack] ungated hotjar (marketing) call via global at src/components/upsell.tsx:42:5
+  Rule: vendor-imports
+  Fix: wrap call sites in <ConsentGate category="…"> or guard with store.has("category")
+  Suppress: // policystack-ignore-next-line
 ```
 
 In dev that's a yellow warning. In CI it's a non-zero exit. The bug pattern this kills is the one where someone copies a vendor snippet into a layout file three weeks before an audit and nobody notices — because the build passes, the tests pass, and a cookie banner that looks correct in the browser is still letting Hotjar fire on first paint regardless of what the user clicked.
@@ -318,14 +346,14 @@ The design choice that makes the rest of it work is the split between consent lo
 - **The banner stays in your component library.** It uses your tokens, your buttons, your dialog primitive. There's nothing to re-skin when you redesign the rest of the app.
 - **The state machine is testable.** Decisions, GPC, jurisdiction, re-consent triggers — all of that is plain functions over a store. You can unit-test "GPC sets analytics to denied" without rendering anything.
 - **The scanner is optional but honest.** Because gating is explicit (`<ConsentGate>`, `gateScript`, `useCategory`), a missing gate is a static fact the scanner can find — if you opt into the Vite plugin. Compare to the alternative — a runtime banner library that hopes you remembered to call `if (consent.analytics)` before every fetch.
-- **AI does the boring work.** When the framework is primitives, an agent that reads your component library can produce a banner that looks like it was always there. There's no "OpenCookies theme" to fight; there's just your design system.
+- **AI does the boring work.** When the framework is primitives, an agent that reads your component library can produce a banner that looks like it was always there. There's no "PolicyStack theme" to fight; there's just your design system.
 
 ## Where to go next
 
-You've got a banner that lives in your components, a state machine that handles the parts you'd otherwise get wrong, and — if you want it — a build-time check that fails the PR when someone forgets the gate. Two adjacent pieces of the PolicyStack turn that into a complete cookie story:
+You've got a banner that lives in your components, a state machine that handles the parts you'd otherwise get wrong, and — if you want it — a build-time check that fails the PR when someone forgets the gate. Two adjacent pieces of PolicyStack turn that into a complete cookie story:
 
-- **[OpenPolicy](/openpolicy)** — the policy half. The same pattern, applied to your privacy policy and cookie policy: TypeScript config, React renderer, Vite plugin that scans for undeclared third parties. The categories you defined here are the categories that show up in the rendered cookie policy. Walkthrough in [Ship a privacy policy with your TanStack app](/blog/tanstack-privacy-policy).
-- **[Open source](https://github.com/jamiedavenport/opencookies)** — Apache-2.0, pre-1.0 but actively developed. Issues and PRs welcome; the framework adapters are deliberately small so adding a new one is a weekend.
-- **[PolicyCloud](/policycloud)** — the hosted control plane. Versioning and audit trails for consent records, a PR bot that flags when a category is added without policy updates, and the dashboards your privacy team actually wants to look at.
+- **[Policy](/policy)** — the policy half. The same pattern, applied to your privacy policy and cookie policy: TypeScript config, React renderer, Vite plugin that scans for undeclared third parties. The categories you defined here are the categories that show up in the rendered cookie policy. Walkthrough in [Ship a privacy policy with your TanStack app](/blog/tanstack-privacy-policy).
+- **[Open source](https://github.com/jamiedavenport/policystack)** — Apache-2.0, 1.0 with a frozen, stable public surface. Issues and PRs welcome; the framework adapters are deliberately small so adding a new one is a weekend.
+- **[Cloud](/cloud)** — the hosted control plane. Versioning and audit trails for consent records, a PR bot that flags when a category is added without policy updates, and the dashboards your privacy team actually wants to look at.
 
-Or browse the [React example](https://github.com/jamiedavenport/opencookies/tree/main/examples/react) for a working end-to-end project you can fork.
+Or browse the [TanStack example](https://github.com/jamiedavenport/policystack/tree/v1/examples/tanstack) for a working end-to-end project you can fork.

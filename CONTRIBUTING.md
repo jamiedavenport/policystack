@@ -19,14 +19,22 @@ vp config
 
 This is a pnpm monorepo (workspaces declared in `pnpm-workspace.yaml`):
 
-| Package            | Description                                      |
-| ------------------ | ------------------------------------------------ |
-| `packages/sdk`     | `@policystack/sdk` — public API (`defineConfig`) |
-| `packages/core`    | `@policystack/core` — compilation engine         |
-| `packages/vite`    | `@policystack/vite` — Vite plugin                |
-| `packages/cli`     | `@policystack/cli` — CLI tool                    |
-| `apps/docs`        | Documentation site (Next.js + Fumadocs)          |
-| `tooling/tsconfig` | Shared TypeScript base config                    |
+| Package              | Description                                                              |
+| -------------------- | ------------------------------------------------------------------------ |
+| `packages/sdk`       | `@policystack/sdk` — public API (`defineConfig`, `renderLlmsTxt`)        |
+| `packages/core`      | `@policystack/core` — compilation engine + consent runtime (`./consent`) |
+| `packages/vite`      | `@policystack/vite` — Vite plugin + opt-in consent scanner               |
+| `packages/cli`       | `@policystack/cli` — install/configure CLI                               |
+| `packages/renderers` | `@policystack/renderers` — shared Markdown/HTML/PDF render layer         |
+| `packages/scripts`   | `@policystack/scripts` — consent-gated third-party script loaders        |
+| `packages/react`     | `@policystack/react` — `./policy` / `./consent` / `./provider`           |
+| `packages/vue`       | `@policystack/vue` — `./policy` / `./consent`                            |
+| `packages/svelte`    | `@policystack/svelte` — `./policy` / `./consent`                         |
+| `packages/solid`     | `@policystack/solid` — `./consent` (source-only)                         |
+| `packages/angular`   | `@policystack/angular` — `./consent`                                     |
+| `apps/web`           | policystack.dev — marketing + docs site (TanStack Start)                 |
+| `apps/www`           | openpolicy.sh redirect shim (Vercel `redirects` only)                    |
+| `tooling/tsconfig`   | `@policystack/tooling` — shared TypeScript base config                   |
 
 ## Development Workflow
 
@@ -121,7 +129,7 @@ This repo uses [Changesets](https://github.com/changesets/changesets) for versio
 
 4. Once merged, the GitHub Actions workflow automatically opens a "Version Packages" PR. Merging that PR publishes the updated packages to NPM. `pnpm publish` rewrites `workspace:*` references to the real published version on the way out.
 
-Publishable packages: `@policystack/sdk`, `@policystack/core`, `@policystack/vite`, `@policystack/cli`, `@policystack/react`, `@policystack/vue`, `@policystack/svelte`.
+Publishable packages (one `fixed` Changesets group — they version and publish together): `@policystack/sdk`, `@policystack/core`, `@policystack/vite`, `@policystack/cli`, `@policystack/react`, `@policystack/vue`, `@policystack/svelte`, `@policystack/solid`, `@policystack/angular`, `@policystack/renderers`, `@policystack/scripts`.
 
 ## Pull Requests
 
