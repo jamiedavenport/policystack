@@ -290,8 +290,8 @@ function Products({ stars }: { stars: { consent: number | null; policy: number |
 					Use one. Use <Highlight>all three.</Highlight>
 				</h2>
 				<p className="mt-8 max-w-[60ch] text-lg text-pretty text-mute">
-					Each repo is independently useful and Apache-2.0 licensed. Cloud sits on top when you want
-					a hosted control plane.
+					Consent and Policy are independently useful and Apache-2.0 licensed. Cloud sits on top
+					when you want a hosted control plane.
 				</p>
 
 				<dl className="mt-20 grid border-2 border-black md:grid-cols-3">
@@ -564,8 +564,8 @@ function CTA() {
 							Stop pasting cookie banners. Start <Highlight>shipping.</Highlight>
 						</h2>
 						<p className="mt-8 max-w-[55ch] text-pretty text-mute">
-							Pick a repo, install one package, and have a typed policy and a working consent flow
-							before lunch.
+							Pick a building block, install one package, and have a typed policy and a working
+							consent flow before lunch.
 						</p>
 					</div>
 					<div className="flex flex-col items-stretch gap-4 md:ml-auto md:w-64">

@@ -15,6 +15,12 @@ const shikiPlugin: [typeof shikiRehype, Record<string, unknown>] = [
 	{
 		theme: monoTheme as unknown as ThemeRegistrationRaw,
 		langs: ["ts", "tsx", "json", "bash", "html", "css", "vue", "svelte", "astro"],
+		// Fenced blocks with no language (e.g. CLI/validator output) and any
+		// unrecognised language fall back to plaintext shiki markup instead of
+		// being left unhighlighted — the latter makes the `code` mdx override
+		// treat a block as inline code and apply the wrapping pill style.
+		defaultLanguage: "text",
+		fallbackLanguage: "text",
 		parseMetaString: (metaString: string | null | undefined) => parseChromeMeta(metaString),
 		transformers: [shikiChromeTransformer],
 	},

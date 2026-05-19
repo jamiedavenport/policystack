@@ -162,7 +162,7 @@ defineConfig({
 
 Explicit values always win over the auto-computed hash. Both helpers — `computePrivacyVersion(config)` and `computeCookieVersion(config)` — are also re-exported from `@policystack/sdk` for callers building configs without `defineConfig`.
 
-`cookieVersion` also feeds the Consent bridge — see [Cookie banner](/docs/policy/cookies/overview) — so a change to `cookies` (which also drives the derived consent mechanism) re-prompts consent automatically.
+`cookieVersion` also feeds the Consent bridge — see the [Consent docs](/docs/consent) — so a change to `cookies` (which also drives the derived consent mechanism) re-prompts consent automatically.
 
 ### Build-time validation
 

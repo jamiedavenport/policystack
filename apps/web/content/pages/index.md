@@ -12,7 +12,7 @@ PolicyStack is built on the opposite premise: consent and policy are _infrastruc
 
 ## Three building blocks
 
-Each repo is independently useful and Apache-2.0 licensed. Cloud sits on top when you want a hosted control plane.
+Consent and Policy are independently useful and Apache-2.0 licensed. Cloud sits on top when you want a hosted control plane.
 
 - **[Consent](https://policystack.dev/consent.md)** — A headless consent state machine. Sub-4kb core with adapters for React, Vue, Solid, Svelte, and Angular. A Vite plugin flags ungated cookies at dev time. Integrations for GA, Meta Pixel, and more. (`@policystack/react/consent`)
 - **[Policy](https://policystack.dev/policy.md)** — Your policy as a typed config. Define your privacy and cookie policy once in TypeScript. Render it as React components, or generate Markdown. Ships a shadcn-style consent banner. (`@policystack/react/policy`)
@@ -35,9 +35,8 @@ Claude reading the same typed config is just what falls out. The machine-readabl
 
 ## Get started
 
-Pick a repo, install one package, and have a typed policy and a working consent flow before lunch.
+Pick a building block, install one package, and have a typed policy and a working consent flow before lunch.
 
 - Docs: <https://policystack.dev/docs>
-- GitHub (Policy): <https://github.com/jamiedavenport/policystack>
-- GitHub (Consent): <https://github.com/jamiedavenport/policystack>
+- GitHub: <https://github.com/jamiedavenport/policystack>
 - Demo (Cloud): <https://cal.eu/jamie-policy/policy-chat-demo>
