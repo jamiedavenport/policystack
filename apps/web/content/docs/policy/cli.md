@@ -1,10 +1,10 @@
 ---
 title: CLI
-description: Install PolicyStack and generate an agent prompt in one command
+description: Install Policy and generate an agent prompt in one command
 product: policy
 ---
 
-`@policystack/cli` sets up PolicyStack in your project. Run it once — it installs the right packages for your stack, scaffolds a starter `policystack.ts`, and prints a prompt you can paste into a coding agent (Claude Code, Cursor, etc.) to finish filling in your config from your codebase.
+`@policystack/cli` sets up Policy in your project. Run it once — it installs the right packages for your stack, scaffolds a starter `policystack.ts`, and prints a prompt you can paste into a coding agent (Claude Code, Cursor, etc.) to finish filling in your config from your codebase.
 
 ## Run it
 
@@ -21,7 +21,7 @@ That's the whole flow. The CLI is meant for one-time setup — once it's done, u
 ## What it does
 
 1. **Detects your package manager** from lockfiles (`bun.lock`, `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`) or the `packageManager` field in `package.json`. Falls back to `npm`.
-2. **Detects frameworks** by reading your `package.json` dependencies and installs the matching PolicyStack integration:
+2. **Detects frameworks** by reading your `package.json` dependencies and installs the matching Policy integration:
    - `vite` → `@policystack/vite` (devDependency)
    - `react` → `@policystack/react`
    - `vue` → `@policystack/vue`

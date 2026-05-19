@@ -1,4 +1,4 @@
-# PolicyStack Consent
+# Consent
 
 > A headless consent state machine.
 
@@ -70,6 +70,6 @@ export function CookieBanner() {
 
 ## See also
 
-- [Docs: PolicyStack Consent](https://policystack.dev/docs/consent.md)
-- [PolicyStack](https://policystack.dev/policy.md) — wire them together
+- [Docs: Consent](https://policystack.dev/docs/consent.md)
+- [Policy](https://policystack.dev/policy.md) — wire them together
 - GitHub: <https://github.com/jamiedavenport/policystack>

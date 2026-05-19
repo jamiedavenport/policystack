@@ -4,7 +4,7 @@ description: "Vue 3 adapter — plugin or provider with composables and ConsentG
 product: consent
 ---
 
-Vue 3 adapter for PolicyStack Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Vue's reactivity via `shallowRef` and `computed`.
+Vue 3 adapter for Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Vue's reactivity via `shallowRef` and `computed`.
 
 ## Install
 

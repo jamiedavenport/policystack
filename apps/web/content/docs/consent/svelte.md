@@ -4,7 +4,7 @@ description: "Svelte 5 runes adapter, with a Svelte 4 Readable fallback"
 product: consent
 ---
 
-Svelte adapter for PolicyStack Consent. Runes-first for Svelte 5; ships a `Readable<ConsentState>` fallback at `@policystack/svelte/consent/stores` for Svelte 4. Wraps [`@policystack/core/consent`](/docs/consent/core).
+Svelte adapter for Consent. Runes-first for Svelte 5; ships a `Readable<ConsentState>` fallback at `@policystack/svelte/consent/stores` for Svelte 4. Wraps [`@policystack/core/consent`](/docs/consent/core).
 
 ## Install
 

@@ -4,7 +4,7 @@ description: "Framework-agnostic consent store and the shared concepts every ada
 product: consent
 ---
 
-Framework-agnostic consent store for PolicyStack Consent. Owns consent state and broadcasts changes to subscribers via a small pub/sub interface that each framework adapter wraps in its own reactivity primitive.
+Framework-agnostic consent store for Consent. Owns consent state and broadcasts changes to subscribers via a small pub/sub interface that each framework adapter wraps in its own reactivity primitive.
 
 If you're using a framework, install one of the adapters instead and read this for the shared concepts: [react](/docs/consent/react) · [vue](/docs/consent/vue) · [solid](/docs/consent/solid) · [svelte](/docs/consent/svelte).
 
@@ -182,7 +182,7 @@ store.getConsentRecord();
 // }
 ```
 
-Records produced by older versions of PolicyStack Consent are tolerated on read: missing fields fall back to safe defaults, the legacy `source: "user"` flag is mapped to `"banner"`, and any other unrecognised legacy source becomes `"import"`. The next user decision rewrites the record in the v1 shape.
+Records produced by older versions of Consent are tolerated on read: missing fields fall back to safe defaults, the legacy `source: "user"` flag is mapped to `"banner"`, and any other unrecognised legacy source becomes `"import"`. The next user decision rewrites the record in the v1 shape.
 
 GPC alone does not produce a record — the visitor has not made a decision. `getConsentRecord()` keeps returning `null` until the user accepts, rejects, saves, or toggles a category.
 
@@ -271,7 +271,7 @@ Useful options on the script definition:
 
 ### No auto-revoke
 
-A loaded script cannot be un-loaded. If consent is later revoked, PolicyStack Consent does **not** unmount the `<script>` tag, restore the queue stubs, or re-evaluate the gate. Recommend `location.reload()` to your users for a clean slate.
+A loaded script cannot be un-loaded. If consent is later revoked, Consent does **not** unmount the `<script>` tag, restore the queue stubs, or re-evaluate the gate. Recommend `location.reload()` to your users for a clean slate.
 
 For inline JSX gating (e.g. wrapping a `<MapWidget />` in a marketing-consent gate) the framework adapters expose `<ConsentGate>` with the same `requires` expression shape.
 

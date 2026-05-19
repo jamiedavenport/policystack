@@ -1,6 +1,6 @@
 ---
 title: Examples
-description: Example projects using PolicyStack
+description: Example projects using Policy
 product: policy
 ---
 

@@ -68,7 +68,7 @@ export default defineConfig({
 });
 ```
 
-The `company` block is shared across all policy types. `company.legalName` and `company.address` are required; `company.name`, `company.url`, and `company.contact.email` are seeded from the host `package.json` (`name` / `homepage` / `author.email`) when omitted, and any explicit value wins. All other fields live at the top level: `effectiveDate` and `jurisdictions` are shared, and PolicyStack auto-detects which policies to generate from the fields you provide — include the `data` block for a privacy policy, and the `cookies` block (or `trackingTechnologies`) for a cookie policy.
+The `company` block is shared across all policy types. `company.legalName` and `company.address` are required; `company.name`, `company.url`, and `company.contact.email` are seeded from the host `package.json` (`name` / `homepage` / `author.email`) when omitted, and any explicit value wins. All other fields live at the top level: `effectiveDate` and `jurisdictions` are shared, and Policy auto-detects which policies to generate from the fields you provide — include the `data` block for a privacy policy, and the `cookies` block (or `trackingTechnologies`) for a cookie policy.
 
 ### Contact methods
 
@@ -162,7 +162,7 @@ defineConfig({
 
 Explicit values always win over the auto-computed hash. Both helpers — `computePrivacyVersion(config)` and `computeCookieVersion(config)` — are also re-exported from `@policystack/sdk` for callers building configs without `defineConfig`.
 
-`cookieVersion` also feeds the PolicyStack Consent bridge — see [Cookie banner](/docs/policy/cookies/overview) — so a change to `cookies` (which also drives the derived consent mechanism) re-prompts consent automatically.
+`cookieVersion` also feeds the Consent bridge — see [Cookie banner](/docs/policy/cookies/overview) — so a change to `cookies` (which also drives the derived consent mechanism) re-prompts consent automatically.
 
 ### Build-time validation
 

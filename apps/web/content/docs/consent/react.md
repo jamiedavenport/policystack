@@ -4,7 +4,7 @@ description: "React adapter — useConsent, useCategory, ConsentGate"
 product: consent
 ---
 
-React adapter for PolicyStack Consent. Wraps [`@policystack/core/consent`](/docs/consent/core) with `useSyncExternalStore` for concurrent-safe reactivity.
+React adapter for Consent. Wraps [`@policystack/core/consent`](/docs/consent/core) with `useSyncExternalStore` for concurrent-safe reactivity.
 
 ## Install
 

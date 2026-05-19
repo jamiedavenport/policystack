@@ -1,4 +1,4 @@
-# PolicyStack Cloud
+# Cloud
 
 > The control plane for your policies.
 
@@ -6,9 +6,9 @@ Centralized versioning, audit trails, and consent analytics across every app in 
 
 **Status:** early access. Onboarding design partners through Q3 2026. [Book a demo](https://cal.eu/jamie-policy/policy-chat-demo).
 
-## What PolicyStack Cloud adds on top
+## What Cloud adds on top
 
-The open-source pieces are still doing the work. PolicyStack Cloud is the place to see them, version them, and prove what happened.
+The open-source pieces are still doing the work. Cloud is the place to see them, version them, and prove what happened.
 
 - **Policy registry** — Every published policy version, signed and timestamped. Diff between versions, see who approved what, roll back if you have to.
 - **Consent analytics** — Acceptance rates by category, region, and surface. Funnel views to find the banner copy that actually works.
@@ -21,7 +21,7 @@ The open-source pieces are still doing the work. PolicyStack Cloud is the place 
 
 We're in private beta with a handful of design partners. Pricing will be usage-based and boring. Open source stays open source.
 
-- **Open source — $0.** Self-hosted. Apache-2.0. Yours forever. Includes PolicyStack, PolicyStack Consent, Vite plugin, CLI.
+- **Open source — $0.** Self-hosted. Apache-2.0. Yours forever. Includes Policy, Consent, Vite plugin, CLI.
 - **Cloud — usage-based.** The hosted control plane, billed on consents and policy publishes. Policy registry, consent analytics, cross-app config, audit log.
 - **Enterprise — talk to us.** For teams with procurement, security questionnaires, and a DPA. SSO + SCIM, custom retention, region pinning, support SLA.
 
@@ -30,4 +30,4 @@ We're in private beta with a handful of design partners. Pricing will be usage-b
 We're onboarding design partners through Q3 2026. Book a 30-minute call and we'll walk you through the control plane.
 
 - Demo: <https://cal.eu/jamie-policy/policy-chat-demo>
-- Underlying OSS: [PolicyStack](https://policystack.dev/policy.md), [PolicyStack Consent](https://policystack.dev/consent.md)
+- Underlying OSS: [Policy](https://policystack.dev/policy.md), [Consent](https://policystack.dev/consent.md)

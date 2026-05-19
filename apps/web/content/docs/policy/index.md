@@ -1,10 +1,10 @@
 ---
 title: Introduction
-description: What PolicyStack is and why it exists
+description: What Policy is and why it exists
 product: policy
 ---
 
-PolicyStack generates privacy policies and cookie policies from TypeScript config files. Instead of maintaining documents manually or copying templates, you describe your actual data practices in code and PolicyStack renders them as components inside your app.
+Policy generates privacy policies and cookie policies from TypeScript config files. Instead of maintaining documents manually or copying templates, you describe your actual data practices in code and Policy renders them as components inside your app.
 
 ## What you can do with it
 
@@ -22,4 +22,4 @@ The CLI installs the right packages for your stack, writes a starter `policystac
 
 ## Why policies-as-code
 
-Policy documents go stale. When you add a new third-party service, change your data retention period, or expand to a new jurisdiction, a static document won't reflect that unless someone remembers to update it. With PolicyStack, your policy config lives next to your codebase — it can be reviewed in PRs, diffed in git, and re-rendered any time something changes.
+Policy documents go stale. When you add a new third-party service, change your data retention period, or expand to a new jurisdiction, a static document won't reflect that unless someone remembers to update it. With Policy, your policy config lives next to your codebase — it can be reviewed in PRs, diffed in git, and re-rendered any time something changes.

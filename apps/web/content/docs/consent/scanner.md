@@ -4,7 +4,7 @@ description: "Static AST detection of cookie writes and vendor scripts"
 product: consent
 ---
 
-Static cookie and vendor detection for PolicyStack Consent. Scans your source for
+Static cookie and vendor detection for Consent. Scans your source for
 known third-party scripts and the cookies they (or your code) set.
 
 The scanner is a pure library. The Vite plugin (`@policystack/vite`) and
@@ -83,9 +83,9 @@ A hit is treated as gated when any ancestor in its AST path is one of:
 
 This is _not_ a control-flow analysis. Treat the `ungated` array as a
 "please double-check" list, not a definitive enforcement signal — the runtime
-is what enforces consent. See [PolicyStack Consent core] for the runtime story.
+is what enforces consent. See [Consent core] for the runtime story.
 
-[PolicyStack Consent core]: ../core/README.md
+[Consent core]: ../core/README.md
 
 ## Custom rules
 

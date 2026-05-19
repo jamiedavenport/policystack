@@ -4,7 +4,7 @@ description: "Vite plugin — surfaces ungated cookie and vendor calls in dev an
 product: consent
 ---
 
-Vite plugin for PolicyStack Consent. Runs `@policystack/vite` against your source on dev start and on every HMR update, and surfaces ungated cookie writes / vendor calls as Vite warnings — or build failures.
+Vite plugin for Consent. Runs `@policystack/vite` against your source on dev start and on every HMR update, and surfaces ungated cookie writes / vendor calls as Vite warnings — or build failures.
 
 ## Install
 

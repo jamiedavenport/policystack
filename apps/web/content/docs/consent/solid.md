@@ -4,7 +4,7 @@ description: "Solid adapter — signals-based hooks and provider"
 product: consent
 ---
 
-Solid adapter for PolicyStack Consent. Built on Solid's signals — fine-grained reactivity with no virtual DOM cost. Wraps [`@policystack/core/consent`](/docs/consent/core).
+Solid adapter for Consent. Built on Solid's signals — fine-grained reactivity with no virtual DOM cost. Wraps [`@policystack/core/consent`](/docs/consent/core).
 
 ## Install
 

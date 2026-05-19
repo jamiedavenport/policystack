@@ -1,4 +1,4 @@
-# PolicyStack
+# Policy
 
 > Your privacy policy, as a typed config.
 
@@ -31,22 +31,22 @@ export function PrivacyPolicyPage() {
 
 Same legal coverage you'd get from a lawyer, a template, or one of the incumbent SaaS tools — without the invoice, the dashboard, or the drift.
 
-| Feature                                     | PolicyStack | Lawyers  | Templates  | Termly      | iubenda       |
-| ------------------------------------------- | ----------- | -------- | ---------- | ----------- | ------------- |
-| Developer workflow (Git, TypeScript, CI)    | ✓           | ✗        | ✗          | ✗           | ✗             |
-| Version controlled                          | ✓           | ✗        | ✗          | ✗           | ✗             |
-| Renders as a React / Vue / Svelte component | ✓           | ✗        | ✗          | ✗           | ✗             |
-| Always in sync with the codebase            | ✓           | ✗        | ✗          | ✗           | ✗             |
-| Markdown / HTML / PDF output                | ✓           | PDF only | Word / PDF | Hosted page | Hosted widget |
-| GDPR + CCPA coverage                        | ✓           | ✓        | Varies     | ✓           | ✓             |
-| No ongoing subscription                     | ✓           | ✗        | ✓          | ✗           | ✗             |
-| Self-hostable / open source                 | ✓           | —        | —          | ✗           | ✗             |
+| Feature                                     | Policy | Lawyers  | Templates  | Termly      | iubenda       |
+| ------------------------------------------- | ------ | -------- | ---------- | ----------- | ------------- |
+| Developer workflow (Git, TypeScript, CI)    | ✓      | ✗        | ✗          | ✗           | ✗             |
+| Version controlled                          | ✓      | ✗        | ✗          | ✗           | ✗             |
+| Renders as a React / Vue / Svelte component | ✓      | ✗        | ✗          | ✗           | ✗             |
+| Always in sync with the codebase            | ✓      | ✗        | ✗          | ✗           | ✗             |
+| Markdown / HTML / PDF output                | ✓      | PDF only | Word / PDF | Hosted page | Hosted widget |
+| GDPR + CCPA coverage                        | ✓      | ✓        | Varies     | ✓           | ✓             |
+| No ongoing subscription                     | ✓      | ✗        | ✓          | ✗           | ✗             |
+| Self-hostable / open source                 | ✓      | —        | —          | ✗           | ✗             |
 
-GDPR and CCPA coverage is the floor — PolicyStack is not legal advice and is not a replacement for counsel on high-stakes matters.
+GDPR and CCPA coverage is the floor — Policy is not legal advice and is not a replacement for counsel on high-stakes matters.
 
 ## Multilingual out of the box
 
-Pass `locale` to `defineConfig` and the ~125 strings PolicyStack emits — headings, table headers, GDPR/CCPA boilerplate, formatted dates — render in your chosen language. Your company name, processing purposes, retention text, and third-party descriptions pass through as you wrote them.
+Pass `locale` to `defineConfig` and the ~125 strings Policy emits — headings, table headers, GDPR/CCPA boilerplate, formatted dates — render in your chosen language. Your company name, processing purposes, retention text, and third-party descriptions pass through as you wrote them.
 
 | Locale  | Tag  |
 | ------- | ---- |
@@ -95,6 +95,6 @@ export default defineConfig({
 
 ## See also
 
-- [Docs: PolicyStack](https://policystack.dev/docs/policy.md)
-- [PolicyStack Consent](https://policystack.dev/consent.md) — pair with PolicyStack for consent state
+- [Docs: Policy](https://policystack.dev/docs/policy.md)
+- [Consent](https://policystack.dev/consent.md) — pair with Policy for consent state
 - GitHub: <https://github.com/jamiedavenport/policystack>

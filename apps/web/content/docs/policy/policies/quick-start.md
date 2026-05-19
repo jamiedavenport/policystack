@@ -6,7 +6,7 @@ product: policy
 
 ## Using shadcn (recommended)
 
-Install a ready-to-use policy component from the PolicyStack shadcn registry. This copies Tailwind-styled components into your project alongside a starter config.
+Install a ready-to-use policy component from the Policy shadcn registry. This copies Tailwind-styled components into your project alongside a starter config.
 
 ```sh
 # Privacy Policy

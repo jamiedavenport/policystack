@@ -1,5 +1,5 @@
 ---
-title: "PolicyStack Consent"
+title: "Consent"
 description: "Open-source primitives for building cookie banners and preferences"
 product: consent
 ---
@@ -8,13 +8,13 @@ Open-source primitives for building cookie banners and preferences.
 
 **Consent logic, not consent UI.**
 
-PolicyStack Consent gives you a tiny, headless state machine and framework-native hooks for managing user consent. You write the banner. We handle the rules.
+Consent gives you a tiny, headless state machine and framework-native hooks for managing user consent. You write the banner. We handle the rules.
 
 ## Why?
 
 Most consent libraries ship a banner with the logic baked in. You either bend your design to match theirs or fight the library every step of the way.
 
-PolicyStack Consent takes the opposite approach. The state machine, expressions, storage, and script gating are all yours to use — the UI is whatever you build around them.
+Consent takes the opposite approach. The state machine, expressions, storage, and script gating are all yours to use — the UI is whatever you build around them.
 
 ## Install
 
@@ -119,9 +119,9 @@ The plugin scans your code for cookie writes and known third-party vendors, and 
 
 Until a docs site lands, each package README is the canonical reference. Shared concepts (categories, GPC, jurisdiction, re-consent triggers, script gating, storage adapters) live in [`@policystack/core/consent`](/docs/consent/core); the framework adapters are thin wrappers over it.
 
-## Companion to PolicyStack
+## Companion to Policy
 
-PolicyStack Consent pairs with [PolicyStack](https://policystack.dev) for the full privacy story: a single config drives your cookie banner, your cookie policy document, and your privacy policy disclosures. They work great together — and just as well apart.
+Consent pairs with [Policy](https://policystack.dev) for the full privacy story: a single config drives your cookie banner, your cookie policy document, and your privacy policy disclosures. They work great together — and just as well apart.
 
 ## Status
 

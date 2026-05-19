@@ -4,7 +4,7 @@ description: "Terminal UI for scans and config sync"
 product: consent
 ---
 
-Terminal entry point for PolicyStack Consent. Wraps [`@policystack/vite`](/docs/consent/scanner) for one-off scans, config init, and writing back vendor-category suggestions that the [Vite plugin](/docs/consent/vite) only prints.
+Terminal entry point for Consent. Wraps [`@policystack/vite`](/docs/consent/scanner) for one-off scans, config init, and writing back vendor-category suggestions that the [Vite plugin](/docs/consent/vite) only prints.
 
 > Status: scaffold. The package and `consent` bin are reserved; the implementation is in flight. For build-time scanning today, use [`@policystack/vite`](/docs/consent/vite) — same scanner, integrated with HMR and `vite build`.
 

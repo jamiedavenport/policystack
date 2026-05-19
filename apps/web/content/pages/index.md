@@ -12,11 +12,11 @@ PolicyStack is built on the opposite premise: consent and policy are _infrastruc
 
 ## Three building blocks
 
-Each repo is independently useful and Apache-2.0 licensed. PolicyStack Cloud sits on top when you want a hosted control plane.
+Each repo is independently useful and Apache-2.0 licensed. Cloud sits on top when you want a hosted control plane.
 
-- **[PolicyStack Consent](https://policystack.dev/consent.md)** — A headless consent state machine. Sub-4kb core with adapters for React, Vue, Solid, Svelte, and Angular. A Vite plugin flags ungated cookies at dev time. Integrations for GA, Meta Pixel, and more. (`@policystack/react/consent`)
-- **[PolicyStack](https://policystack.dev/policy.md)** — Your policy as a typed config. Define your privacy and cookie policy once in TypeScript. Render it as React components, or generate Markdown. Ships a shadcn-style consent banner. (`@policystack/react`)
-- **[PolicyStack Cloud](https://policystack.dev/cloud.md)** — The hosted control plane. Centralized policy versioning, audit trails, and consent analytics across every app in your stack. Optional. Plays nicely with the OSS pieces. (early access)
+- **[Consent](https://policystack.dev/consent.md)** — A headless consent state machine. Sub-4kb core with adapters for React, Vue, Solid, Svelte, and Angular. A Vite plugin flags ungated cookies at dev time. Integrations for GA, Meta Pixel, and more. (`@policystack/react/consent`)
+- **[Policy](https://policystack.dev/policy.md)** — Your policy as a typed config. Define your privacy and cookie policy once in TypeScript. Render it as React components, or generate Markdown. Ships a shadcn-style consent banner. (`@policystack/react`)
+- **[Cloud](https://policystack.dev/cloud.md)** — The hosted control plane. Centralized policy versioning, audit trails, and consent analytics across every app in your stack. Optional. Plays nicely with the OSS pieces. (early access)
 
 ## Good DX that agents love
 
@@ -29,8 +29,8 @@ Claude reading the same typed config is just what falls out. The machine-readabl
 - **Version-controlled** — Policies live next to your code. Changes go through PR review, not a vendor dashboard.
 - **Testable** — Type-checked configs, snapshot tests for rendered policy, unit tests for consent state.
 - **Composable** — Headless cores with framework adapters. Use the parts you want, swap the ones you don't.
-- **Tiny** — PolicyStack Consent core ships under 4kb gzipped. PolicyStack renders zero JS by default.
-- **Open source** — Apache-2.0 across the board. PolicyStack Cloud is the only commercial piece, and it's optional.
+- **Tiny** — Consent core ships under 4kb gzipped. Policy renders zero JS by default.
+- **Open source** — Apache-2.0 across the board. Cloud is the only commercial piece, and it's optional.
 - **Honest** — It generates documents and manages state. It does not give legal advice.
 
 ## Get started
@@ -38,6 +38,6 @@ Claude reading the same typed config is just what falls out. The machine-readabl
 Pick a repo, install one package, and have a typed policy and a working consent flow before lunch.
 
 - Docs: <https://policystack.dev/docs>
-- GitHub (PolicyStack): <https://github.com/jamiedavenport/policystack>
-- GitHub (PolicyStack Consent): <https://github.com/jamiedavenport/policystack>
-- Demo (PolicyStack Cloud): <https://cal.eu/jamie-policy/policy-chat-demo>
+- GitHub (Policy): <https://github.com/jamiedavenport/policystack>
+- GitHub (Consent): <https://github.com/jamiedavenport/policystack>
+- Demo (Cloud): <https://cal.eu/jamie-policy/policy-chat-demo>

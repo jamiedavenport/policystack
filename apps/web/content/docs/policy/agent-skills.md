@@ -1,6 +1,6 @@
 ---
 title: AI skill pack
-description: Install the PolicyStack skill pack into Claude Code — guided procedures for setup, auditing, jurisdiction posture, and instrumentation
+description: Install the Policy skill pack into Claude Code — guided procedures for setup, auditing, jurisdiction posture, and instrumentation
 product: policy
 ---
 
@@ -11,7 +11,7 @@ Claude Code plugin, versioned in the monorepo and generated from the same
 frozen SDK types as `llms.txt`, so a skill can never reference a jurisdiction
 or diagnostic code that no longer exists.
 
-PolicyStack generates policy documents; it is not legal advice. Have a lawyer
+Policy generates policy documents; it is not legal advice. Have a lawyer
 review your policies before publication.
 
 ## Install
@@ -27,7 +27,7 @@ The four skills then activate automatically when a task matches.
 
 ## The skills
 
-- **policystack-init** — scaffold PolicyStack in a project: run
+- **policystack-init** — scaffold Policy in a project: run
   `@policystack/cli init`, then wire `<PolicyStackProvider>` (it supplies both
   the policy context and the consent store from one config).
 - **policystack-audit** — the closed loop: run `policy validate --json`,

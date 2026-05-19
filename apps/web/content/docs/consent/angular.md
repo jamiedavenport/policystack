@@ -4,7 +4,7 @@ description: "Angular 18+ adapter — providePolicyStackConsent, ConsentService,
 product: consent
 ---
 
-Angular 18+ adapter for PolicyStack Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Angular's signal reactivity.
+Angular 18+ adapter for Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Angular's signal reactivity.
 
 ## Install
 
