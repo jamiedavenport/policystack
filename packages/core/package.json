@@ -1,6 +1,6 @@
 {
 	"name": "@policystack/core",
-	"version": "0.0.34",
+	"version": "1.0.0",
 	"description": "Core package for PolicyStack",
 	"license": "Apache-2.0",
 	"repository": {

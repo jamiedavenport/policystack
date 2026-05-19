@@ -1,6 +1,6 @@
 {
 	"name": "@policystack/renderers",
-	"version": "0.0.34",
+	"version": "1.0.0",
 	"description": "Shared policy render layer for PolicyStack — Markdown, HTML, and PDF renderers over the Document AST.",
 	"license": "Apache-2.0",
 	"repository": {

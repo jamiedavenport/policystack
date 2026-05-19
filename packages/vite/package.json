@@ -1,6 +1,6 @@
 {
 	"name": "@policystack/vite",
-	"version": "0.0.34",
+	"version": "1.0.0",
 	"description": "Vite plugin that scans source files for @policystack/sdk collecting()/thirdParty() calls and populates the auto-collected registry at build time",
 	"keywords": [
 		"policystack",
