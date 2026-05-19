@@ -1,3 +1,5 @@
+export { toPolicyStackConsentConfig } from "./config";
+export type { ToConsentConfigOptions } from "./config";
 export { PolicyStackConsentError } from "./errors";
 export type { PolicyStackConsentErrorCode } from "./errors";
 export { evaluate } from "./expr";

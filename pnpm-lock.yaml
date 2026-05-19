@@ -319,9 +319,6 @@ importers:
       '@policystack/core':
         specifier: workspace:*
         version: link:../core
-      '@policystack/sdk':
-        specifier: workspace:*
-        version: link:../sdk
       '@policystack/tooling':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

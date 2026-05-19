@@ -17,7 +17,6 @@ export {
 	DefaultTableRow,
 	DefaultText,
 	DefaultUnknown,
-	renderNode,
 } from "./components/defaults";
 export { PrivacyPolicy } from "./components/PrivacyPolicy";
 // Context / Provider

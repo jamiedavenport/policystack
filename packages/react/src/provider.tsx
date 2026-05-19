@@ -1,48 +1,13 @@
 "use client";
 
-import { isConsentGated, type PolicyStackConfig } from "@policystack/core";
-import type { Category, PolicyStackConsentConfig } from "@policystack/core/consent";
+import type { PolicyStackConfig } from "@policystack/core";
+import {
+	toPolicyStackConsentConfig,
+	type PolicyStackConsentConfig,
+} from "@policystack/core/consent";
 import { useState, type ReactNode } from "react";
 import { PolicyStackConsentProvider } from "./consent";
 import { PolicyStackContext } from "./context";
-
-// Local copy of the @policystack/sdk `toPolicyStackConsentConfig` derivation, narrowed
-// to the authored `PolicyStackConfig.consent` shape (policyVersion / locale /
-// canWithdraw are ALWAYS derived from the policy, never authored in `consent`).
-// Kept here — rather than importing `toPolicyStackConsentConfig` — so @policystack/
-// react's only @policystack/* runtime dependency stays @policystack/core (no
-// react → sdk edge). The canonical bridge is @policystack/sdk's
-// `toPolicyStackConsentConfig`; provider.test.tsx pins this copy to it, so if either
-// drifts the parity test fails. Exported as that parity seam and a legitimate
-// escape hatch — equivalent to `toPolicyStackConsentConfig(policy, policy.consent)`.
-export function deriveConsentConfig(policy: PolicyStackConfig): PolicyStackConsentConfig {
-	const used: Record<string, boolean> = policy.cookies?.used ?? {};
-	const context = policy.cookies?.context ?? {};
-	const categories: Category[] = Object.keys(used)
-		.filter((key) => used[key])
-		.map((key) => {
-			const lawfulBasis = context[key]?.lawfulBasis;
-			return {
-				key,
-				label: key.charAt(0).toUpperCase() + key.slice(1),
-				locked: !isConsentGated(lawfulBasis),
-				...(lawfulBasis ? { lawfulBasis } : {}),
-			};
-		});
-	const consent = policy.consent;
-	// Default the policy-change re-prompt on; authored triggers merge over it.
-	const triggers = { policyVersionChanged: true, ...consent?.triggers };
-	return {
-		...consent,
-		...(policy.cookieVersion ? { policyVersion: policy.cookieVersion } : {}),
-		...(policy.consentMechanism?.canWithdraw != null
-			? { canWithdraw: policy.consentMechanism.canWithdraw }
-			: {}),
-		...(policy.locale ? { locale: policy.locale } : {}),
-		triggers,
-		categories,
-	};
-}
 
 export type PolicyStackProviderProps = {
 	config: PolicyStackConfig;
@@ -69,7 +34,9 @@ export function PolicyStackProvider({ config, children }: PolicyStackProviderPro
 	// Derive once per provider instance. Each SSR request mounts its own
 	// provider, so the consent store never leaks across requests — same
 	// rationale as PolicyStackConsentProvider's own useState store memoization.
-	const [consentConfig] = useState<PolicyStackConsentConfig>(() => deriveConsentConfig(config));
+	const [consentConfig] = useState<PolicyStackConsentConfig>(() =>
+		toPolicyStackConsentConfig(config, config.consent),
+	);
 
 	return (
 		<PolicyStackContext.Provider value={{ config }}>

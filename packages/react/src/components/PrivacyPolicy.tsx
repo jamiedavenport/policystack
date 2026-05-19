@@ -1,40 +1,6 @@
-import {
-	compilePrivacyPolicy,
-	type Dictionary,
-	type Locale,
-	type PolicyStackConfig,
-} from "@policystack/core";
-import { useContext } from "react";
-import { PolicyStackContext } from "../context";
-import { renderDocument } from "../render";
-import type { PolicyComponents } from "../types";
-import { DefaultRoot } from "./defaults";
+import { compilePrivacyPolicy } from "@policystack/core";
+import { PolicyDocument, type PolicyDocumentProps } from "./PolicyDocument";
 
-type PrivacyPolicyProps = {
-	config?: PolicyStackConfig;
-	locale?: Locale;
-	dictionary?: Dictionary;
-	components?: PolicyComponents;
-	style?: unknown;
-};
-
-export function PrivacyPolicy({
-	config: configProp,
-	locale,
-	dictionary,
-	components,
-	style,
-}: PrivacyPolicyProps) {
-	const { config: contextConfig } = useContext(PolicyStackContext);
-	const baseConfig = configProp ?? contextConfig ?? undefined;
-	if (!baseConfig) return null;
-	const config = locale ? { ...baseConfig, locale } : baseConfig;
-	const doc = compilePrivacyPolicy(config, dictionary);
-	if (!doc) return null;
-	const Root = components?.Root ?? DefaultRoot;
-	return (
-		<Root node={doc} style={style}>
-			{renderDocument(doc, components)}
-		</Root>
-	);
+export function PrivacyPolicy(props: PolicyDocumentProps) {
+	return <PolicyDocument {...props} compile={compilePrivacyPolicy} />;
 }

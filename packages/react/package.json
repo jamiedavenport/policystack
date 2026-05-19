@@ -55,7 +55,6 @@
 	},
 	"devDependencies": {
 		"@policystack/core": "workspace:*",
-		"@policystack/sdk": "workspace:*",
 		"@policystack/tooling": "workspace:*",
 		"@testing-library/react": "^16.3.2",
 		"@types/react": "^18.0.0 || ^19.0.0",

@@ -45,6 +45,9 @@ function useStore(): ConsentStore {
 	return store;
 }
 
+// State slice flows through useSyncExternalStore; the actions are the store's
+// own closures, passed by reference (stable identity, no per-render wrappers).
+// `subscribe`/`getState`/`refreshJurisdiction` are intentionally not exposed.
 export type UseConsentResult = {
 	route: Route;
 	categories: Category[];
@@ -53,16 +56,18 @@ export type UseConsentResult = {
 	policyVersion: string;
 	decidedAt: string | null;
 	repromptReason: RepromptReason | null;
-	acceptAll: ConsentStore["acceptAll"];
-	acceptNecessary: ConsentStore["acceptNecessary"];
-	reject: ConsentStore["reject"];
-	toggle: ConsentStore["toggle"];
-	save: ConsentStore["save"];
-	setRoute: ConsentStore["setRoute"];
-	has: ConsentStore["has"];
-	getConsentRecord: ConsentStore["getConsentRecord"];
-	getPreviousRecord: ConsentStore["getPreviousRecord"];
-};
+} & Pick<
+	ConsentStore,
+	| "acceptAll"
+	| "acceptNecessary"
+	| "reject"
+	| "toggle"
+	| "save"
+	| "setRoute"
+	| "has"
+	| "getConsentRecord"
+	| "getPreviousRecord"
+>;
 
 export function useConsent(): UseConsentResult {
 	const store = useStore();
@@ -79,15 +84,15 @@ export function useConsent(): UseConsentResult {
 		policyVersion: state.policyVersion,
 		decidedAt: state.decidedAt,
 		repromptReason: state.repromptReason,
-		acceptAll: (opts) => store.acceptAll(opts),
-		acceptNecessary: (opts) => store.acceptNecessary(opts),
-		reject: (opts) => store.reject(opts),
-		toggle: (key, opts) => store.toggle(key, opts),
-		save: (opts) => store.save(opts),
-		setRoute: (route) => store.setRoute(route),
-		has: (expr) => store.has(expr),
-		getConsentRecord: () => store.getConsentRecord(),
-		getPreviousRecord: () => store.getPreviousRecord(),
+		acceptAll: store.acceptAll,
+		acceptNecessary: store.acceptNecessary,
+		reject: store.reject,
+		toggle: store.toggle,
+		save: store.save,
+		setRoute: store.setRoute,
+		has: store.has,
+		getConsentRecord: store.getConsentRecord,
+		getPreviousRecord: store.getPreviousRecord,
 	};
 }
 

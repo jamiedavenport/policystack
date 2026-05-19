@@ -1,13 +1,12 @@
 // @vitest-environment happy-dom
 import type { PolicyStackConfig } from "@policystack/core";
 import type { ConsentRecord, StorageAdapter } from "@policystack/core/consent";
-import { toPolicyStackConsentConfig } from "@policystack/sdk/consent";
 import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
 import { useContext, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { ConsentGate, useConsent } from "./consent";
 import { PolicyStackContext } from "./context";
-import { deriveConsentConfig, PolicyStackProvider } from "./provider";
+import { PolicyStackProvider } from "./provider";
 
 const company = {
 	name: "Acme Inc.",
@@ -160,33 +159,4 @@ describe("PolicyStackProvider — consent store derived from the one config", ()
 		expect(a.result.current.decisions.analytics).toBe(true);
 		expect(b.result.current.decisions.analytics).toBe(false);
 	});
-});
-
-describe("deriveConsentConfig parity with @policystack/sdk toPolicyStackConsentConfig", () => {
-	const cases: Record<string, PolicyStackConfig> = {
-		"no consent block": withCookies,
-		"with runtime knobs": {
-			...withCookies,
-			consent: {
-				adapter: { read: () => null, write: () => {}, clear: () => {} },
-				jurisdictionResolver: { resolve: () => "eea" },
-				initialRoute: "preferences",
-				triggers: { policyVersionChanged: false, jurisdictionChanged: true },
-			},
-		},
-		"with consentMechanism + locale": {
-			...withCookies,
-			locale: "fr",
-			consentMechanism: { hasBanner: true, hasPreferencePanel: true, canWithdraw: true },
-		},
-		"policy-only (no cookies)": policyOnly,
-	};
-
-	for (const [name, config] of Object.entries(cases)) {
-		it(`matches toPolicyStackConsentConfig for: ${name}`, () => {
-			expect(deriveConsentConfig(config)).toEqual(
-				toPolicyStackConsentConfig(config, config.consent),
-			);
-		});
-	}
 });
