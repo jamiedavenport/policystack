@@ -72,7 +72,7 @@ export type RepromptTriggers = {
 
 export type RepromptEventDetail = { reason: RepromptReason };
 
-export type ConsentRecordSource = "banner" | "preferences" | "api" | "import";
+export type ConsentRecordSource = "banner" | "preferences" | "api" | "import" | "signup";
 
 export type ConsentRecord = {
 	schemaVersion: 1;
