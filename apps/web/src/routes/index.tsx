@@ -18,11 +18,14 @@ import { pageMeta } from "../lib/seo";
 import auvia from "../assets/auvia.svg?url";
 import planily from "../assets/planily.svg?url";
 import virentis from "../assets/virentis.svg?url";
+import plain from "../assets/plain.svg?url";
+import onstage from "../assets/onstage.png";
 
 const LOGOS: Array<{ name: string; src: string; href: string }> = [
 	{ name: "Auvia", src: auvia, href: "https://www.auvia.io/" },
 	{ name: "Planily", src: planily, href: "https://planily.co.uk/" },
 	{ name: "Virentis", src: virentis, href: "https://www.virentis.uk/" },
+	{ name: "Plain", src: plain, href: "https://plain.jxd.dev/" },
 ];
 
 const HERO_SNIPPET = `import { ContractPrerequisite, defineConfig, LegalBases, Voluntary } from "@policystack/sdk";
@@ -144,6 +147,21 @@ function Hero({ heroHtml }: { heroHtml: string }) {
 						browse products
 					</a>
 				</div>
+
+				<a
+					href="https://onstage-shortlist.com/"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="Onstage Top 100 — view the shortlist"
+					className="mt-12 inline-flex items-center gap-4 transition hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+				>
+					<img src={onstage} alt="Onstage Top 100" className="h-16 w-auto md:h-20" />
+					<span className="text-xs tracking-wide text-mute uppercase">
+						Recognised in the
+						<br />
+						Onstage Top 100
+					</span>
+				</a>
 
 				<div className="mt-24 grid gap-6 md:grid-cols-2 md:items-stretch">
 					<div className="min-w-0 md:h-112">
