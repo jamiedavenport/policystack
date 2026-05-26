@@ -236,14 +236,30 @@ function SiteFooter() {
 			</div>
 			<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-8 py-6 text-xs tracking-wide text-mute uppercase">
 				<span>© {new Date().getFullYear()} PolicyStack Ltd — apache-2.0 where noted</span>
-				<a
-					href="https://jxd.dev"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hover:text-ink"
-				>
-					built by jxd.dev
-				</a>
+				<div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+					<a
+						href="https://plain.jxd.dev"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-1.5 hover:text-ink"
+					>
+						<img
+							src="https://plain.jxd.dev/favicon.svg"
+							alt=""
+							aria-hidden="true"
+							className="size-3.5 h-lh shrink-0"
+						/>
+						<span>powered by Plain</span>
+					</a>
+					<a
+						href="https://jxd.dev"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="hover:text-ink"
+					>
+						built by jxd.dev
+					</a>
+				</div>
 			</div>
 		</footer>
 	);
