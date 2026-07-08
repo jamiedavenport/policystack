@@ -39,4 +39,4 @@ Pick a building block, install one package, and have a typed policy and a workin
 
 - Docs: <https://policystack.dev/docs>
 - GitHub: <https://github.com/jamiedavenport/policystack>
-- Demo (Cloud): <https://cal.eu/jamie-policy/policy-chat-demo>
+- Demo (Cloud): <https://cal.eu/jamie-openpolicy/openpolicy-chat-demo>

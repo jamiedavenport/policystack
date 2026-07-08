@@ -4,7 +4,7 @@
 
 Centralized versioning, audit trails, and consent analytics across every app in your stack — without giving up the typed configs and headless primitives you already use.
 
-**Status:** early access. Onboarding design partners through Q3 2026. [Book a demo](https://cal.eu/jamie-policy/policy-chat-demo).
+**Status:** early access. Onboarding design partners through Q3 2026. [Book a demo](https://cal.eu/jamie-openpolicy/openpolicy-chat-demo).
 
 ## What Cloud adds on top
 
@@ -29,5 +29,5 @@ We're in private beta with a handful of design partners. Pricing will be usage-b
 
 We're onboarding design partners through Q3 2026. Book a 30-minute call and we'll walk you through the control plane.
 
-- Demo: <https://cal.eu/jamie-policy/policy-chat-demo>
+- Demo: <https://cal.eu/jamie-openpolicy/openpolicy-chat-demo>
 - Underlying OSS: [Policy](https://policystack.dev/policy.md), [Consent](https://policystack.dev/consent.md)

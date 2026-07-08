@@ -47,7 +47,7 @@ function Hero() {
 				</p>
 				<div className="mt-16 flex flex-wrap items-center gap-x-6 gap-y-4">
 					<a
-						href="https://cal.eu/jamie-policy/policy-chat-demo"
+						href="https://cal.eu/jamie-openpolicy/openpolicy-chat-demo"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="inline-flex items-center gap-2.5 border-2 border-black bg-black px-6 py-3.5 text-sm tracking-wide text-white uppercase hover:bg-white hover:text-black"
@@ -294,7 +294,7 @@ function Waitlist() {
 					</div>
 					<div className="md:ml-auto md:w-72">
 						<a
-							href="https://cal.eu/jamie-policy/policy-chat-demo"
+							href="https://cal.eu/jamie-openpolicy/openpolicy-chat-demo"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="inline-flex w-full items-center justify-center gap-2.5 border-2 border-black bg-black px-6 py-3.5 text-sm tracking-wide text-white uppercase hover:bg-white hover:text-black"
