@@ -3,6 +3,10 @@ packages:
   - "packages/*"
   - "tooling/*"
   - "examples/*"
+  # The Wasp example is npm-managed (the wasp CLI drives its own `npm install`
+  # and can't resolve `workspace:*`), so it consumes the published
+  # @policystack/* packages and stays out of the pnpm workspace.
+  - "!examples/wasp"
 
 # Pinned (not `latest`) so a new Vite+ release can't turn CI red with zero
 # repo changes — toolchain bumps land as deliberate, reviewable PRs.

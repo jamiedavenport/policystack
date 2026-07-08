@@ -1,0 +1,264 @@
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#root > main {
+  flex: 1;
+}
+
+.container {
+  margin: 0 auto;
+  padding: 3rem 3rem 10rem 3rem;
+  max-width: 726px;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.logo {
+  max-height: 200px;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.content {
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 2;
+  margin-bottom: 3rem;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.button {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 1.2rem 1.5rem;
+  border-radius: 10px;
+}
+
+.button-filled {
+  color: black;
+  background-color: #ffcc00;
+  border: 2px solid #ffcc00;
+
+  transition: all 0.2s ease-in-out;
+}
+
+.button-filled:hover {
+  filter: brightness(0.95);
+}
+
+.button-outlined {
+  color: black;
+  background-color: transparent;
+  border: 2px solid #ffcc00;
+
+  transition: all 0.2s ease-in-out;
+}
+
+.button-outlined:hover {
+  filter: brightness(0.95);
+}
+
+code {
+  border-radius: 5px;
+  border: 1px solid #ffcc00;
+  padding: 0.2rem;
+  background: #ffcc0044;
+  font-family:
+    Menlo,
+    Monaco,
+    Lucida Console,
+    Liberation Mono,
+    DejaVu Sans Mono,
+    Bitstream Vera Sans Mono,
+    Courier New,
+    monospace;
+}
+
+/* --- Site chrome (header/footer rendered by src/Root.tsx) ----------------- */
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 2px solid #ffcc00;
+}
+
+.site-name {
+  font-weight: 700;
+  color: black;
+  text-decoration: none;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.site-nav a {
+  color: black;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.site-nav a:hover {
+  text-decoration: underline;
+}
+
+.site-footer {
+  padding: 1rem 2rem;
+  border-top: 1px solid #eee;
+  font-size: 0.875rem;
+  color: #555;
+}
+
+/* --- Cookie banner + preferences (src/components/) ------------------------ */
+
+.cookie-banner {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  max-width: 420px;
+  margin-left: auto;
+  padding: 1.25rem;
+  border: 2px solid #ffcc00;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.cookie-banner p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.cookie-banner-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.cookie-banner-buttons .button {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.cookie-preferences-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.cookie-preferences {
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem;
+  border-radius: 10px;
+  background: white;
+}
+
+.cookie-preferences h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.cookie-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* --- Policy pages (rendered via src/components/policyComponents.tsx) ------ */
+
+.policy {
+  max-width: 726px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+  text-align: left;
+}
+
+.policy-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.policy-heading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.policy-paragraph {
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.65;
+  margin-bottom: 0.75rem;
+}
+
+.policy-list {
+  list-style-type: disc;
+  list-style-position: inside;
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 0.75rem;
+}
+
+.policy-table {
+  width: 100%;
+  border: 1px solid #eee;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 0.75rem 0;
+}
+
+.policy-cell {
+  border: 1px solid #eee;
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+  text-align: left;
+}

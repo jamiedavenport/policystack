@@ -1,0 +1,375 @@
+---
+title: "Ship a cookie banner and privacy policy in your Wasp app"
+excerpt: "Wasp gives you auth, a database, and deployment out of one config file — but the privacy story is still yours to ship. Wire PolicyStack into the root component and get a consent banner, a privacy policy, and a cookie policy from one TypeScript config."
+date: "2026-07-08"
+tag: engineering
+---
+
+[Wasp](https://wasp.sh) is the batteries-included option for full-stack React: one spec file declares your routes, auth, database, and jobs, and the compiler wires up the React + Node.js + Prisma app around it. It handles a remarkable amount of the boring stuff — but the privacy story is still yours. The moment your Wasp app sets an analytics cookie for real users, you owe them a banner, a cookie policy, and a privacy policy that don't drift from what the code actually does.
+
+The good news: under the hood a Wasp app is React and Vite, which means PolicyStack drops in with no framework-specific adapter. One `defineConfig()` in TypeScript generates the privacy policy and cookie policy pages _and_ derives the consent runtime behind the banner. The only Wasp-specific wiring is where the provider mounts. This post walks through the whole thing end-to-end; the finished project lives in the repo as the [Wasp example](https://github.com/jamiedavenport/policystack/tree/main/examples/wasp).
+
+## What you're wiring up
+
+Three pieces, all driven by one config file:
+
+- **The policies.** `PrivacyPolicy` and `CookiePolicy` from `@policystack/react/policy` render the compiled documents as plain React trees on two Wasp pages. No iframe, no markdown file that goes stale.
+- **The consent runtime.** `@policystack/core/consent` is a sub-4kb headless state machine — categories, decisions, jurisdiction, persistence. The banner and preferences panel are your own components reading it through `useConsent()` and `useCategory()`.
+- **An optional build-time check.** The `policyStack()` Vite plugin slots into Wasp's own `vite.config.ts`, scans your source on every dev start and HMR update, validates the config, and flags cookie writes that aren't consent-gated.
+
+The consent categories are derived from the config's `cookies` block — there's no second list to keep in sync, and a category is opt-in exactly when its lawful basis says it needs consent.
+
+## Start from a Wasp project
+
+Any Wasp 0.24+ project works. If you're starting fresh:
+
+```bash file="terminal" tag="bash"
+npm i -g @wasp.sh/wasp-cli@latest
+wasp new my-app -t minimal
+cd my-app
+```
+
+Then add PolicyStack:
+
+```bash file="terminal" tag="bash"
+npm install @policystack/sdk @policystack/core @policystack/react
+npm install -D @policystack/vite
+```
+
+`sdk` gives you `defineConfig`. `core` is the consent state machine plus the storage adapters and jurisdiction resolvers. `react` has the policy components, the consent hooks, and the provider. `vite` is the optional dev-time scanner — more on that at the end.
+
+## One config file
+
+Everything hangs off a single `src/policystack.ts`. The `data` block drives the privacy policy, the `cookies` block drives both the cookie policy and the consent categories, and the `consent` block picks the runtime knobs:
+
+```ts file="src/policystack.ts"
+import { timezoneResolver } from "@policystack/core/consent";
+import { localStorageAdapter } from "@policystack/core/consent/storage/local-storage";
+import { ContractPrerequisite, defineConfig, LegalBases } from "@policystack/sdk";
+import * as scanned from "./policystack.gen";
+
+export default defineConfig(
+	{
+		company: {
+			name: "Acme Inc.",
+			legalName: "Acme Corporation",
+			address: "123 Main St, Springfield, USA",
+			url: "https://acme.example",
+			contact: { email: "privacy@acme.com", phone: "+1 (800) 555-0199" },
+			dpo: { required: false },
+		},
+		effectiveDate: "2026-07-08",
+		jurisdictions: ["eea", "us-ca"],
+		data: {
+			collected: {
+				"Usage Data": ["Pages visited", "Browser type", "IP address"],
+			},
+			context: {
+				"Usage Data": {
+					purpose: "To understand product usage and improve the service",
+					lawfulBasis: LegalBases.LegitimateInterests,
+					retention: "90 days",
+					provision: ContractPrerequisite("We cannot deliver or secure the service."),
+				},
+			},
+		},
+		cookies: {
+			// Each enabled key becomes a consent category; its lawful basis
+			// decides locked vs. gated — LegalObligation ⇒ always on,
+			// Consent ⇒ opt-in, which is what makes the banner appear.
+			used: { essential: true, analytics: true },
+			context: {
+				essential: { lawfulBasis: LegalBases.LegalObligation },
+				analytics: { lawfulBasis: LegalBases.Consent },
+			},
+		},
+		consent: {
+			adapter: localStorageAdapter(),
+			jurisdictionResolver: timezoneResolver(),
+		},
+		automatedDecisionMaking: [],
+	},
+	scanned,
+);
+```
+
+Two things worth pausing on:
+
+- The `consent` block is optional tuning, not boilerplate. `localStorageAdapter()` persists decisions with cross-tab sync; `timezoneResolver()` derives the visitor's region from the browser's IANA timezone so GDPR visitors get opt-in defaults and California visitors get their GPC signal honoured. Swap in the cookie or server adapters when your server needs to read consent.
+- The second argument, `scanned`, merges in the `src/policystack.gen.ts` module that the Vite plugin regenerates from your source. If you skip the plugin, drop the import and the second argument — everything else works the same.
+
+## Mount the provider in Wasp's root component
+
+Here's the one genuinely Wasp-specific step. Wasp doesn't have an `App.tsx` you own — instead the spec file declares a `client.rootComponent` that wraps every page:
+
+```ts file="main.wasp.ts"
+import { app, page, route } from "@wasp.sh/spec";
+import { MainPage } from "./src/MainPage" with { type: "ref" };
+import { CookiePolicyPage } from "./src/pages/CookiePolicyPage" with { type: "ref" };
+import { PrivacyPolicyPage } from "./src/pages/PrivacyPolicyPage" with { type: "ref" };
+import Root from "./src/Root" with { type: "ref" };
+
+export default app({
+	name: "myApp",
+	title: "My App",
+	wasp: { version: "^0.24.0" },
+	client: {
+		rootComponent: Root,
+	},
+	spec: [
+		route("RootRoute", "/", page(MainPage)),
+		route("PrivacyPolicyRoute", "/privacy-policy", page(PrivacyPolicyPage)),
+		route("CookiePolicyRoute", "/cookie-policy", page(CookiePolicyPage)),
+	],
+});
+```
+
+The root component mounts `<PolicyStack>` once, and the current page renders at react-router's `<Outlet />` — Wasp's root component receives no `children` prop, which is the one trap worth knowing about (an empty page with a working banner means you rendered `{children}` instead of `<Outlet />`):
+
+```tsx file="src/Root.tsx"
+import { PolicyStack } from "@policystack/react/provider";
+import { Outlet } from "react-router";
+import { Link } from "wasp/client/router";
+import { CookieBanner } from "./components/CookieBanner";
+import { CookiePreferences } from "./components/CookiePreferences";
+import config from "./policystack";
+
+export default function Root() {
+	return (
+		<PolicyStack config={config}>
+			<header className="site-header">
+				<Link to="/">My App</Link>
+				<nav>
+					<Link to="/privacy-policy">Privacy Policy</Link>
+					<Link to="/cookie-policy">Cookie Policy</Link>
+				</nav>
+			</header>
+
+			<Outlet />
+
+			<CookieBanner />
+			<CookiePreferences />
+		</PolicyStack>
+	);
+}
+```
+
+One provider does everything: it supplies the policy context for the two policy pages _and_, because the config declares consent-gated cookies, it creates the consent store the banner reads from. There is no separate consent provider to wire.
+
+## Build the banner from your own components
+
+The banner is a component like any other in your Wasp app. `useConsent()` returns the store's state plus its actions; `route` tells you which surface should be visible — `"cookie"` for the banner, `"preferences"` for the detail panel, `"closed"` once a decision is on file:
+
+```tsx file="src/components/CookieBanner.tsx"
+import { useConsent } from "@policystack/react/consent";
+
+export function CookieBanner() {
+	const { route, acceptAll, acceptNecessary, setRoute } = useConsent();
+	if (route !== "cookie") return null;
+
+	return (
+		<div className="cookie-banner" role="dialog" aria-label="Cookie consent">
+			<p>
+				We use cookies to keep this app running and, with your permission, to understand how it is
+				used. Read the <a href="/cookie-policy">cookie policy</a>.
+			</p>
+			<div className="cookie-banner-buttons">
+				<button type="button" onClick={() => acceptNecessary()}>
+					Necessary only
+				</button>
+				<button type="button" onClick={() => setRoute("preferences")}>
+					Customize
+				</button>
+				<button type="button" onClick={() => acceptAll()}>
+					Accept all
+				</button>
+			</div>
+		</div>
+	);
+}
+```
+
+The preferences panel reads `useCategory(key)` for each opt-in category. `toggle` flips the category in the store's draft; `save` commits it as a versioned, timestamped `ConsentRecord`:
+
+```tsx file="src/components/CookiePreferences.tsx"
+import { useCategory, useConsent } from "@policystack/react/consent";
+
+function AnalyticsToggle() {
+	const { granted, toggle } = useCategory("analytics");
+	return (
+		<label className="cookie-toggle">
+			<span>Analytics</span>
+			<input type="checkbox" checked={granted} onChange={toggle} />
+		</label>
+	);
+}
+
+export function CookiePreferences() {
+	const { route, save, setRoute } = useConsent();
+	if (route !== "preferences") return null;
+
+	return (
+		<div className="cookie-preferences-backdrop">
+			<div className="cookie-preferences" role="dialog" aria-label="Cookie preferences">
+				<h2>Cookie preferences</h2>
+				<label className="cookie-toggle">
+					<span>Essential (always on)</span>
+					<input type="checkbox" checked disabled />
+				</label>
+				<AnalyticsToggle />
+				<div className="cookie-banner-buttons">
+					<button type="button" onClick={() => setRoute("cookie")}>
+						Back
+					</button>
+					<button type="button" onClick={() => save()}>
+						Save
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+```
+
+Style both with whatever the rest of your Wasp app uses — the minimal template's plain CSS, Tailwind if you've [added it](https://wasp.sh/docs/project/css-frameworks), anything. There is no theme to override because there is no bundled UI.
+
+## Render the policies through your own components
+
+The policy pages are two-line components:
+
+```tsx file="src/pages/PrivacyPolicyPage.tsx"
+import { PrivacyPolicy } from "@policystack/react/policy";
+import { policyComponents } from "../components/policyComponents";
+
+export function PrivacyPolicyPage() {
+	return (
+		<main className="policy">
+			<PrivacyPolicy components={policyComponents} />
+		</main>
+	);
+}
+```
+
+(`CookiePolicyPage` is identical with `CookiePolicy`.) The `components` prop is the same idea as the banner: the renderer walks the compiled document tree and hands each node to _your_ component for that slot — `Section`, `Heading`, `Paragraph`, `List`, `Table`, and so on. Container slots receive their rendered `children`; every slot receives its `node`. Anything you don't override falls back to a sensible default:
+
+```tsx file="src/components/policyComponents.tsx"
+import type { PolicyComponents } from "@policystack/react/policy";
+
+export const policyComponents: PolicyComponents = {
+	Section: ({ node, children }) => (
+		<section className="policy-section" id={node.id}>
+			{children}
+		</section>
+	),
+	Heading: ({ node }) => <h2 className="policy-heading">{node.value}</h2>,
+	Paragraph: ({ children }) => <p className="policy-paragraph">{children}</p>,
+	List: ({ children }) => <ul className="policy-list">{children}</ul>,
+	Table: ({ children }) => <table className="policy-table">{children}</table>,
+	TableHeaderCell: ({ children }) => <th className="policy-cell">{children}</th>,
+	TableCell: ({ children }) => <td className="policy-cell">{children}</td>,
+};
+```
+
+Here that's plain CSS classes to match the Wasp starter, but the slot components are ordinary React — swap in your design system's `<Card>`, a shadcn `<Tooltip>` surfacing `node.context.reason` on hover (the [TanStack example](https://github.com/jamiedavenport/policystack/tree/main/examples/tanstack) does exactly that), or Tailwind classes. The policy pages end up looking like the rest of your app because they're built from the same parts.
+
+Because both documents compile from the same config that drives the banner, the cookie policy's category table and the banner's toggles can't disagree — adding a `marketing` category to `cookies.used` updates the policy page, the consent store, and the re-prompt logic in one diff.
+
+## Gate the things that need consent
+
+For UI that depends on a category, `<ConsentGate>` renders children only when the expression is satisfied. For imperative code — the actual cookie write, the analytics call — guard with `has()`:
+
+```tsx file="src/MainPage.tsx"
+import { ConsentGate, useConsent } from "@policystack/react/consent";
+import { useEffect } from "react";
+
+export function MainPage() {
+	const consent = useConsent();
+
+	useEffect(() => {
+		if (consent.has("analytics")) {
+			document.cookie = "demo_analytics=1; path=/; max-age=7776000";
+		}
+	}, [consent]);
+
+	return (
+		<main className="container">
+			<ConsentGate requires="analytics" fallback={<p>Analytics is off.</p>}>
+				<p>Analytics is on.</p>
+			</ConsentGate>
+			<button type="button" onClick={() => consent.setRoute("preferences")}>
+				Cookie preferences
+			</button>
+		</main>
+	);
+}
+```
+
+The `setRoute("preferences")` button matters for compliance, not just convenience — GDPR requires withdrawing consent to be as easy as giving it, so keep a way back to the panel after the banner is gone (a footer link is the classic spot).
+
+For real third-party scripts — GA4, PostHog, Meta Pixel — use `gateScript()` from core (or the pre-built factories in `@policystack/scripts`) instead of hand-rolled effects: it stubs the vendor global before consent, queues calls, and replays them once the category is granted. The [TanStack post](/blog/tanstack-cookie-banner) covers that pattern in detail and it works identically here.
+
+## Optional: run the scanner inside Wasp's Vite config
+
+Wasp exposes its Vite config as a regular `vite.config.ts` in your project root — you keep the `wasp()` plugin and add your own next to it. That's exactly where `policyStack()` goes:
+
+```ts file="vite.config.ts"
+import { policyStack } from "@policystack/vite";
+import { defineConfig } from "vite";
+import { wasp } from "wasp/client/vite";
+
+export default defineConfig({
+	plugins: [
+		wasp(),
+		policyStack({
+			srcDir: "./src",
+			consent: { mode: "warn" },
+		}),
+	],
+});
+```
+
+On every dev start and HMR update the plugin rescans your source, regenerates `src/policystack.gen.ts` (the module the config merges as its second argument), runs `validate()` against the resolved config, and — with the `consent` key present — flags any cookie write or tracking-vendor call that isn't gated by `<ConsentGate>` or a `has()` check. In dev these are warnings; on `vite build` real issues fail the build.
+
+When the scanner can't see a use it can prove — like our demo's raw `document.cookie` write, which can't be attributed to a category statically — you suppress that one code in the config where the decision is visible in review:
+
+```ts file="vite.config.ts"
+policyStack({
+	srcDir: "./src",
+	consent: { mode: "warn" },
+	// The demo cookie is a raw document.cookie write the scanner can't
+	// attribute to the "analytics" category. A real app using gateScript()
+	// with a recognised vendor wouldn't need this.
+	suppress: ["cookie-category-declared-not-used"],
+});
+```
+
+That's deliberate friction: the accepted gap lives in `vite.config.ts`, not in someone's memory.
+
+## The fast path: hand it to your coding agent
+
+Because PolicyStack ships primitives instead of themed UI, this whole post condenses into a prompt. Wasp scaffolds a `CLAUDE.md`/`AGENTS.md` into every new project, so your agent already knows the Wasp side; point it at the PolicyStack side:
+
+```text file="prompt to your agent" tag="text"
+Read the PolicyStack docs first:
+  https://github.com/jamiedavenport/policystack
+The package READMEs in /packages/{core,react,vite} cover the full
+API, and /examples/wasp is a complete Wasp reference project.
+
+Add PolicyStack to this Wasp app:
+- One src/policystack.ts with defineConfig — cookies block declares
+  essential (locked) and analytics (consent-gated).
+- Mount <PolicyStack> from @policystack/react/provider in a
+  client.rootComponent that renders <Outlet /> from react-router.
+- Routes + pages for /privacy-policy and /cookie-policy rendering
+  PrivacyPolicy / CookiePolicy from @policystack/react/policy.
+- Build the banner and preferences panel with my existing styles.
+- Add policyStack() next to wasp() in vite.config.ts, warn mode.
+```
+
+## Where to go next
+
+You've got a banner that matches your app, two policy pages that can't drift from the code, and a scanner that catches the gap when they try. From here:
+
+- **[The Wasp example](https://github.com/jamiedavenport/policystack/tree/main/examples/wasp)** — the complete project from this post, runnable with `wasp install && wasp start`.
+- **[Policy](/policy)** and **[Consent](/consent)** — the two halves of PolicyStack in more depth, including the storage adapters, jurisdiction resolvers, and GPC handling this post only waved at.
+- **[Cloud](/cloud)** — the hosted control plane: versioned consent records, audit trails, and a PR bot that flags when a new SDK ships without a policy update.

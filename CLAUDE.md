@@ -21,7 +21,7 @@ Use `vp` ([Vite+](https://viteplus.dev)) for everything — it wraps dev/build/t
 
 ## Project Structure
 
-All packages are `@policystack/*`; nothing is published to npm yet (first publish is the 1.0.0 cut). Per-framework packages split `./policy` and `./consent` subpath exports.
+All packages are `@policystack/*`, published to npm (currently 1.0.1). Per-framework packages split `./policy` and `./consent` subpath exports.
 
 - `core` — compilation engine + consent runtime (`./consent` subpath)
 - `sdk` — public API: `defineConfig()`, `renderLlmsTxt()`
@@ -32,4 +32,5 @@ All packages are `@policystack/*`; nothing is published to npm yet (first publis
 - `renderers` — shared policy render layer
 - `tooling/tsconfig` — shared TS base config (`./base`)
 - `apps/web` — the policystack.dev site (dogfoods `react`/`sdk`); `apps/www` — redirect stub
-- `examples/tanstack` — the sole SDK example
+- `examples/tanstack` — the canonical SDK example (workspace member)
+- `examples/wasp` — Wasp example; npm-managed with published `@policystack/*` packages, deliberately OUTSIDE the pnpm workspace and root `vp check` (validate with `wasp compile` from that directory)
