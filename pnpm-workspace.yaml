@@ -3,9 +3,8 @@ packages:
   - "packages/*"
   - "tooling/*"
   - "examples/*"
-  # The Wasp example is npm-managed (the wasp CLI drives its own `npm install`
-  # and can't resolve `workspace:*`), so it consumes the published
-  # @policystack/* packages and stays out of the pnpm workspace.
+  # Wasp is npm-managed because its CLI drives its own `npm install` and can't
+  # resolve workspace dependencies.
   - "!examples/wasp"
 
 # Pinned (not `latest`) so a new Vite+ release can't turn CI red with zero
@@ -22,8 +21,7 @@ catalog:
 minimumReleaseAge: 10080
 # Exempt the Vite+ toolchain: it's pinned exactly above and bumped on purpose,
 # so the grace period shouldn't stall a deliberate toolchain upgrade. Listed by
-# both the catalog alias (`vite`/`vitest` — always aliased to vite-plus via
-# `overrides`, the real packages are never installed) and the real names.
+# both the catalog alias (`vite`/`vitest`) and the real package names.
 minimumReleaseAgeExclude:
   - "vite"
   - "vitest"
@@ -35,7 +33,3 @@ onlyBuiltDependencies:
   - esbuild
   - msw
   - sharp
-
-overrides:
-  vite: "catalog:"
-  vitest: "catalog:"

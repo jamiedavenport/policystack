@@ -1,0 +1,24 @@
+---
+export const prerender = true;
+
+import { PrivacyPolicy } from "@policystack/react/policy";
+import policystack from "../policystack";
+import "../styles.css";
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Privacy Policy | Astro + PolicyStack</title>
+	</head>
+	<body class="bg-white text-slate-950">
+		<main class="mx-auto max-w-3xl px-6 py-16">
+			<a class="text-sm font-medium text-teal-700 underline underline-offset-4" href="/">Astro + PolicyStack</a>
+			<article class="mt-10 [&_[data-op-heading]]:mt-10 [&_[data-op-heading]]:text-2xl [&_[data-op-heading]]:font-semibold [&_[data-op-list]]:my-4 [&_[data-op-paragraph]]:my-4 [&_[data-op-paragraph]]:leading-7 [&_[data-op-section]]:mb-10 [&_[data-op-table]]:my-5 [&_[data-op-table]]:w-full [&_[data-op-table]]:border-collapse [&_[data-op-table]]:text-left [&_[data-op-table-cell]]:border [&_[data-op-table-cell]]:border-slate-300 [&_[data-op-table-cell]]:p-3">
+				<PrivacyPolicy config={policystack} />
+			</article>
+		</main>
+	</body>
+</html>

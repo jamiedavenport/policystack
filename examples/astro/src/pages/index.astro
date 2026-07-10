@@ -1,0 +1,30 @@
+---
+export const prerender = true;
+
+import DeferredLogin from "../components/DeferredLogin.astro";
+import "../styles.css";
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Astro + PolicyStack</title>
+	</head>
+	<body class="bg-white text-slate-950">
+		<main class="mx-auto max-w-3xl px-6 py-16">
+			<p class="text-sm font-medium text-teal-700">Astro example</p>
+			<h1 class="mt-2 text-3xl font-semibold">Astro + PolicyStack</h1>
+			<p class="mt-4 max-w-2xl leading-7 text-slate-700">
+				This page is prerendered. Its interactive React control arrives through a deferred server island.
+			</p>
+			<p class="mt-5">
+				<a class="font-medium text-teal-700 underline underline-offset-4" href="/privacy">Read the privacy policy</a>
+			</p>
+			<DeferredLogin server:defer>
+				<p slot="fallback">Loading account controls...</p>
+			</DeferredLogin>
+		</main>
+	</body>
+</html>

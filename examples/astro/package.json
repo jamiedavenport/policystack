@@ -1,0 +1,29 @@
+{
+	"name": "astro-example",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"dev:repro": "astro dev --force",
+		"build": "astro build",
+		"preview": "astro preview"
+	},
+	"dependencies": {
+		"@policystack/react": "workspace:*",
+		"astro": "6.4.8",
+		"react": "19.2.7",
+		"react-dom": "19.2.7"
+	},
+	"devDependencies": {
+		"@astrojs/node": "^10.0.0",
+		"@astrojs/react": "5.0.7",
+		"@policystack/sdk": "workspace:*",
+		"@policystack/vite": "workspace:*",
+		"@tailwindcss/vite": "^4.2.1",
+		"@types/react": "19.2.17",
+		"@types/react-dom": "19.2.3",
+		"typescript": "^5.9.3",
+		"vite": "^7.0.6"
+	}
+}
