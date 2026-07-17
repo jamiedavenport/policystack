@@ -19,6 +19,7 @@ import auvia from "../assets/auvia.svg?url";
 import planily from "../assets/planily.svg?url";
 import virentis from "../assets/virentis.svg?url";
 import plain from "../assets/plain.svg?url";
+import muriel from "../assets/muriel.svg?url";
 import onstage from "../assets/onstage.png";
 
 const LOGOS: Array<{ name: string; src: string; href: string }> = [
@@ -26,6 +27,7 @@ const LOGOS: Array<{ name: string; src: string; href: string }> = [
 	{ name: "Planily", src: planily, href: "https://planily.co.uk/" },
 	{ name: "Virentis", src: virentis, href: "https://www.virentis.uk/" },
 	{ name: "Plain", src: plain, href: "https://plain.jxd.dev/" },
+	{ name: "Muriel Marketing", src: muriel, href: "https://www.murielmarketing.com/" },
 ];
 
 const HERO_SNIPPET = `import { ContractPrerequisite, defineConfig, LegalBases, Voluntary } from "@policystack/sdk";
