@@ -95,9 +95,12 @@ describe("useConsent", () => {
 	it("toggle and save flow works", () => {
 		const consent = withProvider(() => {});
 		consent.toggle("analytics");
-		expect(consent.decisions().analytics).toBe(true);
+		expect(consent.draft()?.analytics).toBe(true);
+		expect(consent.decisions().analytics).toBe(false);
 		expect(consent.decidedAt()).toBeNull();
 		consent.save();
+		expect(consent.decisions().analytics).toBe(true);
+		expect(consent.draft()).toBeNull();
 		expect(consent.decidedAt()).not.toBeNull();
 		expect(consent.route()).toBe("closed");
 	});
@@ -202,6 +205,9 @@ describe("ConsentGate", () => {
 		expect(screen.queryByTestId("child")).toBeNull();
 		expect(screen.queryByTestId("fb")?.textContent).toBe("nope");
 		consent?.toggle("analytics");
+		// Staged toggles never open the gate — only save() applies them.
+		expect(screen.queryByTestId("child")).toBeNull();
+		consent?.save();
 		expect(screen.queryByTestId("child")?.textContent).toBe("visible");
 		expect(screen.queryByTestId("fb")).toBeNull();
 	});
@@ -224,12 +230,13 @@ describe("ConsentGate", () => {
 		));
 		expect(screen.queryByTestId("child")).toBeNull();
 		consent?.toggle("analytics");
-		expect(screen.queryByTestId("child")).toBeNull();
 		consent?.toggle("marketing");
+		expect(screen.queryByTestId("child")).toBeNull();
+		consent?.save();
 		expect(screen.queryByTestId("child")?.textContent).toBe("both");
 	});
 
-	it("toggle through accessor flips the gate", () => {
+	it("toggle then save through accessors flips the gate", () => {
 		render(() => (
 			<PolicyStack config={policyConfig}>
 				<ToggleProbe />
@@ -237,16 +244,21 @@ describe("ConsentGate", () => {
 		));
 		expect(screen.queryByTestId("gated")).toBeNull();
 		fireEvent.click(screen.getByTestId("toggle"));
+		expect(screen.queryByTestId("gated")).toBeNull();
+		fireEvent.click(screen.getByTestId("save"));
 		expect(screen.queryByTestId("gated")?.textContent).toBe("on");
 	});
 });
 
 function ToggleProbe() {
-	const { toggle } = useConsent();
+	const { toggle, save } = useConsent();
 	return (
 		<div>
 			<button data-testid="toggle" onClick={() => toggle("analytics")} type="button">
 				flip
+			</button>
+			<button data-testid="save" onClick={() => save()} type="button">
+				save
 			</button>
 			<ConsentGate requires="analytics">
 				<span data-testid="gated">on</span>

@@ -44,6 +44,12 @@ export type ConsentState = {
 	route: Route;
 	categories: Category[];
 	decisions: Record<string, boolean>;
+	// Staged, unsaved preference edits. `toggle()` writes here — never straight
+	// to `decisions` — so gating (`has`/ConsentGate), persistence, and gated
+	// scripts are untouched until `save()` promotes the draft. Discarded on any
+	// route change that does not land on "preferences". Null when there are no
+	// unsaved edits. Checkbox UIs render `(draft ?? decisions)[key]`.
+	draft: Record<string, boolean> | null;
 	jurisdiction: JurisdictionId | null;
 	policyVersion: string;
 	decidedAt: string | null;
@@ -134,7 +140,9 @@ export type ConsentStore = {
 	acceptAll(opts?: ActionOptions): void;
 	acceptNecessary(opts?: ActionOptions): void;
 	reject(opts?: ActionOptions): void;
-	toggle(category: string, opts?: ActionOptions): void;
+	// Stages a flip into `state.draft`; takes no ActionOptions because nothing
+	// is recorded until `save()`, whose options name the record source.
+	toggle(category: string): void;
 	save(opts?: ActionOptions): void;
 	setRoute(route: Route): void;
 	has(expr: ConsentExpr): boolean;

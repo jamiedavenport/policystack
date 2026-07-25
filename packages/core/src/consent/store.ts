@@ -43,6 +43,7 @@ export function createConsentStore(
 		route: config.initialRoute ?? "cookie",
 		categories: config.categories,
 		decisions: postureDecisions(config.categories, initialModel),
+		draft: null,
 		jurisdiction: initialJurisdiction.value,
 		policyVersion: config.policyVersion ?? "",
 		decidedAt: null,
@@ -164,6 +165,7 @@ export function createConsentStore(
 		return {
 			...current,
 			decisions: postureDecisions(current.categories, model),
+			draft: null,
 			decidedAt: null,
 			route: "cookie",
 			source: "default",
@@ -242,6 +244,7 @@ export function createConsentStore(
 			commit({
 				...state,
 				decisions: decisionsAll(true),
+				draft: null,
 				decidedAt: new Date().toISOString(),
 				route: "closed",
 				source: "user",
@@ -254,6 +257,7 @@ export function createConsentStore(
 			commit({
 				...state,
 				decisions: decisionsNecessary(),
+				draft: null,
 				decidedAt: new Date().toISOString(),
 				route: "closed",
 				source: "user",
@@ -266,30 +270,29 @@ export function createConsentStore(
 			commit({
 				...state,
 				decisions: decisionsNecessary(),
+				draft: null,
 				decidedAt: new Date().toISOString(),
 				route: "closed",
 				source: "user",
 				repromptReason: null,
 			});
 		},
-		toggle(category: string, opts?: ActionOptions) {
+		toggle(category: string) {
 			const cat = state.categories.find((c) => c.key === category);
 			if (!cat || cat.locked === true) return;
-			lastDecisionSource = inferSource(state.route, opts);
-			commit({
-				...state,
-				decisions: {
-					...state.decisions,
-					[category]: !state.decisions[category],
-				},
-				source: "user",
-			});
+			// Stage the flip in the draft only: live decisions — and with them
+			// gating, persistence, and gated scripts — must not move before the
+			// user confirms with save().
+			const base = state.draft ?? state.decisions;
+			commit({ ...state, draft: { ...base, [category]: base[category] !== true } });
 		},
 		save(opts?: ActionOptions) {
 			lastDecisionSource = inferSource(state.route, opts);
 			previousRecord = null;
 			commit({
 				...state,
+				decisions: state.draft ?? state.decisions,
+				draft: null,
 				decidedAt: new Date().toISOString(),
 				route: "closed",
 				source: "user",
@@ -298,7 +301,9 @@ export function createConsentStore(
 		},
 		setRoute(route: Route) {
 			if (state.route === route) return;
-			commit({ ...state, route });
+			// Any navigation that does not land on the preferences panel abandons
+			// staged edits (banner → customise keeps them; Back/close drops them).
+			commit({ ...state, route, draft: route === "preferences" ? state.draft : null });
 		},
 		has(expr: ConsentExpr) {
 			return evaluate(expr, state, {

@@ -409,11 +409,17 @@ describe("createConsentStore", () => {
 	});
 
 	describe("toggle", () => {
-		it("flips a non-locked category", () => {
+		it("stages the flip in the draft without touching live decisions", () => {
 			const store = createConsentStore(makeConfig());
 			store.toggle("analytics");
-			expect(store.getState().decisions.analytics).toBe(true);
+			expect(store.getState().draft).toEqual({
+				essential: true,
+				analytics: true,
+				marketing: false,
+			});
+			expect(store.getState().decisions.analytics).toBe(false);
 			store.toggle("analytics");
+			expect(store.getState().draft?.analytics).toBe(false);
 			expect(store.getState().decisions.analytics).toBe(false);
 		});
 
@@ -439,16 +445,93 @@ describe("createConsentStore", () => {
 		});
 	});
 
-	describe("save", () => {
-		it("sets decidedAt and closes route without touching decisions", () => {
+	describe("draft (staged) decisions", () => {
+		it("gating ignores staged toggles until save", () => {
+			const store = createConsentStore(makeConfig());
+			store.setRoute("preferences");
+			store.toggle("marketing");
+			expect(store.has("marketing")).toBe(false);
+			store.save();
+			expect(store.has("marketing")).toBe(true);
+		});
+
+		it("leaving preferences without saving discards the draft", () => {
+			const store = createConsentStore(makeConfig());
+			store.setRoute("preferences");
+			store.toggle("marketing");
+			expect(store.getState().draft?.marketing).toBe(true);
+			store.setRoute("cookie");
+			expect(store.getState().draft).toBeNull();
+			expect(store.has("marketing")).toBe(false);
+		});
+
+		it("keeps staged edits when moving from the banner into preferences", () => {
 			const store = createConsentStore(makeConfig());
 			store.toggle("analytics");
+			store.setRoute("preferences");
+			expect(store.getState().draft?.analytics).toBe(true);
+		});
+
+		it("acceptAll / acceptNecessary / reject clear the draft", () => {
+			for (const action of ["acceptAll", "acceptNecessary", "reject"] as const) {
+				const store = createConsentStore(makeConfig());
+				store.toggle("marketing");
+				store[action]();
+				expect(store.getState().draft).toBeNull();
+			}
+		});
+
+		it("a reprompt invalidation clears the draft", async () => {
+			const adapter: StorageAdapter = {
+				read: () => ({
+					schemaVersion: 1,
+					decisions: { essential: true, analytics: true, marketing: true },
+					policyVersion: "",
+					decidedAt: "2026-01-01T00:00:00.000Z",
+					jurisdiction: "eea",
+					locale: "en",
+					source: "banner",
+				}),
+				write: () => {},
+				clear: () => {},
+			};
+			const store = createConsentStore(
+				makeConfig({
+					adapter,
+					jurisdictionResolver: { resolve: () => Promise.resolve("us") },
+					triggers: { jurisdictionChanged: true },
+				}),
+			);
+			store.setRoute("preferences");
+			store.toggle("marketing");
+			expect(store.getState().draft?.marketing).toBe(false);
+			await flushMicrotasks();
+			expect(store.getState().repromptReason).toBe("jurisdiction");
+			expect(store.getState().draft).toBeNull();
+		});
+	});
+
+	describe("save", () => {
+		it("promotes the draft into live decisions, sets decidedAt, and closes route", () => {
+			const store = createConsentStore(makeConfig());
+			store.setRoute("preferences");
+			store.toggle("analytics");
+			store.save();
+			const s = store.getState();
+			expect(s.decisions).toEqual({ essential: true, analytics: true, marketing: false });
+			expect(s.draft).toBeNull();
+			expect(s.decidedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+			expect(s.route).toBe("closed");
+		});
+
+		it("with no staged edits, saves the current decisions unchanged", () => {
+			const store = createConsentStore(makeConfig());
 			const decisionsBefore = store.getState().decisions;
 			store.save();
 			const s = store.getState();
+			expect(s.decisions).toEqual(decisionsBefore);
 			expect(s.decidedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 			expect(s.route).toBe("closed");
-			expect(s.decisions).toEqual(decisionsBefore);
 		});
 	});
 
@@ -484,9 +567,11 @@ describe("createConsentStore", () => {
 			expect(createConsentStore(makeConfig()).has("analytics")).toBe(false);
 		});
 
-		it("reflects toggles", () => {
+		it("reflects toggles only after save", () => {
 			const store = createConsentStore(makeConfig());
 			store.toggle("analytics");
+			expect(store.has("analytics")).toBe(false);
+			store.save();
 			expect(store.has("analytics")).toBe(true);
 		});
 
@@ -555,13 +640,20 @@ describe("createConsentStore", () => {
 			expect(store.getState().source).toBe("user");
 		});
 
-		it("flips to 'user' on acceptNecessary, reject, toggle, save", () => {
-			for (const action of ["acceptNecessary", "reject", "toggle", "save"] as const) {
+		it("flips to 'user' on acceptNecessary, reject, and save", () => {
+			for (const action of ["acceptNecessary", "reject", "save"] as const) {
 				const store = createConsentStore(makeConfig());
-				if (action === "toggle") store.toggle("analytics");
-				else store[action]();
+				store[action]();
 				expect(store.getState().source).toBe("user");
 			}
+		});
+
+		it("does not change on a bare toggle — staged edits are not a decision", () => {
+			const store = createConsentStore(makeConfig());
+			store.toggle("analytics");
+			expect(store.getState().source).toBe("default");
+			store.save();
+			expect(store.getState().source).toBe("user");
 		});
 
 		it("does not change on setRoute", () => {
@@ -659,6 +751,7 @@ describe("createConsentStore", () => {
 			});
 			const decisions = { ...store.getState().decisions };
 			store.toggle("analytics");
+			store.save();
 			expect(store.getState().decisions.analytics).toBe(!decisions.analytics);
 		});
 
@@ -802,7 +895,7 @@ describe("createConsentStore", () => {
 			expect(writes).toEqual([]);
 		});
 
-		it("persists each user decision via adapter.write", () => {
+		it("persists on save — staged toggles never write", () => {
 			const { adapter, writes } = makeAdapter();
 			const store = createConsentStore(makeConfig({ adapter, locale: "en" }));
 			store.acceptAll();
@@ -817,8 +910,27 @@ describe("createConsentStore", () => {
 			expect(writes[0]?.source).toBe("banner");
 
 			store.toggle("marketing");
+			expect(writes).toHaveLength(1);
+			store.save();
 			expect(writes).toHaveLength(2);
 			expect(writes[1]?.decisions.marketing).toBe(false);
+		});
+
+		it("a returning visitor's staged toggles never reach storage before save", () => {
+			// Canonical locale on the stored record: a non-canonical one (e.g.
+			// "en-GB") is rewritten on the first commit as a normalization pass,
+			// which would muddy the no-write-before-save assertion below.
+			const { adapter, writes } = makeAdapter(v1Record({ locale: "en" }));
+			const store = createConsentStore(makeConfig({ adapter, locale: "en" }));
+			store.setRoute("preferences");
+			store.toggle("marketing");
+			expect(writes).toEqual([]);
+			store.save();
+			expect(writes).toHaveLength(1);
+			expect(writes[0]?.decisions.marketing).toBe(true);
+			// The record's timestamp is the save, not the stored decision it replaced.
+			expect(writes[0]?.decidedAt).not.toBe("2026-04-01T00:00:00.000Z");
+			expect(writes[0]?.source).toBe("preferences");
 		});
 
 		it("writes the canonical Locale to the persisted record (PS-26 shim)", () => {

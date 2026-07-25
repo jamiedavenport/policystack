@@ -104,11 +104,14 @@ describe("useConsent", () => {
 		act(() => {
 			result.current.toggle("analytics");
 		});
-		expect(result.current.decisions.analytics).toBe(true);
+		expect(result.current.draft?.analytics).toBe(true);
+		expect(result.current.decisions.analytics).toBe(false);
 		expect(result.current.decidedAt).toBeNull();
 		act(() => {
 			result.current.save();
 		});
+		expect(result.current.decisions.analytics).toBe(true);
+		expect(result.current.draft).toBeNull();
 		expect(result.current.decidedAt).not.toBeNull();
 		expect(result.current.route).toBe("closed");
 	});
@@ -242,7 +245,7 @@ describe("ConsentGate", () => {
 
 	it("evaluates compound expressions via the shared evaluator", () => {
 		function ToggleBoth() {
-			const { toggle } = useConsent();
+			const { toggle, save } = useConsent();
 			return (
 				<>
 					<button type="button" onClick={() => toggle("analytics")}>
@@ -250,6 +253,9 @@ describe("ConsentGate", () => {
 					</button>
 					<button type="button" onClick={() => toggle("marketing")}>
 						tog-m
+					</button>
+					<button type="button" onClick={() => save()}>
+						save-prefs
 					</button>
 				</>
 			);
@@ -269,9 +275,13 @@ describe("ConsentGate", () => {
 		act(() => {
 			screen.getByText("tog-a").click();
 		});
-		expect(screen.queryByTestId("child")).toBeNull();
 		act(() => {
 			screen.getByText("tog-m").click();
+		});
+		// Staged toggles alone never open the gate — only save() applies them.
+		expect(screen.queryByTestId("child")).toBeNull();
+		act(() => {
+			screen.getByText("save-prefs").click();
 		});
 		expect(screen.getByTestId("child").textContent).toBe("both granted");
 	});

@@ -49,6 +49,10 @@ export class ConsentRune {
 		return this.#state.decisions;
 	}
 
+	get draft(): Record<string, boolean> | null {
+		return this.#state.draft;
+	}
+
 	get jurisdiction(): JurisdictionId | null {
 		return this.#state.jurisdiction;
 	}
@@ -68,7 +72,7 @@ export class ConsentRune {
 	acceptAll = (opts?: ActionOptions): void => this.#store.acceptAll(opts);
 	acceptNecessary = (opts?: ActionOptions): void => this.#store.acceptNecessary(opts);
 	reject = (opts?: ActionOptions): void => this.#store.reject(opts);
-	toggle = (key: string, opts?: ActionOptions): void => this.#store.toggle(key, opts);
+	toggle = (key: string): void => this.#store.toggle(key);
 	save = (opts?: ActionOptions): void => this.#store.save(opts);
 	setRoute = (route: Route): void => this.#store.setRoute(route);
 
@@ -97,8 +101,11 @@ export class CategoryRune {
 		this.#key = key;
 	}
 
+	// The checkbox view: reflects staged (unsaved) edits from the draft.
+	// Effective consent — what gates content and scripts — is `has()` /
+	// <ConsentGate>, which only move on save().
 	get granted(): boolean {
-		return this.#parent.decisions[this.#key] === true;
+		return (this.#parent.draft ?? this.#parent.decisions)[this.#key] === true;
 	}
 
 	toggle = (): void => this.#parent._store().toggle(this.#key);

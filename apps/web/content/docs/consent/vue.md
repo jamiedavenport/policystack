@@ -59,6 +59,8 @@ const { route, decisions, acceptAll, acceptNecessary, setRoute } = useConsent();
 
 Granular per-category access. Returns a `granted` computed and a `toggle` action.
 
+`toggle` stages the change and `granted` reflects it instantly (it reads the pending `state.draft`), but nothing is applied — `has()`, `<ConsentGate>`, script gating, and storage only change when `save()` promotes the draft. Leaving the preferences route without saving discards it.
+
 ```vue
 <script setup lang="ts">
 import { useCategory } from "@policystack/vue/consent";

@@ -62,9 +62,12 @@ describe("ConsentService", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		const consent = injectorWithStore(store).get(ConsentService);
 		consent.toggle("analytics");
-		expect(consent.decisions().analytics).toBe(true);
+		expect(consent.draft()?.analytics).toBe(true);
+		expect(consent.decisions().analytics).toBe(false);
 		expect(consent.decidedAt()).toBeNull();
 		consent.save();
+		expect(consent.decisions().analytics).toBe(true);
+		expect(consent.draft()).toBeNull();
 		expect(consent.decidedAt()).not.toBeNull();
 		expect(consent.route()).toBe("closed");
 	});
@@ -92,6 +95,9 @@ describe("ConsentService", () => {
 		expect(consent.has({ and: ["analytics", "marketing"] })).toBe(false);
 		store.toggle("analytics");
 		store.toggle("marketing");
+		// Staged toggles never satisfy has() — only save() applies them.
+		expect(consent.has({ and: ["analytics", "marketing"] })).toBe(false);
+		store.save();
 		expect(consent.has({ and: ["analytics", "marketing"] })).toBe(true);
 	});
 });

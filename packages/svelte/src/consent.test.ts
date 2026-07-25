@@ -108,6 +108,10 @@ describe("ConsentGate", () => {
 		expect(queryByTestId("fb")?.textContent).toBe("nope");
 		store.toggle("analytics");
 		flushSync();
+		// Staged toggles never open the gate — only save() applies them.
+		expect(queryByTestId("child")).toBeNull();
+		store.save();
+		flushSync();
 		expect(queryByTestId("child")?.textContent).toBe("visible");
 		expect(queryByTestId("fb")).toBeNull();
 	});
@@ -120,9 +124,10 @@ describe("ConsentGate", () => {
 		});
 		expect(queryByTestId("child")).toBeNull();
 		store.toggle("analytics");
+		store.toggle("marketing");
 		flushSync();
 		expect(queryByTestId("child")).toBeNull();
-		store.toggle("marketing");
+		store.save();
 		flushSync();
 		expect(queryByTestId("child")?.textContent).toBe("visible");
 	});
@@ -142,6 +147,7 @@ describe("createConsentReadable (svelte 4 stores fallback)", () => {
 	it("exposes action methods", () => {
 		const consent = createConsentReadable({ config: { categories: baseCategories } });
 		consent.toggle("analytics");
+		consent.save();
 		let snapshot: { route: string; decisions: Record<string, boolean> } | undefined;
 		const unsub = consent.subscribe((s) => {
 			snapshot = { route: s.route, decisions: s.decisions };

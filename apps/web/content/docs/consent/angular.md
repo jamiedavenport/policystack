@@ -77,13 +77,15 @@ export class BannerComponent {
 }
 ```
 
-Signal properties: `route`, `categories`, `decisions`, `jurisdiction`, `policyVersion`, `decidedAt`, `repromptReason`, `state`.
+Signal properties: `route`, `categories`, `decisions`, `draft`, `jurisdiction`, `policyVersion`, `decidedAt`, `repromptReason`, `state`.
 
 Methods: `acceptAll`, `acceptNecessary`, `reject`, `toggle`, `save`, `setRoute`, `has`, `getConsentRecord`, `getPreviousRecord`.
 
 ### `injectCategory(key)`
 
 Granular per-category access. Must be called inside an injection context (e.g. a component constructor or field initializer).
+
+`toggle` stages the change and `granted()` reflects it instantly (it reads the pending `state.draft`), but nothing is applied — `has()`, `<ConsentGate>`, script gating, and storage only change when `save()` promotes the draft. Leaving the preferences route without saving discards it.
 
 ```ts
 import { Component } from "@angular/core";

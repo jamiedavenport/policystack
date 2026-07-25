@@ -34,6 +34,7 @@ export type UseConsentResult = {
 	route: Route;
 	categories: Category[];
 	decisions: Record<string, boolean>;
+	draft: Record<string, boolean> | null;
 	jurisdiction: JurisdictionId | null;
 	policyVersion: string;
 	decidedAt: string | null;
@@ -62,6 +63,7 @@ export function useConsent(): UseConsentResult {
 		route: state.route,
 		categories: state.categories,
 		decisions: state.decisions,
+		draft: state.draft,
 		jurisdiction: state.jurisdiction,
 		policyVersion: state.policyVersion,
 		decidedAt: state.decidedAt,
@@ -85,12 +87,20 @@ export type UseCategoryResult = {
 	toggle: () => void;
 };
 
+// `granted` is the checkbox view: it reflects staged (unsaved) edits from the
+// draft so the UI responds instantly. Effective consent — what actually gates
+// content and scripts — is `has()` / <ConsentGate>, which only move on save().
+function grantedSnapshot(store: ConsentStore, key: string): boolean {
+	const state = store.getState();
+	return (state.draft ?? state.decisions)[key] === true;
+}
+
 export function useCategory(key: string): UseCategoryResult {
 	const store = useStore();
 	const granted = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
-		() => store.getState().decisions[key] === true,
-		() => store.getState().decisions[key] === true,
+		() => grantedSnapshot(store, key),
+		() => grantedSnapshot(store, key),
 	);
 	const toggle = useCallback(() => {
 		store.toggle(key);

@@ -65,6 +65,8 @@ Returns a reactive object whose properties are tracked via `$state`. Read direct
 
 Granular per-category access.
 
+`toggle` stages the change and `granted` reflects it instantly (it reads the pending `state.draft`), but nothing is applied — `has()`, `<ConsentGate>`, script gating, and storage only change when `save()` promotes the draft. Leaving the preferences route without saving discards it.
+
 ```svelte
 <script lang="ts">
   import { getCategory } from "@policystack/svelte/consent";

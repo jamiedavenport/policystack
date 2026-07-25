@@ -15,6 +15,7 @@ export function makeStore(initialAccept: string[] = []): ConsentStore {
 		gpc: { enabled: false },
 	});
 	for (const k of initialAccept) store.toggle(k);
+	if (initialAccept.length > 0) store.save();
 	return store;
 }
 

@@ -35,6 +35,12 @@ store.acceptAll();
 
 The store's surface: `getState()`, `subscribe()`, `acceptAll()`, `acceptNecessary()`, `reject()`, `toggle(key)`, `save()`, `setRoute()`, `has(expr)`, `getConsentRecord()`, `getPreviousRecord()`, `refreshJurisdiction()`. See [`types.ts`](./src/types.ts) for the full shape.
 
+### Staged preferences (`state.draft`)
+
+`toggle(key)` never changes live consent. It stages the flip in `state.draft`, and gating (`has()` / `<ConsentGate>`), storage, and gated scripts keep reading `decisions` until `save()` promotes the draft in one step and stamps `decidedAt`. Leaving the preferences flow without saving — any `setRoute` that does not land on `"preferences"` — discards the draft, so "Back" genuinely abandons unsaved edits and nothing was loaded or persisted in the meantime.
+
+Render preference checkboxes from `draft ?? decisions` so the panel responds instantly; the framework bindings' per-category `granted` accessor does exactly this.
+
 ## Storage adapters
 
 Decisions persist via a `StorageAdapter` passed to `createConsentStore({ adapter })`. Three adapters ship as subpath imports:
@@ -104,7 +110,7 @@ const store = createConsentStore({ categories });
 // Brave (and any browser asserting GPC) starts with all opt-outs denied.
 ```
 
-Once a user makes an explicit decision (`acceptAll`, `toggle`, etc.) the resulting record has `state.source === "user"` and is preserved on reload — `applyGPC` will not overwrite it.
+Once a user makes an explicit decision (`acceptAll`, `save`, etc.) the resulting record has `state.source === "user"` and is preserved on reload — `applyGPC` will not overwrite it.
 
 To scope GPC to the legally-required US states only:
 
@@ -158,7 +164,7 @@ type ConsentRecord = {
 - `"api"` — set via a programmatic call (override with `acceptAll({ source: "api" })`, etc.).
 - `"import"` — migrated from a legacy or unrecognised record.
 
-The store infers `source` from `state.route` at the moment the decision is taken; pass `{ source }` to any action to override it.
+The store infers `source` from `state.route` at the moment the decision is taken; pass `{ source }` to any decision action (`acceptAll`, `acceptNecessary`, `reject`, `save`) to override it. `toggle` takes no options — it only stages a draft, and the eventual `save` names the source.
 
 Read the current record via `store.getConsentRecord()` (or the binding-level `useConsent().getConsentRecord()`). It returns `null` until a decision has been recorded.
 
@@ -184,7 +190,7 @@ store.getConsentRecord();
 
 Records produced by older versions of Consent are tolerated on read: missing fields fall back to safe defaults, the legacy `source: "user"` flag is mapped to `"banner"`, and any other unrecognised legacy source becomes `"import"`. The next user decision rewrites the record in the v1 shape.
 
-GPC alone does not produce a record — the visitor has not made a decision. `getConsentRecord()` keeps returning `null` until the user accepts, rejects, saves, or toggles a category.
+GPC alone does not produce a record — the visitor has not made a decision. `getConsentRecord()` keeps returning `null` until the user accepts, rejects, or saves their preference changes.
 
 ## Re-consent triggers
 
