@@ -87,9 +87,8 @@ export type UseCategoryResult = {
 	toggle: () => void;
 };
 
-// `granted` is the checkbox view: it reflects staged (unsaved) edits from the
-// draft so the UI responds instantly. Effective consent — what actually gates
-// content and scripts — is `has()` / <ConsentGate>, which only move on save().
+// `granted` is the checkbox view and includes staged draft edits; effective
+// consent (`has()` / <ConsentGate>) only moves on save().
 function grantedSnapshot(store: ConsentStore, key: string): boolean {
 	const state = store.getState();
 	return (state.draft ?? state.decisions)[key] === true;

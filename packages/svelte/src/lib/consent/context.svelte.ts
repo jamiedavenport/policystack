@@ -101,9 +101,8 @@ export class CategoryRune {
 		this.#key = key;
 	}
 
-	// The checkbox view: reflects staged (unsaved) edits from the draft.
-	// Effective consent — what gates content and scripts — is `has()` /
-	// <ConsentGate>, which only move on save().
+	// The checkbox view, including staged draft edits; effective consent
+	// (`has()` / <ConsentGate>) only moves on save().
 	get granted(): boolean {
 		return (this.#parent.draft ?? this.#parent.decisions)[this.#key] === true;
 	}

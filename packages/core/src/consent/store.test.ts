@@ -917,9 +917,8 @@ describe("createConsentStore", () => {
 		});
 
 		it("a returning visitor's staged toggles never reach storage before save", () => {
-			// Canonical locale on the stored record: a non-canonical one (e.g.
-			// "en-GB") is rewritten on the first commit as a normalization pass,
-			// which would muddy the no-write-before-save assertion below.
+			// Canonical locale: a non-canonical stored one ("en-GB") is rewritten
+			// on the first commit, which would muddy the no-write assertion below.
 			const { adapter, writes } = makeAdapter(v1Record({ locale: "en" }));
 			const store = createConsentStore(makeConfig({ adapter, locale: "en" }));
 			store.setRoute("preferences");

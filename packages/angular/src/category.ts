@@ -6,9 +6,8 @@ export type CategoryRef = {
 	toggle: () => void;
 };
 
-// `granted` is the checkbox view: it reflects staged (unsaved) edits from the
-// draft. Effective consent — what gates content and scripts — is `has()` /
-// <ConsentGate>, which only move on save().
+// `granted` is the checkbox view and includes staged draft edits; effective
+// consent (`has()` / <ConsentGate>) only moves on save().
 export function injectCategory(key: string): CategoryRef {
 	const consent = inject(ConsentService);
 	return {

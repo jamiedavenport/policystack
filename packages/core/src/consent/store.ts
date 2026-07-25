@@ -280,9 +280,7 @@ export function createConsentStore(
 		toggle(category: string) {
 			const cat = state.categories.find((c) => c.key === category);
 			if (!cat || cat.locked === true) return;
-			// Stage the flip in the draft only: live decisions — and with them
-			// gating, persistence, and gated scripts — must not move before the
-			// user confirms with save().
+			// Stage in the draft only; live decisions must not move before save().
 			const base = state.draft ?? state.decisions;
 			commit({ ...state, draft: { ...base, [category]: base[category] !== true } });
 		},
@@ -301,8 +299,7 @@ export function createConsentStore(
 		},
 		setRoute(route: Route) {
 			if (state.route === route) return;
-			// Any navigation that does not land on the preferences panel abandons
-			// staged edits (banner → customise keeps them; Back/close drops them).
+			// Only landing on "preferences" keeps the draft; Back/close abandons it.
 			commit({ ...state, route, draft: route === "preferences" ? state.draft : null });
 		},
 		has(expr: ConsentExpr) {
