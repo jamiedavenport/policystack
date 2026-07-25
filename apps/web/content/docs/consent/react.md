@@ -59,6 +59,8 @@ function Banner() {
 
 Granular per-category access. Returns `{ granted, toggle }`.
 
+`toggle` stages the change and `granted` reflects it instantly (it reads the pending `state.draft`), but nothing is applied — `has()`, `<ConsentGate>`, script gating, and storage only change when `save()` promotes the draft. Leaving the preferences route without saving discards it.
+
 ```tsx
 import { useCategory } from "@policystack/react/consent";
 

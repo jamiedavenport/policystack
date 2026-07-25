@@ -208,6 +208,7 @@ describe("store.has", () => {
 		const store = createConsentStore({ categories: baseCategories });
 		expect(store.has("analytics")).toBe(false);
 		store.toggle("analytics");
+		store.save();
 		expect(store.has("analytics")).toBe(true);
 	});
 

@@ -100,10 +100,13 @@ describe("useConsent", () => {
 		});
 		captured?.toggle("analytics");
 		await wrapper.vm.$nextTick();
-		expect(captured?.decisions.value.analytics).toBe(true);
+		expect(captured?.draft.value?.analytics).toBe(true);
+		expect(captured?.decisions.value.analytics).toBe(false);
 		expect(captured?.decidedAt.value).toBeNull();
 		captured?.save();
 		await wrapper.vm.$nextTick();
+		expect(captured?.decisions.value.analytics).toBe(true);
+		expect(captured?.draft.value).toBeNull();
 		expect(captured?.decidedAt.value).not.toBeNull();
 		expect(captured?.route.value).toBe("closed");
 	});
@@ -222,6 +225,10 @@ describe("ConsentGate", () => {
 		expect(wrapper.find('[data-testid="child"]').exists()).toBe(false);
 		get()?.toggle("analytics");
 		await wrapper.vm.$nextTick();
+		// Staged toggles never open the gate — only save() applies them.
+		expect(wrapper.find('[data-testid="child"]').exists()).toBe(false);
+		get()?.save();
+		await wrapper.vm.$nextTick();
 		expect(wrapper.get('[data-testid="child"]').text()).toBe("visible");
 		expect(wrapper.find('[data-testid="fb"]').exists()).toBe(false);
 	});
@@ -230,9 +237,10 @@ describe("ConsentGate", () => {
 		const { wrapper, get } = mountGate({ and: ["analytics", "marketing"] });
 		expect(wrapper.find('[data-testid="child"]').exists()).toBe(false);
 		get()?.toggle("analytics");
+		get()?.toggle("marketing");
 		await wrapper.vm.$nextTick();
 		expect(wrapper.find('[data-testid="child"]').exists()).toBe(false);
-		get()?.toggle("marketing");
+		get()?.save();
 		await wrapper.vm.$nextTick();
 		expect(wrapper.get('[data-testid="child"]').text()).toBe("visible");
 	});

@@ -90,6 +90,7 @@ describe("applyGPC", () => {
 			route: "cookie",
 			categories: baseCategories,
 			decisions: { essential: true, analytics: true, marketing: true },
+			draft: null,
 			jurisdiction: "us-ca",
 			policyVersion: "",
 			decidedAt: null,

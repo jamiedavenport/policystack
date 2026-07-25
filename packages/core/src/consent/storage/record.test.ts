@@ -9,6 +9,7 @@ const baseState: ConsentState = {
 		{ key: "analytics", label: "Analytics" },
 	],
 	decisions: { essential: true, analytics: true },
+	draft: null,
 	jurisdiction: "eea",
 	policyVersion: "v2",
 	decidedAt: "2026-04-29T00:00:00.000Z",

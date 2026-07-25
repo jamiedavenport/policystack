@@ -144,7 +144,8 @@ Astro's `<script>` tags are bundled by Vite, so this looks like a normal module 
     prefs.hidden = state.route !== "preferences";
     for (const cb of checkboxes) {
       const key = cb.dataset.category;
-      if (key) cb.checked = state.decisions[key] ?? false;
+      // draft holds staged (unsaved) toggles; decisions is what save() applied.
+      if (key) cb.checked = (state.draft ?? state.decisions)[key] ?? false;
     }
   };
   store.subscribe(render);

@@ -49,6 +49,7 @@ export type UseConsentResult = {
 	route: ComputedRef<Route>;
 	categories: ComputedRef<Category[]>;
 	decisions: ComputedRef<Record<string, boolean>>;
+	draft: ComputedRef<Record<string, boolean> | null>;
 	jurisdiction: ComputedRef<JurisdictionId | null>;
 	policyVersion: ComputedRef<string>;
 	decidedAt: ComputedRef<string | null>;
@@ -71,6 +72,7 @@ export function useConsent(): UseConsentResult {
 		route: computed(() => state.value.route),
 		categories: computed(() => state.value.categories),
 		decisions: computed(() => state.value.decisions),
+		draft: computed(() => state.value.draft),
 		jurisdiction: computed(() => state.value.jurisdiction),
 		policyVersion: computed(() => state.value.policyVersion),
 		decidedAt: computed(() => state.value.decidedAt),
@@ -78,7 +80,7 @@ export function useConsent(): UseConsentResult {
 		acceptAll: (opts) => store.acceptAll(opts),
 		acceptNecessary: (opts) => store.acceptNecessary(opts),
 		reject: (opts) => store.reject(opts),
-		toggle: (key, opts) => store.toggle(key, opts),
+		toggle: (key) => store.toggle(key),
 		save: (opts) => store.save(opts),
 		setRoute: (route) => store.setRoute(route),
 		has: (expr) => store.has(expr),
@@ -92,11 +94,13 @@ export type UseCategoryResult = {
 	toggle: () => void;
 };
 
+// `granted` is the checkbox view and includes staged draft edits; effective
+// consent (`has()` / <ConsentGate>) only moves on save().
 export function useCategory(key: string): UseCategoryResult {
 	const store = injectStore();
 	const state = useStoreState(store);
 	return {
-		granted: computed(() => state.value.decisions[key] === true),
+		granted: computed(() => (state.value.draft ?? state.value.decisions)[key] === true),
 		toggle: () => store.toggle(key),
 	};
 }

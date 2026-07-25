@@ -21,6 +21,7 @@ export class ConsentService {
 	readonly route: Signal<Route> = computed(() => this._state().route);
 	readonly categories: Signal<Category[]> = computed(() => this._state().categories);
 	readonly decisions: Signal<Record<string, boolean>> = computed(() => this._state().decisions);
+	readonly draft: Signal<Record<string, boolean> | null> = computed(() => this._state().draft);
 	readonly jurisdiction: Signal<JurisdictionId | null> = computed(() => this._state().jurisdiction);
 	readonly policyVersion: Signal<string> = computed(() => this._state().policyVersion);
 	readonly decidedAt: Signal<string | null> = computed(() => this._state().decidedAt);
@@ -45,8 +46,8 @@ export class ConsentService {
 		this.store.reject(opts);
 	}
 
-	toggle(category: string, opts?: ActionOptions): void {
-		this.store.toggle(category, opts);
+	toggle(category: string): void {
+		this.store.toggle(category);
 	}
 
 	save(opts?: ActionOptions): void {

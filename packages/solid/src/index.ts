@@ -79,6 +79,7 @@ export type UseConsentResult = {
 	route: Accessor<Route>;
 	categories: Accessor<Category[]>;
 	decisions: Accessor<Record<string, boolean>>;
+	draft: Accessor<Record<string, boolean> | null>;
 	jurisdiction: Accessor<JurisdictionId | null>;
 	policyVersion: Accessor<string>;
 	decidedAt: Accessor<string | null>;
@@ -100,6 +101,7 @@ export function useConsent(): UseConsentResult {
 		route: () => state().route,
 		categories: () => state().categories,
 		decisions: () => state().decisions,
+		draft: () => state().draft,
 		jurisdiction: () => state().jurisdiction,
 		policyVersion: () => state().policyVersion,
 		decidedAt: () => state().decidedAt,
@@ -111,7 +113,7 @@ export function useConsent(): UseConsentResult {
 		acceptAll: (opts) => store.acceptAll(opts),
 		acceptNecessary: (opts) => store.acceptNecessary(opts),
 		reject: (opts) => store.reject(opts),
-		toggle: (key, opts) => store.toggle(key, opts),
+		toggle: (key) => store.toggle(key),
 		save: (opts) => store.save(opts),
 		setRoute: (route) => store.setRoute(route),
 		getConsentRecord: () => {
@@ -130,10 +132,15 @@ export type UseCategoryResult = {
 	toggle: () => void;
 };
 
+// `granted` is the checkbox view and includes staged draft edits; effective
+// consent (`has()` / <ConsentGate>) only moves on save().
 export function useCategory(key: string): UseCategoryResult {
 	const { store, state } = useBound();
 	return {
-		granted: () => state().decisions[key] === true,
+		granted: () => {
+			const s = state();
+			return (s.draft ?? s.decisions)[key] === true;
+		},
 		toggle: () => store.toggle(key),
 	};
 }
