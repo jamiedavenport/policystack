@@ -1,5 +1,14 @@
 # @policystack/renderers
 
+## 1.2.0
+
+### Patch Changes
+
+- Updated dependencies [4cc5985]
+- Updated dependencies [e0fc26a]
+- Updated dependencies [279688a]
+  - @policystack/core@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes
