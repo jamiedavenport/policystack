@@ -93,7 +93,7 @@ describe("cookieAdapter (browser)", () => {
 describe("cookieAdapter (Edge / SSR)", () => {
 	it("reads from a request-like object's cookie header", () => {
 		const writer = cookieAdapter();
-		const value = writer.getSetCookieHeader(sample).split(";")[0]?.split("=")[1] ?? "";
+		const value = writer.serialize(sample);
 		const request = { headers: new Headers({ cookie: `oc_consent=${value}` }) };
 		const adapter = cookieAdapter({ request });
 		expect(adapter.read()).toEqual(sample);
@@ -127,5 +127,43 @@ describe("cookieAdapter (Edge / SSR)", () => {
 		adapter.write(sample);
 		const header = adapter.getSetCookieHeader(sample);
 		expect(adapter.parse(header)).toEqual(sample);
+	});
+});
+
+describe("cookieAdapter (bare value)", () => {
+	beforeEach(() => {
+		clearCookies();
+	});
+
+	it("serialize()/deserialize() round-trip a record", () => {
+		const adapter = cookieAdapter();
+		expect(adapter.deserialize(adapter.serialize(sample))).toEqual(sample);
+	});
+
+	it("serialize() emits base64url with no padding", () => {
+		const value = cookieAdapter().serialize(sample);
+		expect(value).not.toMatch(/[+/=]/);
+	});
+
+	it("serialize() matches the value getSetCookieHeader() writes", () => {
+		const adapter = cookieAdapter();
+		const header = adapter.getSetCookieHeader(sample);
+		expect(header).toContain(`oc_consent=${adapter.serialize(sample)};`);
+	});
+
+	// The E2E seeding case from #167: a value set by hand must be readable.
+	it("read() decodes a cookie seeded from serialize()", () => {
+		const adapter = cookieAdapter({ secure: false });
+		document.cookie = `${adapter.name}=${adapter.serialize(sample)}; Path=/`;
+		expect(adapter.read()).toEqual(sample);
+	});
+
+	it("deserialize() returns null on a corrupt value", () => {
+		expect(cookieAdapter().deserialize("not-base64-json")).toBeNull();
+	});
+
+	it("name exposes the resolved cookie name", () => {
+		expect(cookieAdapter().name).toBe("oc_consent");
+		expect(cookieAdapter({ name: "consent" }).name).toBe("consent");
 	});
 });

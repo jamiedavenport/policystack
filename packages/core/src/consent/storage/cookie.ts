@@ -18,9 +18,12 @@ export type CookieAdapterOptions = {
 };
 
 export type CookieAdapter = {
+	name: string;
 	read(): ConsentRecord | null;
 	write(record: ConsentRecord): void;
 	clear(): void;
+	serialize(record: ConsentRecord): string;
+	deserialize(value: string): ConsentRecord | null;
 	getSetCookieHeader(record: ConsentRecord | null): string;
 	parse(header: string | null | undefined): ConsentRecord | null;
 };
@@ -100,6 +103,7 @@ export function cookieAdapter(options: CookieAdapterOptions = {}): CookieAdapter
 	}
 
 	return {
+		name,
 		read() {
 			return decode(parseCookieHeader(readCookieHeader()));
 		},
@@ -113,6 +117,8 @@ export function cookieAdapter(options: CookieAdapterOptions = {}): CookieAdapter
 			setBrowserCookie(header);
 			if (onSetCookie) onSetCookie(header);
 		},
+		serialize: encode,
+		deserialize: decode,
 		getSetCookieHeader,
 		parse(header) {
 			return decode(parseCookieHeader(header));
