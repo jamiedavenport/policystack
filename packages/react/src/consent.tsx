@@ -5,6 +5,7 @@ import type {
 	ConsentExpr,
 	ConsentRecord,
 	ConsentRecordSource,
+	ConsentState,
 	ConsentStore,
 	JurisdictionId,
 	RepromptReason,
@@ -26,6 +27,10 @@ function useStore(): ConsentStore {
 	}
 	return store;
 }
+
+// Every hook below passes `store.server.*` as `getServerSnapshot` — live state
+// there would mismatch on hydration for any returning visitor. React re-reads
+// the live snapshot once hydration commits.
 
 // State slice flows through useSyncExternalStore; the actions are the store's
 // own closures, passed by reference (stable identity, no per-render wrappers).
@@ -57,7 +62,7 @@ export function useConsent(): UseConsentResult {
 	const state = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
 		() => store.getState(),
-		() => store.getState(),
+		() => store.server.getState(),
 	);
 	return {
 		route: state.route,
@@ -89,8 +94,7 @@ export type UseCategoryResult = {
 
 // `granted` is the checkbox view and includes staged draft edits; effective
 // consent (`has()` / <ConsentGate>) only moves on save().
-function grantedSnapshot(store: ConsentStore, key: string): boolean {
-	const state = store.getState();
+function grantedSnapshot(state: ConsentState, key: string): boolean {
 	return (state.draft ?? state.decisions)[key] === true;
 }
 
@@ -98,8 +102,8 @@ export function useCategory(key: string): UseCategoryResult {
 	const store = useStore();
 	const granted = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
-		() => grantedSnapshot(store, key),
-		() => grantedSnapshot(store, key),
+		() => grantedSnapshot(store.getState(), key),
+		() => grantedSnapshot(store.server.getState(), key),
 	);
 	const toggle = useCallback(() => {
 		store.toggle(key);
@@ -118,7 +122,7 @@ export function ConsentGate({ requires, fallback = null, children }: ConsentGate
 	const granted = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
 		() => store.has(requires),
-		() => store.has(requires),
+		() => store.server.has(requires),
 	);
 	return <>{granted ? children : fallback}</>;
 }

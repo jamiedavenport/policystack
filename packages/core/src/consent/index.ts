@@ -35,6 +35,7 @@ export type {
 	Route,
 	ScriptDefinition,
 	ScriptEvent,
+	ServerSnapshot,
 	StorageAdapter,
 	UnknownCategoryBehavior,
 } from "./types";
