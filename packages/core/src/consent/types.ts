@@ -145,6 +145,26 @@ export type ConsentStore = {
 	setRoute(route: Route): void;
 	has(expr: ConsentExpr): boolean;
 	refreshJurisdiction(req?: ResolverContext): Promise<JurisdictionId | null>;
+	server: ServerSnapshot;
+};
+
+/**
+ * The SSR seam. `getState()`/`has()` above read live state, which is derived
+ * from the environment (the adapter finds no stored record on a server; a
+ * timezone resolver reads the *host's* zone) and therefore differs between the
+ * server render and the client that hydrates it.
+ *
+ * These return the deterministic pre-consent view instead: undecided, no
+ * jurisdiction, conservative opt-in posture, derived only from static config.
+ * Two stores built from the same config agree here no matter what adapter or
+ * resolver they were given, which is exactly the property SSR needs.
+ *
+ * `getState()` returns one frozen, referentially stable object — React's
+ * `useSyncExternalStore` requires a cached `getServerSnapshot`.
+ */
+export type ServerSnapshot = {
+	getState(): ConsentState;
+	has(expr: ConsentExpr): boolean;
 };
 
 export type ScriptDefinition = {

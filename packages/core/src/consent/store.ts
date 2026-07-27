@@ -38,6 +38,25 @@ export function createConsentStore(
 	const initialJurisdiction = resolveSync(config, config.request);
 	const initialRecord = readSync(config, locale);
 
+	// The deterministic pre-consent snapshot, built before any environment is
+	// consulted: no record, no resolved jurisdiction, so `jurisdictionPosture`
+	// falls back to `row` (conservative opt-in). Frozen and built once so the
+	// reference is stable across calls.
+	const serverModel = jurisdictionPosture(null);
+	const serverState: ConsentState = Object.freeze({
+		route: config.initialRoute ?? "cookie",
+		categories: config.categories,
+		decisions: postureDecisions(config.categories, serverModel),
+		draft: null,
+		jurisdiction: null,
+		policyVersion: config.policyVersion ?? "",
+		decidedAt: null,
+		source: "default",
+		repromptReason: null,
+		canWithdraw: config.canWithdraw ?? false,
+		consentModel: serverModel,
+	});
+
 	const initialModel = jurisdictionPosture(initialJurisdiction.value);
 	const baseState: ConsentState = {
 		route: config.initialRoute ?? "cookie",
@@ -306,6 +325,16 @@ export function createConsentStore(
 			return evaluate(expr, state, {
 				onUnknownCategory: config.onUnknownCategory,
 			});
+		},
+		server: {
+			getState() {
+				return serverState;
+			},
+			has(expr: ConsentExpr) {
+				return evaluate(expr, serverState, {
+					onUnknownCategory: config.onUnknownCategory,
+				});
+			},
 		},
 		async refreshJurisdiction(req?: ResolverContext) {
 			const resolver = config.jurisdictionResolver;

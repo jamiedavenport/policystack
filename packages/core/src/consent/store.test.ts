@@ -580,6 +580,61 @@ describe("createConsentStore", () => {
 		});
 	});
 
+	describe("server snapshot", () => {
+		const storedRecord: ConsentRecord = {
+			schemaVersion: 1,
+			decisions: { essential: true, analytics: true, marketing: true },
+			jurisdiction: "us",
+			policyVersion: "",
+			decidedAt: "2026-07-01T00:00:00.000Z",
+			locale: "en-GB",
+			source: "banner",
+		};
+
+		// The one property SSR depends on: the snapshot cannot vary with
+		// anything the environment supplies. A server has no stored record and
+		// its own timezone; the client that hydrates has both. If either can
+		// reach this snapshot, hydration mismatches come straight back.
+		it("is identical regardless of adapter and resolver", () => {
+			const bare = createConsentStore(makeConfig());
+			const wired = createConsentStore(
+				makeConfig({
+					adapter: { read: () => storedRecord, write: () => {}, clear: () => {} },
+					jurisdictionResolver: manualResolver("us"),
+				}),
+			);
+			expect(wired.server.getState()).toEqual(bare.server.getState());
+			expect(wired.server.has("analytics")).toBe(bare.server.has("analytics"));
+			// ...while live state does diverge, which is the whole point.
+			expect(wired.getState()).not.toEqual(bare.getState());
+		});
+
+		it("is undecided and posture-neutral", () => {
+			const store = createConsentStore(makeConfig({ jurisdictionResolver: manualResolver("us") }));
+			expect(store.server.getState()).toMatchObject({
+				route: "cookie",
+				jurisdiction: null,
+				consentModel: "opt-in",
+				decidedAt: null,
+				draft: null,
+				source: "default",
+				repromptReason: null,
+				// Locked categories stand on a non-consent basis, so they are
+				// granted even pre-consent; everything gated stays off.
+				decisions: { essential: true, analytics: false, marketing: false },
+			});
+		});
+
+		// React's useSyncExternalStore requires a cached getServerSnapshot and
+		// errors if the reference changes between calls.
+		it("returns a stable reference that mutations do not disturb", () => {
+			const store = createConsentStore(makeConfig());
+			const before = store.server.getState();
+			store.acceptAll();
+			expect(store.server.getState()).toBe(before);
+		});
+	});
+
 	describe("subscribe", () => {
 		it("notifies the listener with the new state on each transition", () => {
 			const store = createConsentStore(makeConfig());
