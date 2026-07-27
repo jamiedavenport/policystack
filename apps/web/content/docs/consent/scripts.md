@@ -26,6 +26,15 @@ const dispose = gateScript(store, pixel);
 
 The factory returns a plain `ScriptDefinition`. `gateScript` installs a stub at every queued global before consent, replays the calls into the real client once the script loads, and removes itself when you call the dispose function.
 
+In React, pass the same definition to [`<GatedScript>`](/docs/consent/react#gatedscript) instead — it pulls the store from `<PolicyStack>` and owns the dispose call:
+
+```tsx
+import { GatedScript } from "@policystack/react/consent";
+import { metaPixel } from "@policystack/scripts/meta-pixel";
+
+<GatedScript def={metaPixel({ pixelId: "1234567890" })} />;
+```
+
 You can also import everything from the package root if tree-shaking the entry barrel is fine for your build:
 
 ```ts

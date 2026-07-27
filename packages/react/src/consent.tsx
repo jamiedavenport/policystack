@@ -11,22 +11,18 @@ import type {
 	RepromptReason,
 	Route,
 } from "@policystack/core/consent";
-import { useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
-import { PolicyStackContext } from "./context";
+import { useCallback, useSyncExternalStore, type ReactNode } from "react";
+import { useConsentStore } from "./use-consent-store";
 
 // The consent hooks read the single store off the shared PolicyStack context —
-// there is no separate consent provider. The store is `null` when the
-// `<PolicyStack>` config declared no cookie categories (a policy-only config),
-// in which case using a consent hook is a configuration error.
-function useStore(): ConsentStore {
-	const { store } = useContext(PolicyStackContext);
-	if (!store) {
-		throw new Error(
-			"useConsent / useCategory / ConsentGate must be used inside <PolicyStack>, and the config must declare cookie categories",
-		);
-	}
-	return store;
-}
+// there is no separate consent provider. `useConsentStore` owns that read (and
+// the "no store" guard for a policy-only config); it is re-exported below so
+// consumers can reach the store for core free functions like `gateScript`.
+export { useConsentStore } from "./use-consent-store";
+
+// The React binding for `gateScript` — the supported way to use
+// `@policystack/scripts` here, so consumers rarely need the raw store.
+export { GatedScript, type GatedScriptProps } from "./gated-script";
 
 // Every hook below passes `store.server.*` as `getServerSnapshot` — live state
 // there would mismatch on hydration for any returning visitor. React re-reads
@@ -34,7 +30,9 @@ function useStore(): ConsentStore {
 
 // State slice flows through useSyncExternalStore; the actions are the store's
 // own closures, passed by reference (stable identity, no per-render wrappers).
-// `subscribe`/`getState`/`refreshJurisdiction` are intentionally not exposed.
+// `subscribe`/`getState`/`refreshJurisdiction` are intentionally kept off this
+// result — the hook already handles subscription. Callers that genuinely need
+// them (to drive a core free function) take the store via `useConsentStore`.
 export type UseConsentResult = {
 	route: Route;
 	categories: Category[];
@@ -58,7 +56,7 @@ export type UseConsentResult = {
 >;
 
 export function useConsent(): UseConsentResult {
-	const store = useStore();
+	const store = useConsentStore();
 	const state = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
 		() => store.getState(),
@@ -99,7 +97,7 @@ function grantedSnapshot(state: ConsentState, key: string): boolean {
 }
 
 export function useCategory(key: string): UseCategoryResult {
-	const store = useStore();
+	const store = useConsentStore();
 	const granted = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
 		() => grantedSnapshot(store.getState(), key),
@@ -118,7 +116,7 @@ export type ConsentGateProps = {
 };
 
 export function ConsentGate({ requires, fallback = null, children }: ConsentGateProps) {
-	const store = useStore();
+	const store = useConsentStore();
 	const granted = useSyncExternalStore(
 		(cb) => store.subscribe(cb),
 		() => store.has(requires),

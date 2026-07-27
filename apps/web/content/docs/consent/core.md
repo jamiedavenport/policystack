@@ -287,6 +287,8 @@ Useful options on the script definition:
 
 A loaded script cannot be un-loaded. If consent is later revoked, Consent does **not** unmount the `<script>` tag, restore the queue stubs, or re-evaluate the gate. Recommend `location.reload()` to your users for a clean slate.
 
+React consumers should reach for [`<GatedScript>`](/docs/consent/react#gatedscript) rather than calling `gateScript` directly: it takes the store from `<PolicyStack>` and ties the gate's lifetime to the component. `useConsentStore()` from the same entry returns the store if you need it for `gateScripts` or another core free function.
+
 For inline JSX gating (e.g. wrapping a `<MapWidget />` in a marketing-consent gate) the framework adapters expose `<ConsentGate>` with the same `requires` expression shape.
 
 ## See also

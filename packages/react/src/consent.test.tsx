@@ -3,7 +3,7 @@ import type { PolicyStackConfig } from "@policystack/core";
 import { act, cleanup, render, renderHook, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { ConsentGate, useCategory, useConsent } from "./consent";
+import { ConsentGate, useCategory, useConsent, useConsentStore } from "./consent";
 import { PolicyStack } from "./provider";
 
 // Cookie posture that derives to the same three categories the old hand-rolled
@@ -58,6 +58,47 @@ describe("consent hooks read the single PolicyStack context", () => {
 	it("throws when hooks are used outside <PolicyStack>", () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});
 		expect(() => renderHook(() => useConsent())).toThrow(/must be used inside <PolicyStack>/);
+	});
+});
+
+describe("useConsentStore", () => {
+	it("exposes the provider's store, including the parts the hooks withhold", () => {
+		const { result } = renderHook(() => useConsentStore(), { wrapper: Wrapper });
+		expect(result.current.subscribe).toBeTypeOf("function");
+		expect(result.current.getState).toBeTypeOf("function");
+		expect(result.current.has).toBeTypeOf("function");
+		expect(result.current.getState().route).toBe("cookie");
+	});
+
+	it("returns a stable reference across re-renders", () => {
+		const { result, rerender } = renderHook(() => useConsentStore(), { wrapper: Wrapper });
+		const first = result.current;
+		rerender();
+		expect(result.current).toBe(first);
+	});
+
+	it("is the same store the hooks read, so gateScript sees hook-driven changes", () => {
+		const { result } = renderHook(() => ({ store: useConsentStore(), consent: useConsent() }), {
+			wrapper: Wrapper,
+		});
+		const seen: boolean[] = [];
+		const unsubscribe = result.current.store.subscribe(() => {
+			seen.push(result.current.store.has("analytics"));
+		});
+
+		act(() => {
+			result.current.consent.toggle("analytics");
+			result.current.consent.save();
+		});
+		unsubscribe();
+
+		expect(result.current.store.has("analytics")).toBe(true);
+		expect(seen).toContain(true);
+	});
+
+	it("throws when used outside <PolicyStack>", () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		expect(() => renderHook(() => useConsentStore())).toThrow(/must be used inside <PolicyStack>/);
 	});
 });
 

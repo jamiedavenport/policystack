@@ -1,6 +1,6 @@
 ---
 title: "@policystack/react/consent"
-description: "React adapter — useConsent, useCategory, ConsentGate"
+description: "React adapter — useConsent, useCategory, ConsentGate, GatedScript"
 product: consent
 ---
 
@@ -93,6 +93,66 @@ import { ConsentGate } from "@policystack/react/consent";
 
 The `requires` shape is a `ConsentExpr` from core: a category key, `{ and: [...] }`, `{ or: [...] }`, or `{ not: ... }`.
 
+### `<GatedScript>`
+
+Consent-gates one third-party script for as long as it is mounted. This is the React binding for [`gateScript`](/docs/consent/core#script-gating) and the intended way to use the [`@policystack/scripts`](/docs/consent/scripts) catalogue — it takes the store from `<PolicyStack>`, so you never handle it yourself.
+
+```tsx
+import { GatedScript } from "@policystack/react/consent";
+import { ga4 } from "@policystack/scripts/ga4";
+import { googleTagManager } from "@policystack/scripts/google-tag-manager";
+
+function Analytics() {
+	return (
+		<>
+			<GatedScript def={ga4({ measurementId: "G-XXXXXXX" })} />
+			<GatedScript def={googleTagManager({ containerId: "GTM-XXXXXX" })} />
+		</>
+	);
+}
+```
+
+The `<script>` tag is injected only once `def.requires` is satisfied. Until then, calls to the globals listed in `def.queue` are captured and replayed after the script loads — so `gtag("event", "signup")` on page boot still reaches GA4 if the visitor accepts a moment later, and never touches the network if they don't.
+
+Renders no DOM, and gates from an effect, so it is inert during SSR. Building the definition inline is fine: the gate follows `def.id`, so a new object each render does not re-gate or lose the queue.
+
+`onEvent` receives the `ScriptEvent` stream (`script:gated`, `script:queued`, `script:loaded`) for debugging or audit logging.
+
+Definitions are not limited to the prebuilt catalogue — `defineScript` from `@policystack/core/consent` takes any vendor snippet:
+
+```tsx
+import { defineScript } from "@policystack/core/consent";
+
+const intercom = defineScript({
+	id: "intercom",
+	requires: { and: ["analytics", "marketing"] },
+	src: "https://widget.intercom.io/widget/APP_ID",
+	queue: ["Intercom"],
+});
+
+<GatedScript def={intercom} />;
+```
+
+Core's script-gating semantics carry over unchanged, including [no auto-revoke](/docs/consent/core#no-auto-revoke): a loaded script is never unloaded. Unmounting `<GatedScript>` after consent disposes the gate but leaves the vendor script running, and revoking consent does not re-gate it.
+
+### `useConsentStore()`
+
+Returns the `ConsentStore` from the enclosing `<PolicyStack>`. The hooks above cover the reactive cases and should stay your default; reach for the store only to hand it to a core free function that takes one.
+
+```tsx
+import { gateScripts } from "@policystack/core/consent";
+import { useConsentStore } from "@policystack/react/consent";
+import { useEffect } from "react";
+
+function Tags() {
+	const store = useConsentStore();
+	useEffect(() => gateScripts(store, [ga4({ measurementId: "G-XXXXXXX" })]), [store]);
+	return null;
+}
+```
+
+The store is stable for the life of the provider and reading it does not subscribe, so this hook never re-renders on state changes. Use `useConsent` (or `store.subscribe`) when you need to react to state. Like the other consent API, it throws under a policy-only config.
+
 ## Next.js
 
 `<PolicyStack>` is already a client component (`"use client"`). Mount it in your root layout:
@@ -129,7 +189,7 @@ For SSR-resolved decisions, author a storage adapter (and jurisdiction resolver)
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the React adapter is a thin reactivity wrapper.
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the React adapter is a thin reactivity wrapper. Script gating lives there too, but reach it through `<GatedScript>` above rather than calling `gateScript` yourself.
 
 ## See also
 
