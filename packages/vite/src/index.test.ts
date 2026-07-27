@@ -102,18 +102,21 @@ type ScannedResult = {
 
 /**
  * Reads the on-disk `policystack.gen.ts` the plugin emits and parses the three
- * scanned exports back out. The values are emitted as compact JSON (valid
- * TypeScript), so each `export const … = <json>;` line round-trips through
- * `JSON.parse`. `root` is where the gen file lands — the project root when
- * there's no `policystack.ts`, otherwise the config's directory.
+ * scanned exports back out. The values are pretty-printed TypeScript literals
+ * spanning several lines; the only thing separating them from JSON is the
+ * trailing commas, which are dropped before parsing. A literal contains no
+ * semicolons of its own, so the first `;\n` ends the statement. `root` is where
+ * the gen file lands — the project root when there's no `policystack.ts`,
+ * otherwise the config's directory.
  */
 async function readScanned(root: string): Promise<ScannedResult> {
 	const source = await readFile(join(root, "policystack.gen.ts"), "utf8");
 
 	function parse<T>(name: string): T {
-		const match = source.match(new RegExp(`export const ${name}:[^=]*= (.*);\\n`));
+		const match = source.match(new RegExp(`export const ${name}:[^=]*= ([\\s\\S]*?);\\n`));
 		if (!match) throw new Error(`could not parse ${name} from:\n${source}`);
-		return JSON.parse(match[1] as string) as T;
+		const json = (match[1] as string).replace(/,(\s*[}\]])/g, "$1");
+		return JSON.parse(json) as T;
 	}
 
 	return {
@@ -947,9 +950,16 @@ test("buildStart includes scanned cookie keys in ScannedCookieKeys", async () =>
 	const plugin = policyStack();
 	await runPluginBuildStart(plugin, tmp);
 	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
-	expect(dts).toContain("interface ScannedCookieKeys");
-	expect(dts).toContain('"analytics": true');
-	expect(dts).toContain('"marketing": true');
+	// Assert the augmentation block itself — the scanned keys also appear in
+	// the `cookies` value literal above it, so a bare `toContain` would pass
+	// even if the interface were empty.
+	expect(dts).toContain(
+		`\tinterface ScannedCookieKeys {\n` +
+			`\t\tanalytics: true;\n` +
+			`\t\tessential: true;\n` +
+			`\t\tmarketing: true;\n` +
+			`\t}\n`,
+	);
 });
 
 test("buildStart writes an empty ScannedCollectionKeys interface when no calls are found", async () => {
@@ -959,6 +969,91 @@ test("buildStart writes an empty ScannedCollectionKeys interface when no calls a
 	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
 	expect(dts).toContain("interface ScannedCollectionKeys {");
 	expect(dts).not.toContain('"Account Information"');
+});
+
+/**
+ * Stands in for whatever formatter the consumer runs over the committed gen
+ * file: spaces instead of tabs, single quotes, a trailing blank line. The
+ * header comment is left alone, which is what the digest check relies on.
+ */
+function reformat(source: string): string {
+	return `${source.replace(/\t/g, "  ").replace(/"/g, "'")}\n`;
+}
+
+test("buildStart leaves a reformatted policystack.gen.ts alone when the scan is unchanged", async () => {
+	await touch(
+		"src/a.ts",
+		`import { collecting } from "@policystack/sdk";\n` +
+			`collecting("Account Information", v, { email: "Email" });\n`,
+	);
+	await runPluginBuildStart(policyStack(), tmp);
+	const formatted = reformat(await readFile(join(tmp, "policystack.gen.ts"), "utf8"));
+	await writeFile(join(tmp, "policystack.gen.ts"), formatted, "utf8");
+
+	await runPluginBuildStart(policyStack(), tmp);
+
+	// The rebuild must not fight the formatter: same scan, no write at all.
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toBe(formatted);
+});
+
+test("buildStart rewrites policystack.gen.ts when the scan changes", async () => {
+	await touch(
+		"src/a.ts",
+		`import { collecting } from "@policystack/sdk";\n` +
+			`collecting("Account Information", v, { email: "Email" });\n`,
+	);
+	await runPluginBuildStart(policyStack(), tmp);
+	await writeFile(
+		join(tmp, "policystack.gen.ts"),
+		reformat(await readFile(join(tmp, "policystack.gen.ts"), "utf8")),
+		"utf8",
+	);
+
+	await touch(
+		"src/b.ts",
+		`import { collecting } from "@policystack/sdk";\n` +
+			`collecting("Session Data", v, { ip: "IP" });\n`,
+	);
+	await runPluginBuildStart(policyStack(), tmp);
+
+	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
+	expect(dts).toContain('"Session Data": true');
+	expect((await readScanned(tmp)).dataCollected).toEqual({
+		"Account Information": ["Email"],
+		"Session Data": ["IP"],
+	});
+});
+
+test("buildStart rewrites a policystack.gen.ts whose header carries no digest", async () => {
+	await touch(
+		"src/a.ts",
+		`import { collecting } from "@policystack/sdk";\n` +
+			`collecting("Account Information", v, { email: "Email" });\n`,
+	);
+	// What a pre-digest version of the plugin left behind: right content, but
+	// nothing to compare against. Unreadable headers rewrite rather than skip.
+	await touch(
+		"policystack.gen.ts",
+		`// AUTO-GENERATED by @policystack/vite — do not edit.\nexport const stale = 1;\n`,
+	);
+
+	await runPluginBuildStart(policyStack(), tmp);
+
+	const dts = await readFile(join(tmp, "policystack.gen.ts"), "utf8");
+	expect(dts).not.toContain("export const stale");
+	expect(dts).toContain('"Account Information": true');
+});
+
+test("buildStart writes policystack.gen.ts when none exists yet", async () => {
+	await touch(
+		"src/a.ts",
+		`import { collecting } from "@policystack/sdk";\n` +
+			`collecting("Account Information", v, { email: "Email" });\n`,
+	);
+	await runPluginBuildStart(policyStack(), tmp);
+	expect(await readFile(join(tmp, "policystack.gen.ts"), "utf8")).toContain(
+		'"Account Information": true',
+	);
 });
 
 test("buildStart emits policystack.gen.ts next to policystack.ts inside src/", async () => {
