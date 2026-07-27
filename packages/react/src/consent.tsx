@@ -28,14 +28,9 @@ function useStore(): ConsentStore {
 	return store;
 }
 
-// All three hooks below pass `store.server.*` to useSyncExternalStore as
-// `getServerSnapshot`. That snapshot comes from static config alone, so the
-// server render and the client's hydration pass agree; React then re-reads the
-// live snapshot once hydration commits and re-renders if it differs. Passing
-// live state there instead (as this once did) guarantees a mismatch for any
-// returning visitor, because the server has no stored record and no real
-// timezone — which is what forced every SSR consumer to hand-roll a `mounted`
-// flag around consent-driven UI.
+// Every hook below passes `store.server.*` as `getServerSnapshot` — live state
+// there would mismatch on hydration for any returning visitor. React re-reads
+// the live snapshot once hydration commits.
 
 // State slice flows through useSyncExternalStore; the actions are the store's
 // own closures, passed by reference (stable identity, no per-render wrappers).

@@ -38,10 +38,9 @@ export function createConsentStore(
 	const initialJurisdiction = resolveSync(config, config.request);
 	const initialRecord = readSync(config, locale);
 
-	// The deterministic pre-consent snapshot, built before any environment is
-	// consulted: no record, no resolved jurisdiction, so `jurisdictionPosture`
-	// falls back to `row` (conservative opt-in). Frozen and built once so the
-	// reference is stable across calls.
+	// The SSR snapshot (see `ServerSnapshot`): built before any environment is
+	// consulted, so `jurisdictionPosture` falls back to `row` (opt-in). Built
+	// once and frozen to keep the reference stable.
 	const serverModel = jurisdictionPosture(null);
 	const serverState: ConsentState = Object.freeze({
 		route: config.initialRoute ?? "cookie",

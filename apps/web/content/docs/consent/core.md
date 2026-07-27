@@ -33,7 +33,15 @@ store.subscribe((state) => render(state));
 store.acceptAll();
 ```
 
-The store's surface: `getState()`, `subscribe()`, `acceptAll()`, `acceptNecessary()`, `reject()`, `toggle(key)`, `save()`, `setRoute()`, `has(expr)`, `getConsentRecord()`, `getPreviousRecord()`, `refreshJurisdiction()`. See [`types.ts`](./src/types.ts) for the full shape.
+The store's surface: `getState()`, `subscribe()`, `acceptAll()`, `acceptNecessary()`, `reject()`, `toggle(key)`, `save()`, `setRoute()`, `has(expr)`, `getConsentRecord()`, `getPreviousRecord()`, `refreshJurisdiction()`, `server`. See [`types.ts`](./src/types.ts) for the full shape.
+
+### Server rendering (`store.server`)
+
+`getState()` and `has()` read live state, which varies with the environment: a server has no stored record, and `timezoneResolver` there resolves the **host's** timezone rather than the visitor's. Rendering from live state on the server therefore mismatches the client that hydrates it.
+
+`store.server.getState()` and `store.server.has(expr)` return the deterministic pre-consent view instead — undecided, no jurisdiction, conservative opt-in, derived from static config alone. Two stores built from one config agree here whatever adapter or resolver they were given. `getState()` is frozen and referentially stable, as React's `useSyncExternalStore` requires of `getServerSnapshot`.
+
+The React bindings wire this for you, so consent-driven UI hydrates cleanly with no `mounted` flag. Custom bindings should render from `store.server` on the server and during hydration, then switch to live state.
 
 ### Staged preferences (`state.draft`)
 

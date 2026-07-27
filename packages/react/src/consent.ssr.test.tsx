@@ -10,9 +10,9 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { ConsentGate, useConsent } from "./consent";
 import { PolicyStack } from "./provider";
 
-// A fresh adapter per environment. The localStorage adapter keeps an in-memory
-// fallback Map, so sharing one instance across the two passes would leak the
-// server's view into the client's and hide the very divergence under test.
+// A fresh adapter per environment: the localStorage adapter keeps an in-memory
+// fallback Map, and one shared instance would leak the server's view into the
+// client's, hiding the divergence under test.
 function makeConfig(): PolicyStackConfig {
 	return {
 		company: {
@@ -62,10 +62,9 @@ function Analytics() {
 	);
 }
 
-// The consent-driven node sits inside a layout element, as it does in a real
-// app. React tolerates leftover nodes at the container root, so a bare subject
-// would let the "server rendered it, client did not" direction slip through
-// unreported.
+// The subject sits inside a layout element, as in a real app. React tolerates
+// leftover nodes at the container root, so a bare subject would let the "server
+// rendered it, client did not" direction slip through unreported.
 function App({ children }: { children: ReactNode }) {
 	return (
 		<PolicyStack config={makeConfig()}>
@@ -74,9 +73,9 @@ function App({ children }: { children: ReactNode }) {
 	);
 }
 
-// Renders `node` the way a server would: no localStorage, so the store finds no
-// stored record. The adapter reads `globalThis.localStorage` lazily per call, so
-// stubbing around the render is enough to reach the SSR fallback path.
+// Renders as a server would: no localStorage, so the store finds no record. The
+// adapter reads `globalThis.localStorage` lazily, so stubbing around the render
+// is enough to reach the fallback path.
 function renderOnServer(node: React.ReactNode): string {
 	vi.stubGlobal("localStorage", undefined);
 	try {
@@ -137,8 +136,8 @@ describe("SSR hydration", () => {
 
 		expect(onRecoverableError).not.toHaveBeenCalled();
 		expect(consoleError).not.toHaveBeenCalled();
-		// ...and the second pass still converges on the live state. Freezing the
-		// snapshot forever would satisfy the two assertions above and fail here.
+		// ...and still converges on live state. A snapshot frozen forever would
+		// pass the two assertions above and fail here.
 		expect(container.querySelector("[data-testid='banner']")).toBeNull();
 	});
 

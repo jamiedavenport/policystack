@@ -149,18 +149,16 @@ export type ConsentStore = {
 };
 
 /**
- * The SSR seam. `getState()`/`has()` above read live state, which is derived
- * from the environment (the adapter finds no stored record on a server; a
- * timezone resolver reads the *host's* zone) and therefore differs between the
- * server render and the client that hydrates it.
+ * The SSR seam. Live state varies with the environment — a server finds no
+ * stored record and a timezone resolver reads the *host's* zone — so rendering
+ * from it on the server mismatches the client that hydrates.
  *
- * These return the deterministic pre-consent view instead: undecided, no
- * jurisdiction, conservative opt-in posture, derived only from static config.
- * Two stores built from the same config agree here no matter what adapter or
- * resolver they were given, which is exactly the property SSR needs.
+ * These read the deterministic pre-consent view instead: undecided, no
+ * jurisdiction, conservative opt-in, from static config only. Two stores built
+ * from one config agree here whatever adapter or resolver they were given.
  *
- * `getState()` returns one frozen, referentially stable object — React's
- * `useSyncExternalStore` requires a cached `getServerSnapshot`.
+ * `getState()` is frozen and referentially stable, as React's
+ * `useSyncExternalStore` requires of `getServerSnapshot`.
  */
 export type ServerSnapshot = {
 	getState(): ConsentState;

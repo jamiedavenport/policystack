@@ -591,10 +591,8 @@ describe("createConsentStore", () => {
 			source: "banner",
 		};
 
-		// The one property SSR depends on: the snapshot cannot vary with
-		// anything the environment supplies. A server has no stored record and
-		// its own timezone; the client that hydrates has both. If either can
-		// reach this snapshot, hydration mismatches come straight back.
+		// The property SSR depends on. If anything environmental reaches this
+		// snapshot, hydration mismatches come straight back.
 		it("is identical regardless of adapter and resolver", () => {
 			const bare = createConsentStore(makeConfig());
 			const wired = createConsentStore(
@@ -620,13 +618,12 @@ describe("createConsentStore", () => {
 				source: "default",
 				repromptReason: null,
 				// Locked categories stand on a non-consent basis, so they are
-				// granted even pre-consent; everything gated stays off.
+				// granted pre-consent; everything gated stays off.
 				decisions: { essential: true, analytics: false, marketing: false },
 			});
 		});
 
-		// React's useSyncExternalStore requires a cached getServerSnapshot and
-		// errors if the reference changes between calls.
+		// useSyncExternalStore errors if getServerSnapshot is not cached.
 		it("returns a stable reference that mutations do not disturb", () => {
 			const store = createConsentStore(makeConfig());
 			const before = store.server.getState();

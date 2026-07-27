@@ -125,6 +125,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 For SSR-resolved decisions, author a storage adapter (and jurisdiction resolver) under `config.consent` — the cookie/header adapters from [`@policystack/core/consent`](/docs/consent/core) restore decisions at init. Nothing else changes; the same one config drives it.
 
+`useConsent`, `useCategory`, and `ConsentGate` server-render from [`store.server`](/docs/consent/core#server-rendering-storeserver), the deterministic pre-consent snapshot, and switch to live state once hydration commits. Consent-driven UI hydrates cleanly for returning visitors with no `mounted` flag of your own.
+
 ## Shared concepts
 
 Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the React adapter is a thin reactivity wrapper.
