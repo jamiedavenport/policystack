@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { ScannerDiagnostic, SharingEntry, ThirdPartyEntry } from "./analyse";
 
 export type CookieMap = { essential: boolean; [key: string]: boolean };
@@ -15,6 +16,79 @@ export type Scanned = {
 };
 
 /**
+ * Bumped whenever {@link renderGenModule} changes what it emits for the same
+ * scan. Without it a formatting change would never reach an existing file: the
+ * digest would still match, the write would be skipped, and the module would
+ * stay in the old shape until its scanned content happened to change. Folding
+ * it into the digest costs exactly one rewrite per consumer per bump.
+ */
+const FORMAT_VERSION = 2;
+
+/**
+ * Canonical JSON of everything the generated module actually renders, used as
+ * the digest input. `diagnostics` is excluded because it never reaches the
+ * module, so a diagnostic appearing or clearing must not force a rewrite.
+ */
+function canonicalPayload(scanned: Scanned): string {
+	return JSON.stringify(
+		canonical({
+			format: FORMAT_VERSION,
+			cookies: scanned.cookies,
+			dataCollected: scanned.dataCollected,
+			sharing: scanned.sharing,
+			thirdParties: scanned.thirdParties,
+		}),
+	);
+}
+
+/**
+ * Deep-sorts object keys and array entries so two scans that found the same
+ * things hash the same however they were ordered — renaming a source file
+ * shifts the walk order without changing what was found.
+ */
+function canonical(value: unknown): unknown {
+	if (Array.isArray(value)) {
+		return value.map(canonical).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : 1));
+	}
+	if (typeof value === "object" && value !== null) {
+		const out: Record<string, unknown> = {};
+		for (const key of Object.keys(value).sort()) {
+			out[key] = canonical((value as Record<string, unknown>)[key]);
+		}
+		return out;
+	}
+	return value;
+}
+
+/**
+ * Digest of the scanned content, stamped into the generated module's header so
+ * a later build can tell "same scan" from "genuinely changed" without parsing
+ * the file back. See {@link readGenDigest}.
+ */
+export function genDigest(scanned: Scanned): string {
+	return createHash("sha256").update(canonicalPayload(scanned)).digest("hex").slice(0, 16);
+}
+
+/**
+ * Reads back the digest a previous run stamped into `source`, or `null` when
+ * there's no recognizable header — hand-edited, truncated, or written by a
+ * version predating the stamp. `null` always means "rewrite", the safe answer.
+ *
+ * Only the leading line comment is inspected, which is the whole point:
+ * formatters rewrite code, not the text inside a `//` comment, so the digest
+ * survives a consumer reformatting the file.
+ */
+export function readGenDigest(source: string): string | null {
+	const newline = source.indexOf("\n");
+	const firstLine = newline === -1 ? source : source.slice(0, newline);
+	const match = /\(scan: ([0-9a-f]+)\)$/.exec(firstLine.trim());
+	if (match === null) {
+		return null;
+	}
+	return match[1] ?? null;
+}
+
+/**
  * Renders the full source of the on-disk `policystack.gen.ts` module emitted
  * next to the user's `policystack.ts`. The module is imported explicitly by the
  * config and carries two things:
@@ -22,7 +96,7 @@ export type Scanned = {
  *  1. The scanned runtime values (`dataCollected` / `thirdParties` /
  *     `cookies` / `sharing`), annotated with the exact public types
  *     `@policystack/sdk` used to export so `defineConfig`'s generic inference
- *     is unchanged. The values are emitted as JSON, which is valid TypeScript.
+ *     is unchanged.
  *  2. A `declare module "@policystack/sdk"` augmentation of
  *     `ScannedCollectionKeys` / `ScannedCookieKeys` so `defineConfig` requires
  *     a sibling `data.context` / `cookies.context` entry for every scanned
@@ -30,50 +104,95 @@ export type Scanned = {
  *     typed seam the §4.3 declared-vs-used cross-check keys off.
  *
  * The augmentation keys are sorted so the committed file is deterministic.
- * The file is excluded from formatting (`fmt.ignorePatterns`), so the compact
- * JSON values don't need to match the project's formatter.
+ *
+ * The output is pretty-printed rather than raw `JSON.stringify` output because
+ * the file is committed, so it lands under whatever formatter the consumer
+ * runs. That only narrows the gap — no single style matches every formatter —
+ * so the real guard against reformat churn is the header digest, which lets
+ * `writeGenModule` skip the write when the scan is unchanged and leave the
+ * consumer's formatting alone.
  */
 export function renderGenModule(scanned: Scanned): string {
-	const dataAugment = Object.keys(scanned.dataCollected)
-		.sort()
-		.map((k) => `\t\t${JSON.stringify(k)}: true;`)
-		.join("\n");
-	const cookieAugment = Object.keys(scanned.cookies)
-		.sort()
-		.map((k) => `\t\t${JSON.stringify(k)}: true;`)
-		.join("\n");
-	const sharingAugment = [...new Set(scanned.sharing.map((s) => s.key))]
-		.sort()
-		.map((k) => `\t\t${JSON.stringify(k)}: true;`)
-		.join("\n");
-
 	return (
-		`// AUTO-GENERATED by @policystack/vite — do not edit.\n` +
+		`// AUTO-GENERATED by @policystack/vite — do not edit. (scan: ${genDigest(scanned)})\n` +
 		`import type { ScannedCollectionKeys } from "@policystack/sdk";\n` +
 		`\n` +
-		`export const dataCollected: Record<keyof ScannedCollectionKeys & string, string[]> = ${JSON.stringify(
+		`export const dataCollected: Record<keyof ScannedCollectionKeys & string, string[]> = ${literal(
 			scanned.dataCollected,
 		)};\n` +
-		`export const thirdParties: { name: string; purpose: string; policyUrl: string }[] = ${JSON.stringify(
+		`export const thirdParties: { name: string; purpose: string; policyUrl: string }[] = ${literal(
 			scanned.thirdParties,
 		)};\n` +
-		`export const cookies: { essential: true; [key: string]: boolean } = ${JSON.stringify(
+		`export const cookies: { essential: true; [key: string]: boolean } = ${literal(
 			scanned.cookies,
 		)};\n` +
-		`export const sharing: { key: string; recipient: string }[] = ${JSON.stringify(
-			scanned.sharing,
-		)};\n` +
+		`export const sharing: { key: string; recipient: string }[] = ${literal(scanned.sharing)};\n` +
 		`\n` +
 		`declare module "@policystack/sdk" {\n` +
-		`\tinterface ScannedCollectionKeys {\n` +
-		(dataAugment ? `${dataAugment}\n` : "") +
-		`\t}\n` +
-		`\tinterface ScannedCookieKeys {\n` +
-		(cookieAugment ? `${cookieAugment}\n` : "") +
-		`\t}\n` +
-		`\tinterface ScannedSharingKeys {\n` +
-		(sharingAugment ? `${sharingAugment}\n` : "") +
-		`\t}\n` +
+		augmentation("ScannedCollectionKeys", Object.keys(scanned.dataCollected)) +
+		augmentation("ScannedCookieKeys", Object.keys(scanned.cookies)) +
+		augmentation(
+			"ScannedSharingKeys",
+			scanned.sharing.map((entry) => entry.key),
+		) +
 		`}\n`
 	);
+}
+
+/**
+ * One `interface X { … }` block, keys sorted and deduped. An empty body
+ * collapses to `{}` on a single line — the shape every formatter agrees on.
+ */
+function augmentation(name: string, keys: string[]): string {
+	const sorted = [...new Set(keys)].sort();
+	if (sorted.length === 0) {
+		return `\tinterface ${name} {}\n`;
+	}
+	const body = sorted.map((key) => `\t\t${propKey(key)}: true;`).join("\n");
+	return `\tinterface ${name} {\n${body}\n\t}\n`;
+}
+
+/**
+ * A key in property position, quoted only when it has to be — the "as-needed"
+ * style every mainstream formatter defaults to. Scanned keys are human labels
+ * ("Account Information"), so plenty of them genuinely need the quotes.
+ */
+function propKey(key: string): string {
+	if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) {
+		return key;
+	}
+	return JSON.stringify(key);
+}
+
+/**
+ * A JSON value as a multi-line TypeScript literal: tab-indented, one entry per
+ * line, trailing commas, `{}` / `[]` for empties. `JSON.stringify`'s own indent
+ * mode gets close but omits trailing commas and splits empty collections over
+ * two lines, both of which formatters immediately rewrite.
+ *
+ * Keys stay quoted here even where an identifier would do. Unlike the type
+ * augmentation below, these are values, and quoting every key keeps each
+ * literal parseable as JSON — a property the module has always had.
+ */
+function literal(value: unknown, depth = 1): string {
+	const pad = "\t".repeat(depth);
+	const closePad = "\t".repeat(depth - 1);
+	if (Array.isArray(value)) {
+		if (value.length === 0) {
+			return "[]";
+		}
+		const items = value.map((entry) => `${pad}${literal(entry, depth + 1)},`).join("\n");
+		return `[\n${items}\n${closePad}]`;
+	}
+	if (typeof value === "object" && value !== null) {
+		const entries = Object.entries(value);
+		if (entries.length === 0) {
+			return "{}";
+		}
+		const items = entries
+			.map(([key, entry]) => `${pad}${JSON.stringify(key)}: ${literal(entry, depth + 1)},`)
+			.join("\n");
+		return `{\n${items}\n${closePad}}`;
+	}
+	return JSON.stringify(value);
 }

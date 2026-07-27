@@ -1,8 +1,8 @@
-import { access, rename, rm, writeFile } from "node:fs/promises";
+import { access, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import type { IssueCode } from "@policystack/core";
 import type { Plugin, ViteDevServer } from "vite";
-import { renderGenModule, type Scanned } from "./scanned";
+import { genDigest, readGenDigest, renderGenModule, type Scanned } from "./scanned";
 import { createSdkMatcher, type ResolveId } from "./sdk-resolver";
 import { isCanonicalSdkSpecifier, type SdkSpecifierMatcher } from "./sdk-specifier";
 import {
@@ -145,6 +145,15 @@ async function findConfig(root: string): Promise<{ dir: string; file: string | n
  * keeps both the values and the type-level constraints live in CI without
  * needing to run the Vite plugin first.
  *
+ * The write is skipped entirely when the on-disk file already carries the
+ * digest of this scan. The file is meant to be committed, so it lands under
+ * the consumer's own formatter — and the plugin's output style won't match
+ * every formatter. Rewriting unconditionally therefore reformats the file on
+ * every build, leaving a spurious diff and a red format check until the
+ * consumer re-runs their formatter, which then re-dirties it on the next
+ * build. Comparing the digest instead of the bytes breaks that loop: identical
+ * scan, no write, the consumer's formatting is left alone.
+ *
  * The write is atomic: content goes to a unique temp sibling and is then
  * `rename`d over the target. A crashed or partial write (ENOSPC, an EACCES
  * mid-write, …) leaves the previously committed `policystack.gen.ts` intact —
@@ -153,6 +162,9 @@ async function findConfig(root: string): Promise<{ dir: string; file: string | n
  */
 async function writeGenModule(targetDir: string, scanned: Scanned): Promise<void> {
 	const target = resolve(targetDir, GEN_FILENAME);
+	if (await isUpToDate(target, scanned)) {
+		return;
+	}
 	// Same-directory temp so `rename` stays on one filesystem (atomic on
 	// POSIX, replace-on-Windows). The `.tmp` extension keeps it out of
 	// `walkSources` / `isTrackedSource`, which both gate on `.ts`/`.tsx`.
@@ -167,6 +179,22 @@ async function writeGenModule(targetDir: string, scanned: Scanned): Promise<void
 		await rm(tmp, { force: true });
 		throw err;
 	}
+}
+
+/**
+ * Whether `target` already represents this scan. Any doubt answers `false` —
+ * a missing file, an unreadable one, or a header without a digest (hand-edited
+ * or written by a pre-digest version) all fall through to a rewrite, which is
+ * the recoverable direction.
+ */
+async function isUpToDate(target: string, scanned: Scanned): Promise<boolean> {
+	let existing: string;
+	try {
+		existing = await readFile(target, "utf8");
+	} catch {
+		return false;
+	}
+	return readGenDigest(existing) === genDigest(scanned);
 }
 
 /**
