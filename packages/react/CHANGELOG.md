@@ -1,5 +1,28 @@
 # @policystack/react
 
+## 1.2.0
+
+### Minor Changes
+
+- 996973e: `@policystack/react/consent` now exposes the provider's consent store, so `gateScript` and the `@policystack/scripts` catalogue are usable with the React bindings (#159). Previously `<PolicyStack>` created its store privately and nothing exported it, leaving no way to obtain the `ConsentStore` that `gateScript(store, def)` requires.
+
+  Two new exports:
+
+  - `<GatedScript def={...} />` — the React binding for `gateScript`. Takes the store from `<PolicyStack>`, gates the script for as long as it is mounted, and disposes on unmount. Renders no DOM and is inert during SSR. Building the definition inline (`def={ga4({ measurementId: "G-XXXXXXX" })}`) is safe: the gate follows `def.id`, so a fresh object each render neither re-gates nor drops queued pre-consent calls. Optional `onEvent` receives the `ScriptEvent` stream.
+  - `useConsentStore()` — returns the `ConsentStore` for handing to other core free functions such as `gateScripts`. Stable for the life of the provider and non-reactive; keep using `useConsent` / `useCategory` / `<ConsentGate>` to react to state.
+
+  Both throw the existing provider guard outside `<PolicyStack>` or under a policy-only config. That error message now names the full consent API rather than three of its members.
+
+- e0fc26a: Consent hooks no longer cause hydration mismatches under SSR. The React hooks passed live store state as `useSyncExternalStore`'s `getServerSnapshot`, so any returning visitor mismatched: the server has no stored record and resolves the _host's_ timezone, while the client has both (#158). Every SSR consumer had to hand-roll a `mounted` flag around consent-driven UI.
+
+  `ConsentStore` gains a `server` member (`getState()` / `has()`) returning a deterministic pre-consent snapshot: undecided, no jurisdiction, conservative opt-in posture, derived from static config alone and never from the adapter or resolver. `useConsent`, `useCategory`, and `ConsentGate` pass it as `getServerSnapshot`, and React re-reads live state once hydration commits.
+
+  The Vue, Svelte, Solid, and Angular bindings still seed from live state and are unchanged here; `store.server` is the shared primitive their fix will use.
+
+- 279688a: Consent preference toggles are now staged. `toggle()` writes to `state.draft` instead of live decisions, and nothing is gated, persisted, or script-loaded until `save()` promotes the draft in one step — scripts no longer load on checkbox tick before "Save", and returning visitors no longer get their stored record rewritten on every tick (#157). Leaving the preferences route without saving discards the draft.
+
+  API changes: `toggle(key)` no longer accepts `ActionOptions` (name the record source at `save()` instead), and `ConsentState` gains a required `draft` field. Per-category `granted` accessors in all framework bindings read `draft ?? decisions` so checkboxes respond instantly; custom panels rendering checkboxes from raw `decisions` should apply the same merge.
+
 ## 1.1.0
 
 ## 1.0.1

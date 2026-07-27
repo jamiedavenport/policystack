@@ -1,5 +1,45 @@
 # @policystack/core
 
+## 1.2.0
+
+### Minor Changes
+
+- 4cc5985: `cookieAdapter()` now exposes the bare cookie value, so nothing has to re-implement its wire format (#167). `encode`/`decode` already existed as private closures; the adapter just never returned them, leaving `getSetCookieHeader()` (a whole `Set-Cookie` header) as the closest thing and forcing consumers to hand-roll base64url or string-parse the value back out.
+
+  Three new members on `CookieAdapter`:
+
+  - `serialize(record)` — the encoded cookie value on its own, exactly what `write()` puts in the cookie.
+  - `deserialize(value)` — the inverse, for a bare value. `parse()` still handles a full cookie header.
+  - `name` — the resolved cookie name, so callers using the default do not hardcode `oc_consent`.
+
+  The motivating case is seeding consent in browser tests, where `browserContext.addCookies()` needs a name and a value:
+
+  ```ts
+  const adapter = cookieAdapter();
+  const store = createConsentStore(policystack);
+  store.acceptAll();
+
+  await context.addCookies([
+    {
+      name: adapter.name,
+      value: adapter.serialize(store.getConsentRecord()),
+      url: baseURL,
+    },
+  ]);
+  ```
+
+  A copied encoder is worth replacing here even though it matches today: `deserialize` swallows errors and returns `null`, so a value that drifts from the adapter's format does not throw — consent silently reads as undecided and the banner reappears.
+
+- e0fc26a: Consent hooks no longer cause hydration mismatches under SSR. The React hooks passed live store state as `useSyncExternalStore`'s `getServerSnapshot`, so any returning visitor mismatched: the server has no stored record and resolves the _host's_ timezone, while the client has both (#158). Every SSR consumer had to hand-roll a `mounted` flag around consent-driven UI.
+
+  `ConsentStore` gains a `server` member (`getState()` / `has()`) returning a deterministic pre-consent snapshot: undecided, no jurisdiction, conservative opt-in posture, derived from static config alone and never from the adapter or resolver. `useConsent`, `useCategory`, and `ConsentGate` pass it as `getServerSnapshot`, and React re-reads live state once hydration commits.
+
+  The Vue, Svelte, Solid, and Angular bindings still seed from live state and are unchanged here; `store.server` is the shared primitive their fix will use.
+
+- 279688a: Consent preference toggles are now staged. `toggle()` writes to `state.draft` instead of live decisions, and nothing is gated, persisted, or script-loaded until `save()` promotes the draft in one step — scripts no longer load on checkbox tick before "Save", and returning visitors no longer get their stored record rewritten on every tick (#157). Leaving the preferences route without saving discards the draft.
+
+  API changes: `toggle(key)` no longer accepts `ActionOptions` (name the record source at `save()` instead), and `ConsentState` gains a required `draft` field. Per-category `granted` accessors in all framework bindings read `draft ?? decisions` so checkboxes respond instantly; custom panels rendering checkboxes from raw `decisions` should apply the same merge.
+
 ## 1.1.0
 
 ### Minor Changes
