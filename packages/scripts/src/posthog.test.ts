@@ -18,7 +18,7 @@ describe("posthog", () => {
 			"posthog.capture",
 			"posthog.identify",
 			"posthog.alias",
-			"posthog.set",
+			"posthog.setPersonProperties",
 			"posthog.reset",
 			"posthog.group",
 		]);
