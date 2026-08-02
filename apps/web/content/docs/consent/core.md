@@ -248,7 +248,9 @@ globalThis.addEventListener("policystack:reprompt", (event) => {
 
 ## Script gating
 
-Third-party tag scripts (GA4, Meta Pixel, PostHog, …) need to be loaded _only_ after the visitor consents to the matching category — but typical site code calls `window.gtag(…)` from the moment the page boots. `gateScript` solves that gap: it injects the `<script>` tag once consent is granted, intercepts pre-consent calls to listed window globals, and replays them after the script and `init` have run.
+Third-party tag scripts (GA4, Meta Pixel, PostHog, …) need to be loaded _only_ after the visitor consents to the matching category — but typical site code calls `window.gtag(…)` from the moment the page boots. `gateScript` solves that gap: it intercepts pre-consent calls to listed window globals, and once consent is granted it runs the vendor's snippet bootstrap (`init`), replays the queued calls into it, and then injects the `<script>` tag — the same order as the vendor's documented snippet.
+
+`init` runs **before** the script is injected, so it must do what the vendor's inline snippet does: create the vendor's own queueing stub and make the initial calls. Vendor scripts like `fbevents.js` decorate the global that exists when they load and drain its queue — they never create their own.
 
 ```ts
 import { createConsentStore, defineScript, gateScript } from "@policystack/core/consent";

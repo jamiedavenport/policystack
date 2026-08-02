@@ -45,6 +45,19 @@ describe("ga4", () => {
 		expect(win.dataLayer).toContainEqual({ event: "early-push" });
 	});
 
+	it("seeds gtag('js') and gtag('config') in the dataLayer before gtag.js loads", async () => {
+		const store = makeStore(["analytics"]);
+		let entriesAtLoad = -1;
+		const { doc } = makeFakeDoc(() => {
+			entriesAtLoad = (window as unknown as { dataLayer: unknown[] }).dataLayer.length;
+		});
+
+		gateScript(store, ga4({ measurementId: "G-XXX" }), { document: doc });
+		await flushMicrotasks();
+
+		expect(entriesAtLoad).toBeGreaterThanOrEqual(2);
+	});
+
 	it("passes config object through to gtag('config', ...)", async () => {
 		const store = makeStore(["analytics"]);
 		store.save();

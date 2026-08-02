@@ -112,7 +112,7 @@ function Analytics() {
 }
 ```
 
-The `<script>` tag is injected only once `def.requires` is satisfied. Until then, calls to the globals listed in `def.queue` are captured and replayed after the script loads — so `gtag("event", "signup")` on page boot still reaches GA4 if the visitor accepts a moment later, and never touches the network if they don't.
+The `<script>` tag is injected only once `def.requires` is satisfied. Until then, calls to the globals listed in `def.queue` are captured, then replayed into the vendor's snippet stub (created by `def.init`) just before the script is injected — so `gtag("event", "signup")` on page boot still reaches GA4 if the visitor accepts a moment later, and never touches the network if they don't.
 
 Renders no DOM, and gates from an effect, so it is inert during SSR. Building the definition inline is fine: the gate follows `def.id`, so a new object each render does not re-gate or lose the queue.
 

@@ -170,6 +170,15 @@ export type ScriptDefinition = {
 	requires: ConsentExpr;
 	src?: string;
 	attrs?: Record<string, string>;
+	/**
+	 * The vendor's inline snippet bootstrap. Runs at consent time, BEFORE the
+	 * script is injected — mirror the official snippet: create the vendor's own
+	 * queueing stub (e.g. the `fbq` function with `.queue`, the `dataLayer`
+	 * array) and make the initial calls (`fbq("init", …)`, `gtm.start`).
+	 * Vendors like fbevents.js decorate the global that exists at load time and
+	 * drain its queue, so the stub must exist before the script arrives.
+	 * Queued pre-consent calls are replayed into it right after `init` returns.
+	 */
 	init?: () => void;
 	queue?: string[];
 };

@@ -17,6 +17,22 @@ describe("googleTagManager", () => {
 		expect(def.queue).toEqual(["dataLayer.push"]);
 	});
 
+	it("pushes gtm.start into the dataLayer before gtm.js loads", async () => {
+		const store = makeStore(["marketing"]);
+		let hasStartAtLoad = false;
+		const { doc } = makeFakeDoc(() => {
+			const dl = (window as unknown as { dataLayer: unknown[] }).dataLayer;
+			hasStartAtLoad = dl.some(
+				(e) => typeof e === "object" && e !== null && "gtm.start" in (e as object),
+			);
+		});
+
+		gateScript(store, googleTagManager({ containerId: "GTM-ABC" }), { document: doc });
+		await flushMicrotasks();
+
+		expect(hasStartAtLoad).toBe(true);
+	});
+
 	it("seeds dataLayer with gtm.start and replays early pushes after consent", async () => {
 		const store = makeStore();
 		const { doc, scripts } = makeFakeDoc();

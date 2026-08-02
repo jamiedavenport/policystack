@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { gateScript } from "@policystack/core/consent";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { hotjar } from "./hotjar.ts";
 import { flushMicrotasks, makeFakeDoc, makeStore } from "./test-helpers.ts";
 
@@ -24,26 +24,29 @@ describe("hotjar", () => {
 		expect(def.src).toBe("https://static.hotjar.com/c/hotjar-999.js?sv=7");
 	});
 
-	it("populates _hjSettings on load and replays queued hj calls", async () => {
+	it("sets _hjSettings and queues replayed hj calls in hj.q before the script loads", async () => {
 		const store = makeStore();
-		const realHj = vi.fn();
+		const drained: unknown[][] = [];
+		let settingsAtLoad: unknown;
+		// Mirrors the real hotjar script: it reads _hjSettings and drains the
+		// snippet stub's hj.q queue when it boots.
 		const { doc } = makeFakeDoc(() => {
-			(window as unknown as Record<string, unknown>).hj = realHj;
+			const w = window as unknown as { hj?: { q?: unknown[][] }; _hjSettings?: unknown };
+			settingsAtLoad = w._hjSettings;
+			for (const args of w.hj?.q ?? []) drained.push(args);
 		});
 
 		gateScript(store, hotjar({ siteId: 42 }), { document: doc });
 
 		const w = window as unknown as { hj: (...args: unknown[]) => void };
 		w.hj("event", "purchase");
+		expect(drained).toEqual([]);
 
 		store.toggle("analytics");
 		store.save();
 		await flushMicrotasks();
 
-		expect((window as unknown as { _hjSettings: unknown })._hjSettings).toEqual({
-			hjid: 42,
-			hjsv: 6,
-		});
-		expect(realHj).toHaveBeenCalledWith("event", "purchase");
+		expect(settingsAtLoad).toEqual({ hjid: 42, hjsv: 6 });
+		expect(drained).toEqual([["event", "purchase"]]);
 	});
 });

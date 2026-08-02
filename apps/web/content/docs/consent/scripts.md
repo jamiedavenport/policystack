@@ -24,7 +24,7 @@ const pixel = metaPixel({ pixelId: "1234567890" });
 const dispose = gateScript(store, pixel);
 ```
 
-The factory returns a plain `ScriptDefinition`. `gateScript` installs a stub at every queued global before consent, replays the calls into the real client once the script loads, and removes itself when you call the dispose function.
+The factory returns a plain `ScriptDefinition`. `gateScript` installs a stub at every queued global before consent. When consent is granted it follows the official snippet order: it restores the original globals, runs the vendor's inline bootstrap (`init` — which creates the vendor's own queueing stub), replays the queued calls into it, and only then injects the script, so the vendor drains its own queue on load exactly as it would with the documented snippet. Calling the dispose function while still gated removes the stubs.
 
 Framework adapters expose a renderless `<GatedScript>` that pulls the context store and owns the dispose call. It is available from the React, Vue, Solid, and Svelte `/consent` entry points:
 
@@ -65,7 +65,7 @@ import { metaPixel } from "@policystack/scripts/meta-pixel";
 metaPixel({ pixelId: "1234567890" });
 ```
 
-Defaults: `requires: "marketing"`, queues `fbq`. Fires `fbq("init", pixelId)` and `fbq("track", "PageView")` on load.
+Defaults: `requires: "marketing"`, queues `fbq`. At consent time — before `fbevents.js` loads — it creates the official snippet's `fbq` stub and fires `fbq("init", pixelId)` and `fbq("track", "PageView")`.
 
 ### PostHog — `@policystack/scripts/posthog`
 
@@ -75,7 +75,7 @@ import { posthog } from "@policystack/scripts/posthog";
 posthog({ apiKey: "phc_xxx", apiHost: "https://eu.i.posthog.com" });
 ```
 
-Defaults: `requires: "analytics"`, `apiHost: "https://us.i.posthog.com"`, queues the common `posthog.*` methods. Calls `posthog.init(apiKey, { api_host, ...options })` on load.
+Defaults: `requires: "analytics"`, `apiHost: "https://us.i.posthog.com"`, queues the common `posthog.*` methods. At consent time — before `array.js` loads — it creates the official snippet's stub and calls `posthog.init(apiKey, { api_host, ...options })`.
 
 ### Segment — `@policystack/scripts/segment`
 
@@ -85,7 +85,7 @@ import { segment } from "@policystack/scripts/segment";
 segment({ writeKey: "WRITE_KEY" });
 ```
 
-Defaults: `requires: "analytics"`, queues the common `analytics.*` methods. Calls `analytics.page()` on load.
+Defaults: `requires: "analytics"`, queues the common `analytics.*` methods. At consent time — before `analytics.min.js` loads — it creates the official snippet's queueing array and calls `analytics.page()`.
 
 ### Google Tag Manager — `@policystack/scripts/google-tag-manager`
 
@@ -95,7 +95,7 @@ import { googleTagManager } from "@policystack/scripts/google-tag-manager";
 googleTagManager({ containerId: "GTM-XXXXXX" });
 ```
 
-Defaults: `requires: "marketing"`, queues `dataLayer.push`. Seeds `dataLayer` with `gtm.start` on load.
+Defaults: `requires: "marketing"`, queues `dataLayer.push`. Seeds `dataLayer` with `gtm.start` at consent time, before `gtm.js` loads — so consent-mode defaults pushed earlier stay ahead of it.
 
 ### Hotjar — `@policystack/scripts/hotjar`
 
@@ -105,13 +105,13 @@ import { hotjar } from "@policystack/scripts/hotjar";
 hotjar({ siteId: 1234567 });
 ```
 
-Defaults: `requires: "analytics"`, `version: 6`, queues `hj`. Sets `_hjSettings` on load.
+Defaults: `requires: "analytics"`, `version: 6`, queues `hj`. At consent time — before the script loads — it creates the official snippet's `hj` stub and sets `_hjSettings`.
 
 ## Adding a new integration
 
 PRs welcome. To add a vendor:
 
-1. Add `src/<vendor>.ts` exporting a factory that returns `defineScript({ id, requires, src, queue, init })`. Mirror the vendor's documented snippet — `init` should match what their inline bootstrap does, and `queue` should list every global a developer might call before consent.
+1. Add `src/<vendor>.ts` exporting a factory that returns `defineScript({ id, requires, src, queue, init })`. Mirror the vendor's documented snippet — `init` runs **before** the script is injected and must do exactly what the inline bootstrap does: create the vendor's own queueing stub (real vendor scripts like `fbevents.js` decorate that stub and drain its queue, they never create their own global) and make the initial calls. `queue` should list every global a developer might call before consent.
 2. Add `src/<vendor>.test.ts` asserting the snippet shape and an end-to-end `gateScript` flow (use the helpers in `src/test-helpers.ts`).
 3. Register the entry in `vite.config.ts` and the matching `./<vendor>` subpath in `package.json` `exports`.
 4. Add a section to this README with the install snippet and defaults.

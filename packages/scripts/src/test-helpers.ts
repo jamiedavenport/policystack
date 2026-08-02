@@ -29,20 +29,26 @@ export type FakeScript = {
 	addEventListener(ev: string, cb: () => void, opts?: { once?: boolean }): void;
 };
 
-export function makeFakeDoc(onScriptLoad?: (script: FakeScript) => void): {
+export function makeFakeDoc(
+	onScriptLoad?: (script: FakeScript) => void,
+	opts?: { manualLoad?: boolean },
+): {
 	doc: Document;
 	scripts: FakeScript[];
+	triggerLoad: () => void;
 } {
 	const scripts: FakeScript[] = [];
+	const pending: FakeScript[] = [];
+	const fire = (script: FakeScript): void => {
+		onScriptLoad?.(script);
+		script._onLoad?.();
+	};
 	const head = {
 		appendChild<T>(el: T): T {
 			const fakeScript = el as unknown as FakeScript;
-			const onLoad = fakeScript._onLoad;
-			if (onLoad) {
-				queueMicrotask(() => {
-					onScriptLoad?.(fakeScript);
-					onLoad();
-				});
+			if (fakeScript._onLoad) {
+				if (opts?.manualLoad) pending.push(fakeScript);
+				else queueMicrotask(() => fire(fakeScript));
 			}
 			return el;
 		},
@@ -67,5 +73,11 @@ export function makeFakeDoc(onScriptLoad?: (script: FakeScript) => void): {
 			return el;
 		},
 	};
-	return { doc: doc as unknown as Document, scripts };
+	return {
+		doc: doc as unknown as Document,
+		scripts,
+		triggerLoad: () => {
+			for (const script of pending.splice(0)) fire(script);
+		},
+	};
 }

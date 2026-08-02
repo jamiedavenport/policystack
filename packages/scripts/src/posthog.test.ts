@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { gateScript } from "@policystack/core/consent";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { posthog } from "./posthog.ts";
 import { flushMicrotasks, makeFakeDoc, makeStore } from "./test-helpers.ts";
 
@@ -29,12 +29,22 @@ describe("posthog", () => {
 		expect(def.src).toBe("https://eu.i.posthog.com/static/array.js");
 	});
 
-	it("calls posthog.init with the api key + api_host once loaded and replays queued calls", async () => {
+	it("registers the api key in _i and queues calls where array.js drains them", async () => {
 		const store = makeStore();
-		const init = vi.fn();
-		const capture = vi.fn();
+		const inits: unknown[][] = [];
+		const drained: unknown[][] = [];
+		let stubIsArrayAtLoad: boolean | null = null;
+		// Mirrors real array.js: it hydrates the snippet's stub in place —
+		// reads posthog._i for init registrations and drains the queued
+		// [method, ...args] entries from the array. It never replaces it.
 		const { doc } = makeFakeDoc(() => {
-			(window as unknown as Record<string, unknown>).posthog = { init, capture };
+			const ph = (window as unknown as Record<string, unknown>).posthog as
+				| (unknown[] & { _i?: unknown[][] })
+				| undefined;
+			stubIsArrayAtLoad = Array.isArray(ph);
+			if (!ph) return;
+			for (const entry of ph._i ?? []) inits.push(entry);
+			while (ph.length > 0) drained.push(ph.shift() as unknown[]);
 		});
 
 		gateScript(store, posthog({ apiKey: "phc_abc", options: { autocapture: false } }), {
@@ -45,15 +55,16 @@ describe("posthog", () => {
 			posthog: { capture: (...args: unknown[]) => void };
 		};
 		w.posthog.capture("$pageview");
+		expect(drained).toEqual([]);
 
 		store.toggle("analytics");
 		store.save();
 		await flushMicrotasks();
 
-		expect(init).toHaveBeenCalledWith("phc_abc", {
-			api_host: "https://us.i.posthog.com",
-			autocapture: false,
-		});
-		expect(capture).toHaveBeenCalledWith("$pageview");
+		expect(stubIsArrayAtLoad).toBe(true);
+		expect(inits).toEqual([
+			["phc_abc", { api_host: "https://us.i.posthog.com", autocapture: false }, "posthog"],
+		]);
+		expect(drained).toEqual([["capture", "$pageview"]]);
 	});
 });
