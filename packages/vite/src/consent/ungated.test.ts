@@ -32,6 +32,75 @@ function App() {
 		expect(ungated(src)).toHaveLength(0);
 	});
 
+	it("does not flag hits inside an aliased ConsentGate import", () => {
+		const src = `
+import { ConsentGate as Gate } from "@policystack/react/consent";
+function App() {
+  return (
+    <Gate requires="analytics">
+      {(() => { document.cookie = 'a=1'; return null; })()}
+    </Gate>
+  );
+}
+`;
+		expect(ungated(src)).toHaveLength(0);
+	});
+
+	it("does not flag hits inside a namespaced ConsentGate", () => {
+		const src = `
+import * as PS from "@policystack/react/consent";
+function App() {
+  return (
+    <PS.ConsentGate requires="analytics">
+      {(() => { document.cookie = 'a=1'; return null; })()}
+    </PS.ConsentGate>
+  );
+}
+`;
+		expect(ungated(src)).toHaveLength(0);
+	});
+
+	it("still flags an unresolved alias that is not a PolicyStack gate", () => {
+		const src = `
+function App() {
+  return (
+    <Gate requires="analytics">
+      {(() => { document.cookie = 'a=1'; return null; })()}
+    </Gate>
+  );
+}
+`;
+		expect(ungated(src)).toHaveLength(1);
+	});
+
+	it("still flags an alias imported from a non-PolicyStack package", () => {
+		const src = `
+import { ConsentGate as Gate } from "some-other-lib";
+function App() {
+  return (
+    <Gate requires="analytics">
+      {(() => { document.cookie = 'a=1'; return null; })()}
+    </Gate>
+  );
+}
+`;
+		expect(ungated(src)).toHaveLength(1);
+	});
+
+	it("does not flag hits inside an aliased Solid gate imported from the package root", () => {
+		const src = `
+import { ConsentGate as Gate } from "@policystack/solid";
+function App() {
+  return (
+    <Gate requires="analytics">
+      {(() => { document.cookie = 'a=1'; return null; })()}
+    </Gate>
+  );
+}
+`;
+		expect(ungated(src)).toHaveLength(0);
+	});
+
 	it("does not flag hits inside an if (consent.has(...)) gate", () => {
 		const src = `
 if (consent.has('analytics')) {
