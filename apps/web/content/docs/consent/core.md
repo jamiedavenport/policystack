@@ -59,6 +59,14 @@ Decisions persist via a `StorageAdapter` passed to `createConsentStore({ adapter
 
 Implement the `StorageAdapter` interface (`read`, `write`, `clear`, optional `subscribe`) for anything else (IndexedDB, your own backend, etc.).
 
+### Storage key
+
+The localStorage and cookie adapters both default to `ps_consent`, overridable with `localStorageAdapter({ key })` and `cookieAdapter({ name })`. Rather than hardcoding the name server-side, read it off the adapter: `cookieAdapter().name`.
+
+Before 1.3.0 the default was `oc_consent`, a leftover from the OpenCookies rebrand. Both adapters still **read** the old key when the new one is absent, so visitors who already decided are not re-prompted. The fallback is read-only — writes always use `ps_consent` — with one exception: `clear()` removes both, so withdrawing consent cannot be undone by the fallback. It is skipped entirely if you pass your own `key`/`name`.
+
+On the server, clear consent with `getSetCookieHeaders(null)`, which returns every `Set-Cookie` header you need to emit including the one expiring the legacy cookie. The singular `getSetCookieHeader` covers only the canonical cookie.
+
 ## Jurisdiction
 
 A `JurisdictionResolver` tells the store which region the visitor is in, so banner defaults can vary (opt-in for EEA/UK, opt-out for US, and so on). The resolved jurisdiction is stored on the consent record and persists across decision changes.
