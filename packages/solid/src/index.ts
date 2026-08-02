@@ -1,9 +1,12 @@
 import {
 	createComponent,
 	createContext,
+	createEffect,
+	createMemo,
 	createSignal,
 	onCleanup,
 	Show,
+	untrack,
 	useContext,
 	type Accessor,
 	type JSX,
@@ -11,6 +14,7 @@ import {
 import type { PolicyStackConfig } from "@policystack/core";
 import {
 	createConsentStore,
+	gateScript,
 	type Category,
 	type ConsentExpr,
 	type ConsentRecord,
@@ -20,6 +24,8 @@ import {
 	type JurisdictionId,
 	type RepromptReason,
 	type Route,
+	type ScriptDefinition,
+	type ScriptEvent,
 } from "@policystack/core/consent";
 
 type Bound = {
@@ -30,13 +36,22 @@ type Bound = {
 const Ctx = createContext<Bound | null>(null);
 
 const NOT_PROVIDED_MESSAGE =
-	"useConsent / useCategory / ConsentGate must be used inside <PolicyStack>, " +
+	"PolicyStack consent (useConsent / useCategory / useConsentStore / ConsentGate / GatedScript) must be used inside <PolicyStack>, " +
 	"and the config must declare cookie categories";
 
 function useBound(): Bound {
 	const ctx = useContext(Ctx);
 	if (!ctx) throw new Error(NOT_PROVIDED_MESSAGE);
 	return ctx;
+}
+
+/**
+ * The stable, non-reactive consent store from the enclosing `<PolicyStack>`.
+ * Prefer the reactive consent hooks for UI reads; use this when a core free
+ * function such as `gateScripts` needs the store itself.
+ */
+export function useConsentStore(): ConsentStore {
+	return useBound().store;
 }
 
 export type PolicyStackProps = {
@@ -175,6 +190,32 @@ export function ConsentGate(props: ConsentGateProps): JSX.Element {
 	);
 }
 
+export type GatedScriptProps = {
+	def: ScriptDefinition;
+	onEvent?: (event: ScriptEvent) => void;
+};
+
+/**
+ * Consent-gates one third-party script for as long as it is mounted.
+ * Renders no DOM; Solid effects are inert during SSR.
+ */
+export function GatedScript(props: GatedScriptProps): JSX.Element {
+	const store = useConsentStore();
+	const id = createMemo(() => props.def.id);
+
+	createEffect(() => {
+		id();
+		const dispose = untrack(() =>
+			gateScript(store, props.def, {
+				onEvent: (event) => props.onEvent?.(event),
+			}),
+		);
+		onCleanup(dispose);
+	});
+
+	return null;
+}
+
 export type {
 	Category,
 	ConsentExpr,
@@ -185,4 +226,6 @@ export type {
 	JurisdictionId,
 	RepromptReason,
 	Route,
+	ScriptDefinition,
+	ScriptEvent,
 };

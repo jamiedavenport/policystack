@@ -1,6 +1,6 @@
 ---
 title: "@policystack/vue/consent"
-description: "Vue 3 adapter — one PolicyStack provider, composables, ConsentGate"
+description: "Vue 3 adapter — provider, composables, ConsentGate, GatedScript"
 product: consent
 ---
 
@@ -31,7 +31,7 @@ import config from "./policystack";
 </template>
 ```
 
-`useConsent` / `useCategory` / `<ConsentGate>` (from `@policystack/vue/consent`) read the store from this same provider. A policy-only config (no `cookies`) provides no store, so a consent composable used under it throws — that is a configuration error, not a runtime state.
+`useConsent` / `useCategory` / `useConsentStore` / `<ConsentGate>` / `<GatedScript>` (from `@policystack/vue/consent`) read the store from this same provider. A policy-only config (no `cookies`) provides no store, so a consent composable used under it throws — that is a configuration error, not a runtime state.
 
 ## API
 
@@ -101,6 +101,41 @@ import EnablePrompt from "./EnablePrompt.vue";
 </template>
 ```
 
+### `<GatedScript>`
+
+Consent-gates one third-party script against the store from `<PolicyStack>`. It is the intended way to use the [`@policystack/scripts`](/docs/consent/scripts) catalogue from Vue.
+
+```vue
+<script setup lang="ts">
+import { GatedScript } from "@policystack/vue/consent";
+import { ga4 } from "@policystack/scripts/ga4";
+
+const onScriptEvent = (event) => console.debug(event);
+</script>
+
+<template>
+	<GatedScript :def="ga4({ measurementId: 'G-XXXXXXX' })" :on-event="onScriptEvent" />
+</template>
+```
+
+The component renders no DOM and starts its gate after mount, so it is inert during SSR. Definitions can be built inline: a fresh object with the same `def.id` does not restart the gate or discard queued calls. Changing the ID disposes the old gate and starts the new one. `onEvent` receives `script:gated`, `script:queued`, and `script:loaded` events.
+
+Core's [no-auto-revoke behavior](/docs/consent/core#no-auto-revoke) still applies: once loaded, a vendor script is not unloaded when consent changes or the component unmounts.
+
+### `useConsentStore()`
+
+Returns the stable, non-reactive `ConsentStore` from `<PolicyStack>` for core free functions such as `gateScripts`. Keep using `useConsent`, `useCategory`, or `<ConsentGate>` for reactive UI.
+
+```ts
+import { gateScripts } from "@policystack/core/consent";
+import { useConsentStore } from "@policystack/vue/consent";
+
+const store = useConsentStore();
+const dispose = gateScripts(store, definitions);
+```
+
+Like the other consent composables, it throws outside `<PolicyStack>` or under a policy-only config.
+
 ## Options API
 
 The composables are usable from Options API via `setup()`:
@@ -147,7 +182,7 @@ import config from "./policystack";
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Vue adapter is a thin reactivity wrapper.
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating, and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Vue adapter is a thin reactivity wrapper.
 
 ## See also
 

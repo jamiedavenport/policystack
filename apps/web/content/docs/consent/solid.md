@@ -1,6 +1,6 @@
 ---
 title: "@policystack/solid"
-description: "Solid adapter — one PolicyStack provider, signals-based hooks"
+description: "Solid adapter — provider, signals-based hooks, GatedScript"
 product: consent
 ---
 
@@ -33,7 +33,7 @@ render(
 );
 ```
 
-`useConsent` / `useCategory` / `<ConsentGate>` read the store from this same provider. A policy-only config (no `cookies`) provides no store, so a consent hook used under it throws — that is a configuration error, not a runtime state.
+`useConsent` / `useCategory` / `useConsentStore` / `<ConsentGate>` / `<GatedScript>` read the store from this same provider. A policy-only config (no `cookies`) provides no store, so a consent hook used under it throws — that is a configuration error, not a runtime state.
 
 ## API
 
@@ -95,6 +95,35 @@ import { ConsentGate } from "@policystack/solid/consent";
 </ConsentGate>
 ```
 
+### `<GatedScript>`
+
+Consent-gates one third-party script against the store from `<PolicyStack>`. It is the intended way to use the [`@policystack/scripts`](/docs/consent/scripts) catalogue from Solid.
+
+```tsx
+import { GatedScript } from "@policystack/solid/consent";
+import { ga4 } from "@policystack/scripts/ga4";
+
+<GatedScript def={ga4({ measurementId: "G-XXXXXXX" })} onEvent={(event) => console.debug(event)} />;
+```
+
+The component renders no DOM and gates from a client effect, so it is inert during SSR. Definitions can be built inline: a fresh object with the same `def.id` does not restart the gate or discard queued calls. Changing the ID disposes the old gate and starts the new one. `onEvent` receives `script:gated`, `script:queued`, and `script:loaded` events.
+
+Core's [no-auto-revoke behavior](/docs/consent/core#no-auto-revoke) still applies: once loaded, a vendor script is not unloaded when consent changes or the component unmounts.
+
+### `useConsentStore()`
+
+Returns the stable, non-reactive `ConsentStore` from `<PolicyStack>` for core free functions such as `gateScripts`. Keep using `useConsent`, `useCategory`, or `<ConsentGate>` for reactive UI.
+
+```tsx
+import { gateScripts } from "@policystack/core/consent";
+import { useConsentStore } from "@policystack/solid/consent";
+
+const store = useConsentStore();
+const dispose = gateScripts(store, definitions);
+```
+
+Like the other consent hooks, it throws outside `<PolicyStack>` or under a policy-only config.
+
 ## SolidStart (SSR)
 
 `<PolicyStack>` works in SolidStart — call it from your `app.tsx` root:
@@ -125,7 +154,7 @@ This package ships source via the `solid` export condition, so consumers using `
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Solid adapter is a thin reactivity wrapper.
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating, and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Solid adapter is a thin reactivity wrapper.
 
 ## See also
 

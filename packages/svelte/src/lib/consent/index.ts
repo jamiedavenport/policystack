@@ -12,6 +12,7 @@ export type {
 	Route,
 } from "@policystack/core/consent";
 export { default as ConsentGate } from "./ConsentGate.svelte";
+export { default as GatedScript } from "./GatedScript.svelte";
 export {
 	CategoryRune,
 	ConsentRune,

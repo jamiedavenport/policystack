@@ -3,7 +3,7 @@ import type { PolicyStackConfig } from "@policystack/core";
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { defineComponent, h } from "vue";
-import { ConsentGate, type ConsentExpr, useCategory, useConsent } from "./consent";
+import { ConsentGate, type ConsentExpr, useCategory, useConsent, useConsentStore } from "./consent";
 import { PolicyStack } from "./provider";
 
 // Cookie posture that derives to the same three categories the old hand-rolled
@@ -27,6 +27,13 @@ const policyConfig: PolicyStackConfig = {
 			marketing: { lawfulBasis: "consent" },
 		},
 	},
+};
+
+const policyOnlyConfig: PolicyStackConfig = {
+	company: policyConfig.company,
+	effectiveDate: policyConfig.effectiveDate,
+	jurisdictions: policyConfig.jurisdictions,
+	data: policyConfig.data,
 };
 
 afterEach(() => {
@@ -68,6 +75,59 @@ describe("consent composables read the single PolicyStack context", () => {
 			render: () => h("div"),
 		});
 		expect(() => mount(Probe)).toThrow(/must be used inside <PolicyStack>/);
+	});
+});
+
+describe("useConsentStore", () => {
+	it("returns one stable store for the provider lifetime", () => {
+		let first: ReturnType<typeof useConsentStore> | undefined;
+		let second: ReturnType<typeof useConsentStore> | undefined;
+		withProvider(() => {
+			first = useConsentStore();
+			second = useConsentStore();
+		});
+		expect(first).toBe(second);
+	});
+
+	it("returns the same store driven by useConsent", () => {
+		let store: ReturnType<typeof useConsentStore> | undefined;
+		let consent: ReturnType<typeof useConsent> | undefined;
+		withProvider(() => {
+			store = useConsentStore();
+			consent = useConsent();
+		});
+		consent?.toggle("analytics");
+		consent?.save();
+		expect(store?.has("analytics")).toBe(true);
+	});
+
+	it("throws outside the provider", () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		const Probe = defineComponent({
+			setup: () => {
+				useConsentStore();
+			},
+			render: () => h("div"),
+		});
+		expect(() => mount(Probe)).toThrow(/must be used inside <PolicyStack>/);
+	});
+
+	it("throws under a policy-only provider", () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		const Probe = defineComponent({
+			setup: () => {
+				useConsentStore();
+			},
+			render: () => h("div"),
+		});
+		expect(() =>
+			mount(PolicyStack, {
+				props: { config: policyOnlyConfig },
+				slots: { default: () => h(Probe) },
+			}),
+		).toThrow(/config must declare cookie categories/);
 	});
 });
 

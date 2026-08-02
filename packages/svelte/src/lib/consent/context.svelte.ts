@@ -16,7 +16,7 @@ import { getContext, onDestroy, setContext } from "svelte";
 const CONTEXT_KEY = Symbol("policystack-consent");
 
 const NOT_PROVIDED =
-	"getConsent / getCategory / <ConsentGate> must be used inside a component tree where setPolicyStackConsentContext({ config }) was called";
+	"PolicyStack consent (getConsent / getCategory / <ConsentGate> / <GatedScript>) must be used inside a component tree where setPolicyStackConsentContext(...) was called";
 
 export class ConsentRune {
 	#store: ConsentStore;

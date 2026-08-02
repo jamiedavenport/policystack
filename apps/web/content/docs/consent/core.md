@@ -287,7 +287,7 @@ Useful options on the script definition:
 
 A loaded script cannot be un-loaded. If consent is later revoked, Consent does **not** unmount the `<script>` tag, restore the queue stubs, or re-evaluate the gate. Recommend `location.reload()` to your users for a clean slate.
 
-React consumers should reach for [`<GatedScript>`](/docs/consent/react#gatedscript) rather than calling `gateScript` directly: it takes the store from `<PolicyStack>` and ties the gate's lifetime to the component. `useConsentStore()` from the same entry returns the store if you need it for `gateScripts` or another core free function.
+Framework consumers should reach for the adapter's `<GatedScript>` rather than calling `gateScript` directly: [React](/docs/consent/react#gatedscript), [Vue](/docs/consent/vue#gatedscript), [Solid](/docs/consent/solid#gatedscript), and [Svelte](/docs/consent/svelte#gatedscript) all bind the provider store to the component lifecycle. React, Vue, and Solid also expose `useConsentStore()` when `gateScripts` or another core free function needs the store itself; Svelte callers can inject a pre-created store with `setPolicyStackConsentContext({ store })`.
 
 For inline JSX gating (e.g. wrapping a `<MapWidget />` in a marketing-consent gate) the framework adapters expose `<ConsentGate>` with the same `requires` expression shape.
 

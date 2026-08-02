@@ -7,6 +7,7 @@ import {
 	PolicyStack,
 	useCategory,
 	useConsent,
+	useConsentStore,
 	type UseCategoryResult,
 	type UseConsentResult,
 } from "./index.ts";
@@ -32,6 +33,13 @@ const policyConfig: PolicyStackConfig = {
 			marketing: { lawfulBasis: "consent" },
 		},
 	},
+};
+
+const policyOnlyConfig: PolicyStackConfig = {
+	company: policyConfig.company,
+	effectiveDate: policyConfig.effectiveDate,
+	jurisdictions: policyConfig.jurisdictions,
+	data: policyConfig.data,
 };
 
 afterEach(() => {
@@ -69,6 +77,61 @@ describe("PolicyStack provider", () => {
 		expect(() => render(() => <Orphan />)).toThrow(/must be used inside <PolicyStack>/);
 	});
 });
+
+describe("useConsentStore", () => {
+	it("returns one stable store for the provider lifetime", () => {
+		let first: ReturnType<typeof useConsentStore> | undefined;
+		let second: ReturnType<typeof useConsentStore> | undefined;
+		render(() => (
+			<PolicyStack config={policyConfig}>
+				{(() => {
+					first = useConsentStore();
+					second = useConsentStore();
+					return null;
+				})()}
+			</PolicyStack>
+		));
+		expect(first).toBe(second);
+	});
+
+	it("returns the same store driven by useConsent", () => {
+		let store: ReturnType<typeof useConsentStore> | undefined;
+		let consent: UseConsentResult | undefined;
+		render(() => (
+			<PolicyStack config={policyConfig}>
+				{(() => {
+					store = useConsentStore();
+					consent = useConsent();
+					return null;
+				})()}
+			</PolicyStack>
+		));
+		consent?.toggle("analytics");
+		consent?.save();
+		expect(store?.has("analytics")).toBe(true);
+	});
+
+	it("throws outside the provider", () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		expect(() => render(() => <StoreOrphan />)).toThrow(/must be used inside <PolicyStack>/);
+	});
+
+	it("throws under a policy-only provider", () => {
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		expect(() =>
+			render(() => (
+				<PolicyStack config={policyOnlyConfig}>
+					<StoreOrphan />
+				</PolicyStack>
+			)),
+		).toThrow(/config must declare cookie categories/);
+	});
+});
+
+function StoreOrphan() {
+	useConsentStore();
+	return null;
+}
 
 function Orphan() {
 	useConsent();
