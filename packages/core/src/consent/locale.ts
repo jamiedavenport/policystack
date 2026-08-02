@@ -10,7 +10,11 @@ import type { PolicyStackConsentConfig } from "./types";
 // That is not a deprecated *configuration* — it is the runtime default and is
 // almost always region-tagged (e.g. "en-US") — so it must not warn. Outlives
 // the freeze (navigator.language stays a free string after PS-36).
-function coerceLocale(input: string): Locale {
+//
+// Also used by `deriveConsentConfig` to pick the dictionary behind derived
+// category copy: it lands on the same Locale `resolveLocale` would, without
+// emitting the deprecation warning twice for one configured locale.
+export function coerceLocale(input: string): Locale {
 	if (isLocale(input)) return input;
 	const primary = input.toLowerCase().split(/[-_]/)[0] ?? "";
 	return isLocale(primary) ? primary : "en";

@@ -54,6 +54,13 @@ test("uses the policy locale for dictionary-backed category copy", () => {
 	);
 });
 
+test("dictionary-backed category copy follows an options.locale override", () => {
+	const config = deriveConsentConfig({ ...policy, locale: "fr" }, { locale: "de" });
+	const analytics = config.categories.find((c) => c.key === "analytics");
+	expect(config.locale).toBe("de");
+	expect(analytics?.label).toBe("Analyse-Cookies");
+});
+
 test("falls back independently around explicit category copy", () => {
 	const config = deriveConsentConfig({
 		...policy,

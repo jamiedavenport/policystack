@@ -2,6 +2,7 @@ import { isConsentGated } from "../types";
 import type { PolicyStackConfig } from "../types";
 import { createT } from "../i18n";
 import { resolveCookieTypeMeta } from "../i18n/cookie-type";
+import { coerceLocale } from "./locale";
 import type { Category, PolicyStackConsentConfig } from "./types";
 
 // Everything in PolicyStackConsentConfig bar `categories` — the runtime-only
@@ -24,7 +25,13 @@ export function deriveConsentConfig(
 ): PolicyStackConsentConfig {
 	const used: Record<string, boolean> = policy.cookies?.used ?? {};
 	const context = policy.cookies?.context ?? {};
-	const t = createT(policy.locale ?? "en");
+	// PS-26: one shared Locale — the policy's canonical Locale flows into the
+	// consent config so policy text and consent UI agree. An explicit
+	// options.locale still wins (same override convention as policyVersion).
+	// The same resolved locale backs the dictionary copy below, so a derived
+	// category label can never disagree with the locale the config reports.
+	const locale = options?.locale ?? policy.locale;
+	const t = createT(coerceLocale(locale ?? "en"));
 	const categories: Category[] = Object.keys(used)
 		.filter((key) => used[key])
 		.map((key) => {
@@ -53,10 +60,6 @@ export function deriveConsentConfig(
 	// actually invalidates stored consent. Callers can still override any
 	// individual trigger via `options.triggers`.
 	const triggers = { policyVersionChanged: true, ...options?.triggers };
-	// PS-26: one shared Locale — the policy's canonical Locale flows into the
-	// consent config so policy text and consent UI agree. An explicit
-	// options.locale still wins (same override convention as policyVersion).
-	const locale = options?.locale ?? policy.locale;
 	return {
 		...options,
 		...(policyVersion ? { policyVersion } : {}),
