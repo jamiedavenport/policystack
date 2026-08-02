@@ -24,14 +24,36 @@ export type CookieAdapter = {
 	clear(): void;
 	serialize(record: ConsentRecord): string;
 	deserialize(value: string): ConsentRecord | null;
+	/**
+	 * The `Set-Cookie` header for the canonical cookie only. Clearing through
+	 * this leaves a pre-rebrand `oc_consent` cookie in place, which the lenient
+	 * read would then resurrect — SSR callers should prefer
+	 * {@link CookieAdapter.getSetCookieHeaders}.
+	 */
 	getSetCookieHeader(record: ConsentRecord | null): string;
+	/**
+	 * Every `Set-Cookie` header the caller must emit. Same as
+	 * `getSetCookieHeader` for writes; on clear it also expires the legacy
+	 * cookie.
+	 */
+	getSetCookieHeaders(record: ConsentRecord | null): string[];
 	parse(header: string | null | undefined): ConsentRecord | null;
 };
 
 const DEFAULT_MAX_AGE = 60 * 60 * 24 * 365;
 
+const DEFAULT_NAME = "ps_consent";
+
+// ─── oc_ → ps_ rebrand migration shim (#161) — remove pre-freeze ───
+// Mirrors localStorageAdapter: canonical writes under `ps_consent`, lenient
+// reads so pre-rebrand visitors keep their decision. Only consulted when the
+// caller did not pick their own name.
+const LEGACY_NAME = "oc_consent";
+// ─── end migration shim ───
+
 export function cookieAdapter(options: CookieAdapterOptions = {}): CookieAdapter {
-	const name = options.name ?? "oc_consent";
+	const name = options.name ?? DEFAULT_NAME;
+	const legacyName = options.name === undefined ? LEGACY_NAME : null;
 	const path = options.path ?? "/";
 	const sameSite = options.sameSite ?? "lax";
 	const secure = options.secure ?? true;
@@ -49,17 +71,26 @@ export function cookieAdapter(options: CookieAdapterOptions = {}): CookieAdapter
 		return null;
 	}
 
-	function parseCookieHeader(header: string | null | undefined): string | null {
+	function readCookieValue(header: string | null | undefined, cookieName: string): string | null {
 		if (!header) return null;
 		const parts = header.split(";");
 		for (const part of parts) {
 			const eq = part.indexOf("=");
 			if (eq === -1) continue;
 			const k = part.slice(0, eq).trim();
-			if (k !== name) continue;
-			return part.slice(eq + 1).trim();
+			if (k !== cookieName) continue;
+			// An expired cookie can linger with an empty value; that carries no
+			// record, so treat it as absent rather than letting it shadow the
+			// legacy fallback.
+			return part.slice(eq + 1).trim() || null;
 		}
 		return null;
+	}
+
+	function parseCookieHeader(header: string | null | undefined): string | null {
+		const current = readCookieValue(header, name);
+		if (current !== null) return current;
+		return legacyName === null ? null : readCookieValue(header, legacyName);
 	}
 
 	function decode(value: string | null): ConsentRecord | null {
@@ -83,8 +114,8 @@ export function cookieAdapter(options: CookieAdapterOptions = {}): CookieAdapter
 		return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 	}
 
-	function buildHeader(value: string, expireMaxAge: number): string {
-		const parts = [`${name}=${value}`, `Path=${path}`, `Max-Age=${expireMaxAge}`];
+	function buildHeader(value: string, expireMaxAge: number, cookieName = name): string {
+		const parts = [`${cookieName}=${value}`, `Path=${path}`, `Max-Age=${expireMaxAge}`];
 		if (domain) parts.push(`Domain=${domain}`);
 		parts.push(`SameSite=${capitalize(sameSite)}`);
 		if (secure) parts.push("Secure");
@@ -102,24 +133,38 @@ export function cookieAdapter(options: CookieAdapterOptions = {}): CookieAdapter
 		return buildHeader(encode(record), maxAge);
 	}
 
+	function getSetCookieHeaders(record: ConsentRecord | null): string[] {
+		const headers = [getSetCookieHeader(record)];
+		// Expire the pre-rebrand cookie too, or the lenient read would resurrect
+		// the decision the visitor just withdrew.
+		if (record === null && legacyName !== null) {
+			headers.push(buildHeader("", 0, legacyName));
+		}
+		return headers;
+	}
+
+	function emit(headers: string[]): void {
+		for (const header of headers) {
+			setBrowserCookie(header);
+			if (onSetCookie) onSetCookie(header);
+		}
+	}
+
 	return {
 		name,
 		read() {
 			return decode(parseCookieHeader(readCookieHeader()));
 		},
 		write(record) {
-			const header = getSetCookieHeader(record);
-			setBrowserCookie(header);
-			if (onSetCookie) onSetCookie(header);
+			emit(getSetCookieHeaders(record));
 		},
 		clear() {
-			const header = getSetCookieHeader(null);
-			setBrowserCookie(header);
-			if (onSetCookie) onSetCookie(header);
+			emit(getSetCookieHeaders(null));
 		},
 		serialize: encode,
 		deserialize: decode,
 		getSetCookieHeader,
+		getSetCookieHeaders,
 		parse(header) {
 			return decode(parseCookieHeader(header));
 		},

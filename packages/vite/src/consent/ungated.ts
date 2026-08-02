@@ -1,25 +1,60 @@
-import type { AnyNode } from "./types";
+import type { AnyNode, ImportInfo } from "./types";
 
 const SET_PREFIX_RE = /^set[A-Z_]/;
 const GATE_HELPER_NAMES = new Set(["acceptAll", "acceptNecessary"]);
+const GATE_EXPORT = "ConsentGate";
+const GATE_PACKAGE_PREFIX = "@policystack/";
 
-export function isGated(parents: AnyNode[]): boolean {
+type Imports = Map<string, ImportInfo> | undefined;
+
+export function isGated(parents: AnyNode[], imports?: Imports): boolean {
 	for (let i = parents.length - 1; i >= 0; i--) {
 		const p = parents[i]!;
-		if (isConsentGateElement(p)) return true;
+		if (isConsentGateElement(p, imports)) return true;
 		if (isHasCheck(p)) return true;
 		if (isGateHelperFunction(p)) return true;
 	}
 	return false;
 }
 
-function isConsentGateElement(node: AnyNode): boolean {
+/** A local binding that came from a PolicyStack package's `ConsentGate` export. */
+function isGateBinding(local: string, imports: Imports): boolean {
+	const info = imports?.get(local);
+	return info?.imported === GATE_EXPORT && info.source.startsWith(GATE_PACKAGE_PREFIX);
+}
+
+/** A local binding for `import * as X from "@policystack/…"`. */
+function isGateNamespaceBinding(local: string, imports: Imports): boolean {
+	const info = imports?.get(local);
+	return info?.imported === "*" && info.source.startsWith(GATE_PACKAGE_PREFIX);
+}
+
+function isConsentGateElement(node: AnyNode, imports: Imports): boolean {
 	if (node.type !== "JSXElement") return false;
 	const opening = node.openingElement as AnyNode | undefined;
 	if (!opening) return false;
 	const name = opening.name as AnyNode | undefined;
-	if (name?.type !== "JSXIdentifier") return false;
-	return name.name === "ConsentGate";
+	if (!name) return false;
+
+	// `<ConsentGate>` — matched by name alone, with no import required. Local
+	// wrappers, barrel re-exports and auto-imports all rely on this, so import
+	// resolution below only ever adds matches.
+	if (name.type === "JSXIdentifier") {
+		if (name.name === GATE_EXPORT) return true;
+		// `import { ConsentGate as Gate }` → `<Gate>`.
+		return isGateBinding(name.name as string, imports);
+	}
+
+	// `import * as PS` → `<PS.ConsentGate>`.
+	if (name.type === "JSXMemberExpression") {
+		const object = name.object as AnyNode | undefined;
+		const property = name.property as AnyNode | undefined;
+		if (object?.type !== "JSXIdentifier" || property?.type !== "JSXIdentifier") return false;
+		if (property.name !== GATE_EXPORT) return false;
+		return isGateNamespaceBinding(object.name as string, imports);
+	}
+
+	return false;
 }
 
 function isHasCheck(node: AnyNode): boolean {

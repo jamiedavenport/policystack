@@ -125,7 +125,7 @@ describe("SSR hydration", () => {
 
 		// The visitor already decided, so mergeRecord starts the live client
 		// store at route "closed".
-		localStorage.setItem("oc_consent", JSON.stringify(RETURNING_VISITOR));
+		localStorage.setItem("ps_consent", JSON.stringify(RETURNING_VISITOR));
 
 		const { container, onRecoverableError, consoleError } = await hydrate(
 			html,
@@ -150,7 +150,7 @@ describe("SSR hydration", () => {
 		// No record and an opt-in posture, so the gate is closed on the server.
 		expect(html).not.toContain("Analytics");
 
-		localStorage.setItem("oc_consent", JSON.stringify(RETURNING_VISITOR));
+		localStorage.setItem("ps_consent", JSON.stringify(RETURNING_VISITOR));
 
 		const { container, onRecoverableError, consoleError } = await hydrate(
 			html,

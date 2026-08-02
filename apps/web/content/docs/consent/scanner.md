@@ -75,7 +75,9 @@ conservative — it favours false negatives over false positives.
 
 A hit is treated as gated when any ancestor in its AST path is one of:
 
-- a JSX element named `<ConsentGate>`
+- a JSX element named `<ConsentGate>`, or one imported from a PolicyStack
+  package under any local name — both `import { ConsentGate as Gate }` →
+  `<Gate>` and `import * as PS` → `<PS.ConsentGate>` are recognised
 - an `if` / ternary whose test contains a `.has(...)` call (matches both
   `consent.has("analytics")` and `cookies.has("session")`)
 - a function named `acceptAll`, `acceptNecessary`, or any name beginning with

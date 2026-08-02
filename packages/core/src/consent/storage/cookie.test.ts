@@ -33,7 +33,7 @@ describe("cookieAdapter (browser)", () => {
 	it("round-trips via document.cookie with default name", () => {
 		const adapter = cookieAdapter({ secure: false });
 		adapter.write(sample);
-		expect(document.cookie).toContain("oc_consent=");
+		expect(document.cookie).toContain("ps_consent=");
 		expect(adapter.read()).toEqual(sample);
 	});
 
@@ -50,7 +50,7 @@ describe("cookieAdapter (browser)", () => {
 	});
 
 	it("returns null when cookie is corrupt", () => {
-		document.cookie = "oc_consent=not-base64-json; Path=/";
+		document.cookie = "ps_consent=not-base64-json; Path=/";
 		expect(cookieAdapter().read()).toBeNull();
 	});
 
@@ -59,6 +59,42 @@ describe("cookieAdapter (browser)", () => {
 		adapter.write(sample);
 		adapter.clear();
 		expect(adapter.read()).toBeNull();
+	});
+
+	it("reads a pre-rebrand oc_consent cookie", () => {
+		const adapter = cookieAdapter({ secure: false });
+		document.cookie = `oc_consent=${adapter.serialize(sample)}; Path=/`;
+		expect(adapter.read()).toEqual(sample);
+	});
+
+	it("does not read the legacy cookie when a custom name is set", () => {
+		const adapter = cookieAdapter({ name: "consent", secure: false });
+		document.cookie = `oc_consent=${adapter.serialize(sample)}; Path=/`;
+		expect(adapter.read()).toBeNull();
+	});
+
+	it("clear() expires the legacy cookie too, so consent is not resurrected", () => {
+		const adapter = cookieAdapter({ secure: false });
+		document.cookie = `oc_consent=${adapter.serialize(sample)}; Path=/`;
+		adapter.write(sample);
+		adapter.clear();
+		expect(adapter.read()).toBeNull();
+		// happy-dom keeps an expired cookie as an empty entry, so assert no value
+		// survives rather than that the name is gone entirely.
+		expect(document.cookie).not.toMatch(/oc_consent=[^;\s]/);
+	});
+
+	it("getSetCookieHeaders expires both cookies on clear, one on write", () => {
+		const adapter = cookieAdapter();
+		const cleared = adapter.getSetCookieHeaders(null);
+		expect(cleared).toHaveLength(2);
+		expect(cleared[1]).toMatch(/^oc_consent=; /);
+		expect(cleared[1]).toContain("Max-Age=0");
+		expect(adapter.getSetCookieHeaders(sample)).toHaveLength(1);
+	});
+
+	it("getSetCookieHeaders emits only the custom name when one is set", () => {
+		expect(cookieAdapter({ name: "consent" }).getSetCookieHeaders(null)).toHaveLength(1);
 	});
 
 	it("Set-Cookie header includes Path, Max-Age, SameSite, Secure", () => {
@@ -73,7 +109,7 @@ describe("cookieAdapter (browser)", () => {
 	it("clear header has Max-Age=0 and empty value", () => {
 		const adapter = cookieAdapter();
 		const header = adapter.getSetCookieHeader(null);
-		expect(header).toMatch(/^oc_consent=; /);
+		expect(header).toMatch(/^ps_consent=; /);
 		expect(header).toContain("Max-Age=0");
 	});
 
@@ -94,7 +130,7 @@ describe("cookieAdapter (Edge / SSR)", () => {
 	it("reads from a request-like object's cookie header", () => {
 		const writer = cookieAdapter();
 		const value = writer.serialize(sample);
-		const request = { headers: new Headers({ cookie: `oc_consent=${value}` }) };
+		const request = { headers: new Headers({ cookie: `ps_consent=${value}` }) };
 		const adapter = cookieAdapter({ request });
 		expect(adapter.read()).toEqual(sample);
 	});
@@ -110,7 +146,7 @@ describe("cookieAdapter (Edge / SSR)", () => {
 		adapter.write(sample);
 		expect(onSetCookie).toHaveBeenCalledOnce();
 		const header = onSetCookie.mock.calls[0]?.[0] as string;
-		expect(header).toMatch(/^oc_consent=/);
+		expect(header).toMatch(/^ps_consent=/);
 		expect(header).toContain("Max-Age=");
 	});
 
@@ -148,7 +184,7 @@ describe("cookieAdapter (bare value)", () => {
 	it("serialize() matches the value getSetCookieHeader() writes", () => {
 		const adapter = cookieAdapter();
 		const header = adapter.getSetCookieHeader(sample);
-		expect(header).toContain(`oc_consent=${adapter.serialize(sample)};`);
+		expect(header).toContain(`ps_consent=${adapter.serialize(sample)};`);
 	});
 
 	// The E2E seeding case from #167: a value set by hand must be readable.
@@ -163,7 +199,7 @@ describe("cookieAdapter (bare value)", () => {
 	});
 
 	it("name exposes the resolved cookie name", () => {
-		expect(cookieAdapter().name).toBe("oc_consent");
+		expect(cookieAdapter().name).toBe("ps_consent");
 		expect(cookieAdapter({ name: "consent" }).name).toBe("consent");
 	});
 });

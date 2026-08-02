@@ -39,7 +39,7 @@ export function walk(parsed: ParsedFile, rules: Rule[], registry: VendorRegistry
 			parents,
 			report: (hit: Hit) => {
 				hits.push(hit);
-				if (!isGated(parents)) {
+				if (!isGated(parents, ctxBase.imports)) {
 					ungated.push({
 						file: hit.file,
 						line: hit.line,
