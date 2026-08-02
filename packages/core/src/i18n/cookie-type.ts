@@ -11,7 +11,10 @@ export function resolveCookieTypeMeta(key: string, t: T): CookieTypeMeta {
 		string,
 		{ label: () => string; description: () => string } | undefined
 	>;
-	const entry = known[key];
+	// Own-property check, not a bare index: the key is user-authored, so
+	// `constructor`/`toString` would otherwise resolve up the prototype chain
+	// to a truthy non-entry and throw instead of taking the fallback.
+	const entry = Object.hasOwn(known, key) ? known[key] : undefined;
 	if (entry) return { label: entry.label(), description: entry.description() };
 	return t.cookie.types.fallback({ key });
 }
