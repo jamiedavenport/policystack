@@ -111,6 +111,34 @@ describe("localStorageAdapter", () => {
 		expect(adapter.read()).toBeNull();
 	});
 
+	it("falls back to in-memory when the probe succeeds but the write is rejected", () => {
+		// Quota-exceeded shape: the one-byte probe fits, the record does not. The
+		// storage handle is therefore usable, so reads must still consult memory.
+		const store = new Map<string, string>();
+		const nearlyFull: Storage = {
+			getItem: (k: string) => store.get(k) ?? null,
+			setItem: (k: string, v: string) => {
+				if (k === "__ps_probe__") {
+					store.set(k, v);
+					return;
+				}
+				throw new Error("QuotaExceededError");
+			},
+			removeItem: (k: string) => {
+				store.delete(k);
+			},
+			clear: () => store.clear(),
+			key: () => null,
+			length: 0,
+		};
+		vi.stubGlobal("localStorage", nearlyFull);
+		const adapter = localStorageAdapter();
+		adapter.write(sample);
+		expect(adapter.read()).toEqual(sample);
+		adapter.clear();
+		expect(adapter.read()).toBeNull();
+	});
+
 	it("falls back to in-memory when localStorage is undefined (SSR)", () => {
 		vi.stubGlobal("localStorage", undefined);
 		const adapter = localStorageAdapter();

@@ -47,8 +47,11 @@ export function localStorageAdapter(options: LocalStorageAdapterOptions = {}): L
 		if (ls) {
 			try {
 				// An empty entry carries no record; treat it as absent rather than
-				// letting it shadow the legacy fallback below.
-				return ls.getItem(name) || null;
+				// letting it shadow the legacy fallback below. Fall through to memory
+				// too: a write can be rejected (quota) while the probe still succeeds,
+				// which leaves the only copy of the record in the memory map.
+				const value = ls.getItem(name);
+				if (value) return value;
 			} catch {
 				// fall through to memory
 			}
