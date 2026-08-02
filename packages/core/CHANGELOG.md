@@ -1,5 +1,28 @@
 # @policystack/core
 
+## 1.3.0
+
+### Minor Changes
+
+- 74ab73b: `gateScript` now follows the official vendor snippet order, fixing gated scripts that never fired (#156). On consent it restores the stubbed globals, runs `init`, replays the pre-consent queue, and only then injects the script; `script:loaded` fires only after the script's real load event, and calls made while the script downloads are no longer dropped. The shipped Meta Pixel, PostHog, Segment, and Hotjar integrations now create their vendor's official snippet stub in `init`, so scripts like `fbevents.js` — which decorate the existing global and drain its queue rather than replacing it — bootstrap correctly in both the gated and already-granted paths.
+
+  **Migration for custom `defineScript` definitions:** `init` now runs _before_ the script is injected (previously after). Mirror the vendor's inline snippet: create the vendor's own queueing stub and make the initial calls there.
+
+- aa2f390: Storage keys drop the pre-rebrand `oc_` prefix, and the consent scanner now resolves aliased `ConsentGate` imports (#161).
+
+  `localStorageAdapter` and `cookieAdapter` both default to `ps_consent` instead of `oc_consent` (and the localStorage probe key is now `__ps_probe__`). **No visitor is re-prompted:** both adapters still read the old key when the new one is absent, so an existing decision keeps loading. The fallback is read-only — writes always go to `ps_consent` — and is skipped entirely when you pass your own `key`/`name`. The one exception is `clear()`, which removes both keys; otherwise the fallback would resurrect a decision the visitor just withdrew.
+
+  Two things to check if you touch the cookie name directly:
+
+  - `cookieAdapter().name` now returns `ps_consent`. Server code that reads the consent cookie should use that property rather than a hardcoded string.
+  - Clearing consent from SSR should switch to the new `getSetCookieHeaders(record)`, which returns every `Set-Cookie` header to emit — on clear that includes one expiring the legacy cookie. The existing singular `getSetCookieHeader` is unchanged and still covers only the canonical cookie, so clearing through it leaves `oc_consent` behind.
+
+  The Vite consent scanner previously treated a JSX element as a gate only when it was literally named `ConsentGate`, so `import { ConsentGate as Gate }` silently defeated gating detection and correctly-gated code was reported as ungated (a build failure under `mode: "error"`). Aliased imports and namespaced usage (`import * as PS` → `<PS.ConsentGate>`) resolving to a PolicyStack package are now recognised. This is purely additive — a bare `<ConsentGate>` with no import still counts, so local wrappers, barrel re-exports and auto-imports keep working and no previously-clean project starts failing.
+
+- e7c984f: Cookie context entries now accept `label`, `description`, and `respectGPC`, and derived consent categories use that metadata directly. Missing copy falls back to the built-in cookie-type dictionary for the policy locale, so preference panels can render `useConsent().categories` without maintaining a separate copy table (#160).
+
+  Note that this changes the default copy for categories that do not set `label`/`description`: a derived category's `label` is now the dictionary label (`"Analytics Cookies"`) rather than the capitalised key (`"Analytics"`), and `description` is now the dictionary description (or `""` for a custom category key) rather than `undefined`. Set `label`/`description` in `cookies.context` to keep your existing wording.
+
 ## 1.2.0
 
 ### Minor Changes

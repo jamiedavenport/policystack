@@ -1,5 +1,12 @@
 # @policystack/cli
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [aa2f390]
+  - @policystack/vite@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes
