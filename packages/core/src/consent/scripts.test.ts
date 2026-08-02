@@ -32,12 +32,23 @@ type FakeScript = {
 	addEventListener(ev: string, cb: () => void, opts?: { once?: boolean }): void;
 };
 
-function makeFakeDoc(): { doc: Document; scripts: FakeScript[] } {
+function makeFakeDoc(
+	onScriptLoad?: (script: FakeScript) => void,
+	opts?: { manualLoad?: boolean },
+): { doc: Document; scripts: FakeScript[]; triggerLoad: () => void } {
 	const scripts: FakeScript[] = [];
+	const pending: FakeScript[] = [];
+	const fire = (script: FakeScript): void => {
+		onScriptLoad?.(script);
+		script._onLoad?.();
+	};
 	const head = {
 		appendChild<T>(el: T): T {
-			const onLoad = (el as unknown as FakeScript)._onLoad;
-			if (onLoad) queueMicrotask(onLoad);
+			const script = el as unknown as FakeScript;
+			if (script._onLoad) {
+				if (opts?.manualLoad) pending.push(script);
+				else queueMicrotask(() => fire(script));
+			}
 			return el;
 		},
 	};
@@ -61,7 +72,46 @@ function makeFakeDoc(): { doc: Document; scripts: FakeScript[] } {
 			return el;
 		},
 	};
-	return { doc: doc as unknown as Document, scripts };
+	return {
+		doc: doc as unknown as Document,
+		scripts,
+		triggerLoad: () => {
+			for (const script of pending.splice(0)) fire(script);
+		},
+	};
+}
+
+// The official Meta snippet's stub shape: a function that dispatches to
+// callMethod once fbevents attaches it, queueing argument lists until then.
+type FbqStub = {
+	(...args: unknown[]): void;
+	callMethod?: (...args: unknown[]) => void;
+	queue: unknown[][];
+};
+
+function installOfficialFbqStub(): void {
+	const w = window as unknown as { fbq?: FbqStub };
+	if (w.fbq) return;
+	const fbq = ((...args: unknown[]) => {
+		if (fbq.callMethod) fbq.callMethod(...args);
+		else fbq.queue.push(args);
+	}) as FbqStub;
+	fbq.queue = [];
+	w.fbq = fbq;
+}
+
+// Mirrors real fbevents.js: it DECORATES the existing window.fbq (attaches
+// callMethod, drains fbq.queue) and never replaces it.
+function fakeFbevents(calls: unknown[][]): void {
+	const fbq = (window as unknown as { fbq?: FbqStub }).fbq;
+	if (!fbq) return;
+	fbq.callMethod = (...args: unknown[]) => {
+		calls.push(args);
+	};
+	while (fbq.queue.length > 0) {
+		const queued = fbq.queue.shift();
+		if (queued) calls.push(queued);
+	}
 }
 
 afterEach(() => {
@@ -181,7 +231,9 @@ describe("gateScript — pending consent", () => {
 		store.save();
 		await flushMicrotasks();
 
-		expect((window as unknown as { dataLayer: unknown[] }).dataLayer).toHaveLength(1);
+		// same array identity: the created dataLayer must survive the hand-off
+		expect((window as unknown as { dataLayer: unknown[] }).dataLayer).toBe(layer);
+		expect(layer).toHaveLength(1);
 	});
 
 	it("runs only init when there is no src", async () => {
@@ -322,6 +374,212 @@ describe("gateScripts", () => {
 	});
 });
 
+describe("gateScript — snippet-order lifecycle (#156)", () => {
+	it("runs init before the script tag is injected", async () => {
+		const store = makeStore(["analytics"]);
+		const { doc, scripts } = makeFakeDoc();
+		let scriptsAtInit = -1;
+
+		gateScript(
+			store,
+			{
+				id: "ga4",
+				requires: "analytics",
+				src: "https://example.test/ga.js",
+				init: () => {
+					scriptsAtInit = scripts.length;
+				},
+			},
+			{ document: doc },
+		);
+
+		await flushMicrotasks();
+		expect(scriptsAtInit).toBe(0);
+		expect(scripts).toHaveLength(1);
+	});
+
+	it("creates the vendor stub before load on the already-granted path", async () => {
+		const store = makeStore(["marketing"]);
+		const calls: unknown[][] = [];
+		let fbqPresentAtLoad = false;
+		const { doc } = makeFakeDoc(() => {
+			fbqPresentAtLoad = typeof (window as unknown as Record<string, unknown>).fbq === "function";
+			fakeFbevents(calls);
+		});
+
+		gateScript(
+			store,
+			{
+				id: "fbq",
+				requires: "marketing",
+				src: "https://connect.facebook.net/en_US/fbevents.js",
+				init: () => {
+					installOfficialFbqStub();
+					(window as unknown as { fbq: (...args: unknown[]) => void }).fbq("init", "PID");
+				},
+				queue: ["fbq"],
+			},
+			{ document: doc },
+		);
+
+		await flushMicrotasks();
+		expect(fbqPresentAtLoad).toBe(true);
+		expect(calls).toEqual([["init", "PID"]]);
+	});
+
+	it("restores the original global before init runs", async () => {
+		const original = vi.fn();
+		(window as unknown as Record<string, unknown>).gtag = original;
+		const store = makeStore();
+		const { doc } = makeFakeDoc();
+		let gtagAtInit: unknown;
+
+		gateScript(
+			store,
+			{
+				id: "ga4",
+				requires: "analytics",
+				queue: ["gtag"],
+				init: () => {
+					gtagAtInit = (window as unknown as Record<string, unknown>).gtag;
+				},
+			},
+			{ document: doc },
+		);
+
+		expect((window as unknown as Record<string, unknown>).gtag).not.toBe(original);
+		store.toggle("analytics");
+		store.save();
+		await flushMicrotasks();
+		expect(gtagAtInit).toBe(original);
+	});
+
+	it("queues calls during download in the vendor stub and emits script:loaded only after the load event", async () => {
+		const store = makeStore(["marketing"]);
+		const calls: unknown[][] = [];
+		const events: ScriptEvent[] = [];
+		const { doc, triggerLoad } = makeFakeDoc(() => fakeFbevents(calls), { manualLoad: true });
+
+		gateScript(
+			store,
+			{
+				id: "fbq",
+				requires: "marketing",
+				src: "https://connect.facebook.net/en_US/fbevents.js",
+				init: installOfficialFbqStub,
+				queue: ["fbq"],
+			},
+			{ document: doc, onEvent: (e) => events.push(e) },
+		);
+
+		await flushMicrotasks();
+		(window as unknown as { fbq: (...args: unknown[]) => void }).fbq("track", "MidDownload");
+		expect(events.some((e) => e.type === "script:loaded")).toBe(false);
+		expect(calls).toEqual([]);
+
+		triggerLoad();
+		await flushMicrotasks();
+		expect(calls).toEqual([["track", "MidDownload"]]);
+		expect(events.some((e) => e.type === "script:loaded")).toBe(true);
+	});
+
+	it("delivers calls made after the script has loaded", async () => {
+		const store = makeStore(["marketing"]);
+		const calls: unknown[][] = [];
+		const { doc } = makeFakeDoc(() => fakeFbevents(calls));
+
+		gateScript(
+			store,
+			{
+				id: "fbq",
+				requires: "marketing",
+				src: "https://connect.facebook.net/en_US/fbevents.js",
+				init: installOfficialFbqStub,
+				queue: ["fbq"],
+			},
+			{ document: doc },
+		);
+
+		await flushMicrotasks();
+		(window as unknown as { fbq: (...args: unknown[]) => void }).fbq("track", "Late");
+		expect(calls).toEqual([["track", "Late"]]);
+	});
+
+	it("forwards calls through a captured stub reference after the hand-off", async () => {
+		const store = makeStore();
+		const calls: unknown[][] = [];
+		const { doc } = makeFakeDoc(() => fakeFbevents(calls));
+
+		gateScript(
+			store,
+			{
+				id: "fbq",
+				requires: "marketing",
+				src: "https://connect.facebook.net/en_US/fbevents.js",
+				init: installOfficialFbqStub,
+				queue: ["fbq"],
+			},
+			{ document: doc },
+		);
+
+		const captured = (window as unknown as { fbq: (...args: unknown[]) => void }).fbq;
+		captured("track", "Early");
+
+		store.toggle("marketing");
+		store.save();
+		await flushMicrotasks();
+
+		captured("track", "Late");
+		expect(calls).toEqual([
+			["track", "Early"],
+			["track", "Late"],
+		]);
+	});
+
+	it("removes stub-created parent objects on consent so init sees a clean slate", async () => {
+		const store = makeStore();
+		const { doc } = makeFakeDoc();
+		let posthogAtInit: unknown = "sentinel";
+
+		gateScript(
+			store,
+			{
+				id: "ph",
+				requires: "analytics",
+				queue: ["posthog.capture"],
+				init: () => {
+					posthogAtInit = (window as unknown as Record<string, unknown>).posthog;
+				},
+			},
+			{ document: doc },
+		);
+
+		expect(typeof (window as unknown as Record<string, unknown>).posthog).toBe("object");
+		store.toggle("analytics");
+		store.save();
+		await flushMicrotasks();
+		expect(posthogAtInit).toBeUndefined();
+	});
+
+	it("does not emit script:loaded when disposed during download", async () => {
+		const store = makeStore(["analytics"]);
+		const events: ScriptEvent[] = [];
+		const { doc, triggerLoad } = makeFakeDoc(undefined, { manualLoad: true });
+
+		const dispose = gateScript(
+			store,
+			{ id: "ga4", requires: "analytics", src: "https://example.test/ga.js" },
+			{ document: doc, onEvent: (e) => events.push(e) },
+		);
+
+		await flushMicrotasks();
+		dispose();
+		triggerLoad();
+		await flushMicrotasks();
+		expect(events.some((e) => e.type === "script:loaded")).toBe(false);
+	});
+});
+
 describe("vendor snippet shapes", () => {
 	it("works end-to-end with a GA4-style snippet", async () => {
 		const store = makeStore();
@@ -363,10 +621,10 @@ describe("vendor snippet shapes", () => {
 		expect(typeof (window as unknown as { gtag: unknown }).gtag).toBe("function");
 	});
 
-	it("works end-to-end with a Meta Pixel-style snippet", async () => {
+	it("works end-to-end with a Meta Pixel-style snippet (vendor decorates, never replaces)", async () => {
 		const store = makeStore();
-		const { doc } = makeFakeDoc();
-		const realFbq = vi.fn();
+		const calls: unknown[][] = [];
+		const { doc } = makeFakeDoc(() => fakeFbevents(calls));
 
 		gateScript(
 			store,
@@ -375,7 +633,10 @@ describe("vendor snippet shapes", () => {
 				requires: "marketing",
 				src: "https://connect.facebook.net/en_US/fbevents.js",
 				init: () => {
-					(window as unknown as Record<string, unknown>).fbq = realFbq;
+					installOfficialFbqStub();
+					const w = window as unknown as { fbq: (...args: unknown[]) => void };
+					w.fbq("init", "1234567890");
+					w.fbq("track", "PageView");
 				},
 				queue: ["fbq"],
 			},
@@ -383,17 +644,18 @@ describe("vendor snippet shapes", () => {
 		);
 
 		const w = window as unknown as { fbq: (...args: unknown[]) => void };
-		w.fbq("init", "1234567890");
-		w.fbq("track", "PageView");
-		expect(realFbq).not.toHaveBeenCalled();
+		w.fbq("track", "Purchase", { value: 100 });
+		expect(calls).toEqual([]);
 
 		store.toggle("marketing");
 		store.save();
 		await flushMicrotasks();
 
-		expect(realFbq).toHaveBeenCalledTimes(2);
-		expect(realFbq).toHaveBeenNthCalledWith(1, "init", "1234567890");
-		expect(realFbq).toHaveBeenNthCalledWith(2, "track", "PageView");
+		expect(calls).toEqual([
+			["init", "1234567890"],
+			["track", "PageView"],
+			["track", "Purchase", { value: 100 }],
+		]);
 	});
 
 	it("works end-to-end with a PostHog-style snippet", async () => {

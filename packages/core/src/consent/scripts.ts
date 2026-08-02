@@ -3,6 +3,7 @@ import type { ConsentStore, GateOptions, ScriptDefinition, ScriptEvent } from ".
 type Win = Window & Record<string, unknown>;
 type QueuedCall = { path: string; args: unknown[]; forwarded: boolean };
 type StubRecord = { path: string; original: unknown; existed: boolean };
+type PathTarget = { parent: Record<string, unknown>; leaf: string };
 
 const registered = new WeakMap<ConsentStore, Set<string>>();
 
@@ -39,7 +40,9 @@ export function gateScript(
 
 	const queuedCalls: QueuedCall[] = [];
 	let stubs: StubRecord[] = [];
+	const createdParents = new Set<string>();
 	let unsubscribe: (() => void) | null = null;
+	let started = false;
 	let loaded = false;
 	let disposed = false;
 
@@ -48,31 +51,42 @@ export function gateScript(
 	}
 
 	function onCall(call: QueuedCall): void {
-		if (loaded) return;
 		queuedCalls.push(call);
 		emit({ type: "script:queued", id: def.id, path: call.path, args: call.args });
 	}
 
 	function installStubs(): void {
-		for (const path of def.queue ?? []) stubs.push(installStub(win, path, onCall));
+		for (const path of def.queue ?? []) {
+			stubs.push(installStub(win, path, onCall, () => started, createdParents));
+		}
 	}
 
 	function restoreStubs(): void {
 		for (const stub of stubs) restoreStub(win, stub);
 		stubs = [];
+		removeCreatedParents(win, createdParents);
 	}
 
 	async function load(): Promise<void> {
-		if (loaded) return;
-		loaded = true;
+		if (started) return;
+		started = true;
+		// Official vendor snippet order: restore the pristine globals, run the
+		// snippet bootstrap (`init`), replay the pre-consent queue into the
+		// vendor's own stub, then inject the script. Vendors like fbevents.js
+		// decorate whatever global exists at load time and drain its queue, so
+		// the gate's stub must be gone — and the vendor's must exist — before
+		// the script arrives. These three steps must stay synchronous.
+		restoreStubs();
+		def.init?.();
+		replayQueued(win, queuedCalls);
 		try {
 			if (def.src) await injectScript(doc, def.src, def.attrs);
 		} catch (err) {
 			console.warn(`[policystack] failed to load script "${def.id}":`, err);
 			return;
 		}
-		def.init?.();
-		replayQueued(win, queuedCalls);
+		if (disposed) return;
+		loaded = true;
 		emit({ type: "script:loaded", id: def.id });
 	}
 
@@ -82,7 +96,7 @@ export function gateScript(
 		emit({ type: "script:gated", id: def.id });
 		installStubs();
 		unsubscribe = store.subscribe(() => {
-			if (disposed || loaded) return;
+			if (disposed || started) return;
 			if (!store.has(def.requires)) return;
 			unsubscribe?.();
 			unsubscribe = null;
@@ -128,15 +142,37 @@ function resolveEnv(opts?: GateOptions): { win: Win; doc: Document } | null {
 	return { win, doc };
 }
 
-function installStub(win: Win, path: string, onCall: (call: QueuedCall) => void): StubRecord {
+function resolvePath(win: Win, path: string): PathTarget | null {
+	const segments = path.split(".");
+	const leaf = segments.pop();
+	if (!leaf) return null;
+	let parent: Record<string, unknown> | undefined = win as unknown as Record<string, unknown>;
+	for (const seg of segments) {
+		if (!parent) return null;
+		parent = parent[seg] as Record<string, unknown> | undefined;
+	}
+	if (!parent) return null;
+	return { parent, leaf };
+}
+
+function installStub(
+	win: Win,
+	path: string,
+	onCall: (call: QueuedCall) => void,
+	isStarted: () => boolean,
+	createdParents: Set<string>,
+): StubRecord {
 	const segments = path.split(".");
 	const leaf = segments.pop();
 	if (!leaf) throw new Error(`[policystack] invalid queue path: "${path}"`);
 
 	let parent: Record<string, unknown> = win as unknown as Record<string, unknown>;
+	const walked: string[] = [];
 	for (const seg of segments) {
+		walked.push(seg);
 		if (parent[seg] === undefined || parent[seg] === null) {
 			parent[seg] = seg === "dataLayer" ? [] : {};
+			createdParents.add(walked.join("."));
 		}
 		parent = parent[seg] as Record<string, unknown>;
 	}
@@ -146,6 +182,19 @@ function installStub(win: Win, path: string, onCall: (call: QueuedCall) => void)
 	const isArrayMethod = Array.isArray(parent) && (leaf === "push" || leaf === "unshift");
 
 	const stub = (...args: unknown[]): unknown => {
+		if (isStarted()) {
+			// The hand-off already removed this stub from the window, but a
+			// caller may hold a pre-consent reference to it — forward to
+			// whatever lives at the path now instead of dropping the call.
+			const target = resolvePath(win, path);
+			if (target) {
+				const fn = target.parent[target.leaf];
+				if (typeof fn === "function" && fn !== stub) {
+					return (fn as (...a: unknown[]) => unknown).apply(target.parent, args);
+				}
+			}
+			return undefined;
+		}
 		onCall({ path, args, forwarded: isArrayMethod });
 		if (isArrayMethod) {
 			return Array.prototype[leaf as "push" | "unshift"].apply(
@@ -161,36 +210,46 @@ function installStub(win: Win, path: string, onCall: (call: QueuedCall) => void)
 }
 
 function restoreStub(win: Win, stub: StubRecord): void {
-	const segments = stub.path.split(".");
-	const leaf = segments.pop();
-	if (!leaf) return;
-	let parent: Record<string, unknown> | undefined = win as unknown as Record<string, unknown>;
-	for (const seg of segments) {
-		if (!parent) return;
-		parent = parent[seg] as Record<string, unknown> | undefined;
-	}
-	if (!parent) return;
+	const target = resolvePath(win, stub.path);
+	if (!target) return;
 	if (stub.existed) {
-		parent[leaf] = stub.original;
+		target.parent[target.leaf] = stub.original;
 	} else {
-		delete parent[leaf];
+		delete target.parent[target.leaf];
 	}
+}
+
+// Removes intermediate objects that installStub created and that are still
+// empty after the leaf stubs were restored (e.g. the `{}` behind
+// `posthog.capture`), so `init` bootstraps like `window.analytics || []` see a
+// clean slate. Created arrays are kept: pre-consent forwarded pushes — and any
+// captured references — live in the array itself and must survive the hand-off.
+function removeCreatedParents(win: Win, createdParents: Set<string>): void {
+	const paths = [...createdParents].sort((a, b) => b.split(".").length - a.split(".").length);
+	for (const path of paths) {
+		const target = resolvePath(win, path);
+		if (!target) continue;
+		const value = target.parent[target.leaf];
+		if (
+			value !== null &&
+			typeof value === "object" &&
+			!Array.isArray(value) &&
+			Object.keys(value).length === 0
+		) {
+			delete target.parent[target.leaf];
+		}
+	}
+	createdParents.clear();
 }
 
 function replayQueued(win: Win, queued: QueuedCall[]): void {
 	for (const call of queued) {
 		if (call.forwarded) continue;
-		const segments = call.path.split(".");
-		const leaf = segments.pop();
-		if (!leaf) continue;
-		let parent: Record<string, unknown> | undefined = win as unknown as Record<string, unknown>;
-		for (const seg of segments) {
-			if (!parent) break;
-			parent = parent[seg] as Record<string, unknown> | undefined;
-		}
-		const fn = parent?.[leaf];
+		const target = resolvePath(win, call.path);
+		if (!target) continue;
+		const fn = target.parent[target.leaf];
 		if (typeof fn === "function") {
-			(fn as (...args: unknown[]) => unknown).apply(parent, call.args);
+			(fn as (...args: unknown[]) => unknown).apply(target.parent, call.args);
 		}
 	}
 }

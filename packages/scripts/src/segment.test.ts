@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { gateScript } from "@policystack/core/consent";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { segment } from "./segment.ts";
 import { flushMicrotasks, makeFakeDoc, makeStore } from "./test-helpers.ts";
 
@@ -24,12 +24,22 @@ describe("segment", () => {
 		]);
 	});
 
-	it("calls analytics.page() on init and replays queued tracks", async () => {
+	it("queues page() and replayed tracks in the snippet array that analytics.min.js drains", async () => {
 		const store = makeStore();
-		const page = vi.fn();
-		const track = vi.fn();
+		const drained: unknown[][] = [];
+		let stubIsArrayAtLoad: boolean | null = null;
+		let writeKeyAtLoad: unknown;
+		// Mirrors real analytics.min.js: it consumes window.analytics as an
+		// ARRAY of queued [method, ...args] entries — a leftover plain object
+		// breaks it, so the shape at load time is the regression under test.
 		const { doc } = makeFakeDoc(() => {
-			(window as unknown as Record<string, unknown>).analytics = { page, track };
+			const analytics = (window as unknown as Record<string, unknown>).analytics as
+				| (unknown[] & { _writeKey?: string })
+				| undefined;
+			stubIsArrayAtLoad = Array.isArray(analytics);
+			if (!Array.isArray(analytics)) return;
+			writeKeyAtLoad = analytics._writeKey;
+			while (analytics.length > 0) drained.push(analytics.shift() as unknown[]);
 		});
 
 		gateScript(store, segment({ writeKey: "WK" }), { document: doc });
@@ -38,12 +48,14 @@ describe("segment", () => {
 			analytics: { track: (...args: unknown[]) => void };
 		};
 		w.analytics.track("Signed Up", { plan: "pro" });
+		expect(drained).toEqual([]);
 
 		store.toggle("analytics");
 		store.save();
 		await flushMicrotasks();
 
-		expect(page).toHaveBeenCalledTimes(1);
-		expect(track).toHaveBeenCalledWith("Signed Up", { plan: "pro" });
+		expect(stubIsArrayAtLoad).toBe(true);
+		expect(writeKeyAtLoad).toBe("WK");
+		expect(drained).toEqual([["page"], ["track", "Signed Up", { plan: "pro" }]]);
 	});
 });
