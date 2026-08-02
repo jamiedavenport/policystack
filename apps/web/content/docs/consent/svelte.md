@@ -1,6 +1,6 @@
 ---
 title: "@policystack/svelte/consent"
-description: "Svelte 5 runes adapter, with a Svelte 4 Readable fallback"
+description: "Svelte 5 runes adapter with GatedScript and a Svelte 4 Readable fallback"
 product: consent
 ---
 
@@ -107,6 +107,28 @@ Renders the `children` snippet when an expression is satisfied; renders `fallbac
 </ConsentGate>
 ```
 
+### `<GatedScript>`
+
+Consent-gates one third-party script against the store installed by `setPolicyStackConsentContext`. It is the intended way to use the [`@policystack/scripts`](/docs/consent/scripts) catalogue from Svelte.
+
+```svelte
+<script lang="ts">
+  import { GatedScript } from "@policystack/svelte/consent";
+  import { ga4 } from "@policystack/scripts/ga4";
+
+  const onScriptEvent = (event) => console.debug(event);
+</script>
+
+<GatedScript
+  def={ga4({ measurementId: "G-XXXXXXX" })}
+  onEvent={onScriptEvent}
+/>
+```
+
+The component renders no DOM and gates from `$effect`, so it is inert during SSR. Definitions can be built inline: a fresh object with the same `def.id` does not restart the gate or discard queued calls. Changing the ID disposes the old gate and starts the new one. `onEvent` receives `script:gated`, `script:queued`, and `script:loaded` events.
+
+Core's [no-auto-revoke behavior](/docs/consent/core#no-auto-revoke) still applies: once loaded, a vendor script is not unloaded when consent changes or the component is destroyed.
+
 ## SvelteKit (SSR + hydration)
 
 Call `setPolicyStackConsentContext` from your root layout. It uses Svelte's `setContext`, so it hydrates safely:
@@ -149,7 +171,7 @@ For Svelte 4 codebases (or when you prefer `$store` syntax), import from the `/s
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Svelte adapter is a thin reactivity wrapper. A working example is in [`examples/svelte`](../../examples/svelte/).
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating, and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Svelte adapter is a thin reactivity wrapper. A working example is in [`examples/svelte`](../../examples/svelte/).
 
 ## See also
 

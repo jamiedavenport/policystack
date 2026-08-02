@@ -2,12 +2,15 @@ import {
 	computed,
 	defineComponent,
 	inject,
+	onMounted,
 	onScopeDispose,
+	onUnmounted,
 	shallowRef,
 	type ComputedRef,
 	type PropType,
 	type Ref,
 	type SlotsType,
+	watch,
 } from "vue";
 import type {
 	Category,
@@ -19,18 +22,26 @@ import type {
 	JurisdictionId,
 	RepromptReason,
 	Route,
+	ScriptDefinition,
+	ScriptEvent,
 } from "@policystack/core/consent";
+import { gateScript } from "@policystack/core/consent";
 import { PolicyStackContextKey } from "./context";
 
 const NOT_PROVIDED_MESSAGE =
-	"useConsent / useCategory / ConsentGate must be used inside <PolicyStack>, " +
+	"PolicyStack consent (useConsent / useCategory / useConsentStore / ConsentGate / GatedScript) must be used inside <PolicyStack>, " +
 	"and the config must declare cookie categories";
 
 // The consent composables read the single store off the shared PolicyStack
 // injection — there is no separate consent provider. The store is `null` when
 // the `<PolicyStack>` config declared no cookie categories (a policy-only
 // config), in which case using a consent composable is a configuration error.
-function injectStore(): ConsentStore {
+/**
+ * The stable, non-reactive consent store from the enclosing `<PolicyStack>`.
+ * Prefer the reactive consent composables for UI reads; use this when a core
+ * free function such as `gateScripts` needs the store itself.
+ */
+export function useConsentStore(): ConsentStore {
 	const ctx = inject(PolicyStackContextKey, null);
 	if (!ctx?.store) throw new Error(NOT_PROVIDED_MESSAGE);
 	return ctx.store;
@@ -66,7 +77,7 @@ export type UseConsentResult = {
 };
 
 export function useConsent(): UseConsentResult {
-	const store = injectStore();
+	const store = useConsentStore();
 	const state = useStoreState(store);
 	return {
 		route: computed(() => state.value.route),
@@ -97,7 +108,7 @@ export type UseCategoryResult = {
 // `granted` is the checkbox view and includes staged draft edits; effective
 // consent (`has()` / <ConsentGate>) only moves on save().
 export function useCategory(key: string): UseCategoryResult {
-	const store = injectStore();
+	const store = useConsentStore();
 	const state = useStoreState(store);
 	return {
 		granted: computed(() => (state.value.draft ?? state.value.decisions)[key] === true),
@@ -118,13 +129,61 @@ export const ConsentGate = defineComponent({
 		fallback?: () => unknown;
 	}>,
 	setup(props, { slots }) {
-		const store = injectStore();
+		const store = useConsentStore();
 		const state = useStoreState(store);
 		const granted = computed(() => {
 			void state.value;
 			return store.has(props.requires);
 		});
 		return () => (granted.value ? slots.default?.() : slots.fallback?.());
+	},
+});
+
+export type GatedScriptProps = {
+	def: ScriptDefinition;
+	onEvent?: (event: ScriptEvent) => void;
+};
+
+/**
+ * Consent-gates one third-party script for as long as it is mounted.
+ * Renders no DOM and starts from `onMounted`, so it is inert during SSR.
+ */
+export const GatedScript = defineComponent({
+	name: "GatedScript",
+	props: {
+		def: {
+			type: Object as PropType<ScriptDefinition>,
+			required: true,
+		},
+		onEvent: Function as PropType<(event: ScriptEvent) => void>,
+	},
+	setup(props) {
+		const store = useConsentStore();
+		let dispose: (() => void) | undefined;
+		let stopWatching: (() => void) | undefined;
+
+		const gate = () =>
+			gateScript(store, props.def, {
+				onEvent: (event) => props.onEvent?.(event),
+			});
+
+		onMounted(() => {
+			dispose = gate();
+			stopWatching = watch(
+				() => props.def.id,
+				() => {
+					dispose?.();
+					dispose = gate();
+				},
+			);
+		});
+
+		onUnmounted(() => {
+			stopWatching?.();
+			dispose?.();
+		});
+
+		return () => null;
 	},
 });
 
@@ -138,4 +197,6 @@ export type {
 	JurisdictionId,
 	RepromptReason,
 	Route,
+	ScriptDefinition,
+	ScriptEvent,
 };
