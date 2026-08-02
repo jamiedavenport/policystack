@@ -117,6 +117,25 @@ test("a shared field change (cookies.used) shifts both versions", () => {
 	expect(computeCookieVersion(after)).not.toBe(computeCookieVersion(base));
 });
 
+test("cookie context copy changes both policy versions", () => {
+	const after: PolicyStackConfig = {
+		...base,
+		cookies: {
+			...base.cookies!,
+			context: {
+				...base.cookies!.context,
+				analytics: {
+					lawfulBasis: "consent",
+					label: "Measurement cookies",
+					description: "Used to improve the service.",
+				},
+			},
+		},
+	};
+	expect(computePrivacyVersion(after)).not.toBe(computePrivacyVersion(base));
+	expect(computeCookieVersion(after)).not.toBe(computeCookieVersion(base));
+});
+
 test("effectiveDate change shifts both versions", () => {
 	const after: PolicyStackConfig = { ...base, effectiveDate: "2026-06-01" };
 	expect(computePrivacyVersion(after)).not.toBe(computePrivacyVersion(base));

@@ -1,6 +1,7 @@
 import { expect, test } from "vite-plus/test";
 import { compilePrivacyPolicy } from "../index";
 import type { Locale, PolicyStackConfig } from "../types";
+import { resolveCookieTypeMeta } from "./cookie-type";
 import { de } from "./de";
 import { en } from "./en";
 import { es } from "./es";
@@ -56,6 +57,27 @@ test("isLocale accepts registered locales and rejects others", () => {
 	expect(isLocale("")).toBe(false);
 	expect(isLocale(undefined)).toBe(false);
 	expect(isLocale(123)).toBe(false);
+});
+
+test("resolveCookieTypeMeta reads dictionary entries and falls back on custom keys", () => {
+	const t = createT("en");
+	expect(resolveCookieTypeMeta("analytics", t).label).toBe("Analytics Cookies");
+	expect(resolveCookieTypeMeta("loyalty", t)).toEqual({
+		label: "Loyalty Cookies",
+		description: "",
+	});
+});
+
+test("resolveCookieTypeMeta falls back for category keys inherited from Object", () => {
+	const t = createT("en");
+	// A user-authored `cookies.used` key can collide with Object.prototype;
+	// those must take the generic fallback, not resolve up the chain.
+	for (const key of ["constructor", "toString", "valueOf"]) {
+		expect(resolveCookieTypeMeta(key, t)).toEqual({
+			label: `${key.charAt(0).toUpperCase()}${key.slice(1)} Cookies`,
+			description: "",
+		});
+	}
 });
 
 test("LOCALES contains every key in dictionaries", () => {

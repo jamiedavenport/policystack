@@ -11,18 +11,9 @@ const primaryButton =
 const secondaryButton =
 	"inline-flex items-center justify-center border-2 border-black bg-canvas px-4 py-2 text-xs tracking-wide text-ink uppercase hover:bg-ink hover:text-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
 
-const DESCRIPTIONS: Record<string, string> = {
-	essential:
-		"Required for the site to work — security, session, and your consent choice itself. Always on.",
-	analytics:
-		"Lets us measure which pages are used so we can improve the site. Off until you allow it.",
-	marketing: "Used to personalise and measure marketing. Off until you allow it.",
-};
-
 function CategoryRow({ category }: { category: Category }) {
 	const { granted, toggle } = useCategory(category.key);
 	const inputId = `consent-${category.key}`;
-	const description = category.description ?? DESCRIPTIONS[category.key] ?? "";
 
 	return (
 		<li className="flex items-start justify-between gap-4 border-t-2 border-black py-4 first:border-t-0">
@@ -30,7 +21,9 @@ function CategoryRow({ category }: { category: Category }) {
 				<label htmlFor={inputId} className="text-sm tracking-wide text-ink uppercase">
 					{category.label}
 				</label>
-				{description && <p className="mt-1 text-xs text-pretty text-mute">{description}</p>}
+				{category.description && (
+					<p className="mt-1 text-xs text-pretty text-mute">{category.description}</p>
+				)}
 			</div>
 			<span className="relative inline-flex h-6 w-12 shrink-0 border-2 border-black">
 				<input

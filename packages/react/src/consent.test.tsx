@@ -30,9 +30,9 @@ const policyConfig: PolicyStackConfig = {
 };
 
 const expectedCategories = [
-	{ key: "essential", label: "Essential", locked: true },
-	{ key: "analytics", label: "Analytics", locked: false },
-	{ key: "marketing", label: "Marketing", locked: false },
+	{ key: "essential", label: "Essential Cookies", locked: true },
+	{ key: "analytics", label: "Analytics Cookies", locked: false },
+	{ key: "marketing", label: "Marketing Cookies", locked: false },
 ];
 
 function Wrapper({ children }: { children: ReactNode }) {

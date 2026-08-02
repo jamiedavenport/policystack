@@ -143,6 +143,9 @@ export type CookieUsage = {
 
 export type CookieContextEntry = {
 	lawfulBasis: LegalBasis;
+	label?: string;
+	description?: string;
+	respectGPC?: boolean;
 };
 
 export type CookieContext = Record<string, CookieContextEntry>;

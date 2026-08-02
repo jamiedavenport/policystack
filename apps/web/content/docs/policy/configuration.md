@@ -86,7 +86,7 @@ company: {
 
 Setting `phone` is recommended when `jurisdictions` includes `us-ca`. CCPA §1798.130(a)(1) requires businesses to provide two or more designated methods for consumers to submit privacy requests, and (unless you operate exclusively online) one of those methods must be a toll-free number. When `phone` is set, the rendered CCPA supplement appends a "Submitting requests" block listing both methods. Omitting it under `us-ca` emits a validation warning.
 
-The `data` block has two sibling maps: `collected` (category → field labels) and `context` (category → metadata about that category). `defineConfig`'s generic enforces that every key in `collected` has a matching `context` entry with `purpose`, `lawfulBasis`, `retention`, and `provision`. The `cookies` block mirrors the same shape: `cookies.used` lists the categories you enable (with `essential: true` always required), and `cookies.context` declares the Article 6 basis for each enabled category.
+The `data` block has two sibling maps: `collected` (category → field labels) and `context` (category → metadata about that category). `defineConfig`'s generic enforces that every key in `collected` has a matching `context` entry with `purpose`, `lawfulBasis`, `retention`, and `provision`. The `cookies` block mirrors the same shape: `cookies.used` lists the categories you enable (with `essential: true` always required), and `cookies.context` declares the Article 6 basis for each enabled category. Cookie context entries can also provide `label`, `description`, and `respectGPC`; these flow into the consent categories exposed by the framework bindings, with missing copy resolved from the built-in dictionary for the configured locale.
 
 ### Data Protection Officer
 
