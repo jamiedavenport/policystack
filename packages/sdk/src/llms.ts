@@ -162,7 +162,12 @@ cookies: {
   used: { essential: true, analytics: true, marketing: true },
   context: {
     essential:  { lawfulBasis: "legal_obligation" },
-    analytics:  { lawfulBasis: "consent" },
+    analytics:  {
+      lawfulBasis: "consent",
+      label: "Analytics",
+      description: "Helps us understand how the site is used.",
+      respectGPC: true,
+    },
     marketing:  { lawfulBasis: "consent" },
   },
 }
@@ -172,6 +177,9 @@ The consent category data is **derived** from this one config, never authored
 separately:
 
 - each truthy \`cookies.used\` key → a consent \`Category\`
+- optional \`label\`, \`description\`, and \`respectGPC\` flow from
+  \`cookies.context[key]\`; missing copy falls back field-by-field to the
+  built-in cookie-type dictionary for \`config.locale\` (English by default)
 - \`lawfulBasis === "consent"\` → toggleable; any other basis → \`locked: true\`
   (a missing basis stays gated and \`validate()\` hard-errors it)
 - \`cookieVersion\` → \`policyVersion\`; a changed hash re-prompts automatically

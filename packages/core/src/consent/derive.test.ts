@@ -36,9 +36,94 @@ test("locks the essential category", () => {
 	expect(analytics?.locked).toBe(false);
 });
 
-test("capitalizes the category label", () => {
+test("falls back to the English cookie-type dictionary", () => {
 	const config = deriveConsentConfig(policy);
-	expect(config.categories.find((c) => c.key === "analytics")?.label).toBe("Analytics");
+	const analytics = config.categories.find((c) => c.key === "analytics");
+	expect(analytics?.label).toBe("Analytics Cookies");
+	expect(analytics?.description).toBe(
+		"Help us understand how visitors interact with our services so we can improve them.",
+	);
+});
+
+test("uses the policy locale for dictionary-backed category copy", () => {
+	const config = deriveConsentConfig({ ...policy, locale: "fr" });
+	const analytics = config.categories.find((c) => c.key === "analytics");
+	expect(analytics?.label).toBe("Cookies d'analyse");
+	expect(analytics?.description).toBe(
+		"Nous aident à comprendre comment les visiteurs interagissent avec nos services afin de les améliorer.",
+	);
+});
+
+test("falls back independently around explicit category copy", () => {
+	const config = deriveConsentConfig({
+		...policy,
+		cookies: {
+			used: { essential: true, analytics: true },
+			context: {
+				essential: { lawfulBasis: "legal_obligation", label: "Required" },
+				analytics: {
+					lawfulBasis: "consent",
+					description: "Our measurement cookies.",
+				},
+			},
+		},
+	});
+	const essential = config.categories.find((c) => c.key === "essential");
+	const analytics = config.categories.find((c) => c.key === "analytics");
+	expect(essential?.label).toBe("Required");
+	expect(essential?.description).toBe(
+		"Required for the basic functioning of our services. These cannot be disabled.",
+	);
+	expect(analytics?.label).toBe("Analytics Cookies");
+	expect(analytics?.description).toBe("Our measurement cookies.");
+});
+
+test("preserves explicit empty category copy", () => {
+	const config = deriveConsentConfig({
+		...policy,
+		cookies: {
+			used: { essential: true },
+			context: {
+				essential: { lawfulBasis: "legal_obligation", label: "", description: "" },
+			},
+		},
+	});
+	expect(config.categories[0]?.label).toBe("");
+	expect(config.categories[0]?.description).toBe("");
+});
+
+test("uses the locale fallback for custom category keys", () => {
+	const config = deriveConsentConfig({
+		...policy,
+		locale: "fr",
+		cookies: {
+			used: { essential: true, personalization: true },
+			context: {
+				essential: { lawfulBasis: "legal_obligation" },
+				personalization: { lawfulBasis: "consent" },
+			},
+		},
+	});
+	const personalization = config.categories.find((c) => c.key === "personalization");
+	expect(personalization?.label).toBe("Cookies personalization");
+	expect(personalization?.description).toBe("");
+});
+
+test("carries both respectGPC values onto derived categories", () => {
+	const config = deriveConsentConfig({
+		...policy,
+		cookies: {
+			used: { essential: true, analytics: true, marketing: true },
+			context: {
+				essential: { lawfulBasis: "legal_obligation" },
+				analytics: { lawfulBasis: "consent", respectGPC: false },
+				marketing: { lawfulBasis: "consent", respectGPC: true },
+			},
+		},
+	});
+	expect(config.categories.find((c) => c.key === "essential")?.respectGPC).toBeUndefined();
+	expect(config.categories.find((c) => c.key === "analytics")?.respectGPC).toBe(false);
+	expect(config.categories.find((c) => c.key === "marketing")?.respectGPC).toBe(true);
 });
 
 test("returns no categories when policy has no cookies block", () => {

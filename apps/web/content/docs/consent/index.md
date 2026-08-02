@@ -67,11 +67,23 @@ function CookieBanner() {
 	);
 }
 
+function CookiePreferences() {
+	const { categories } = useConsent();
+	return categories.map((category) => (
+		<label key={category.key}>
+			{category.label}
+			{category.description && <span>{category.description}</span>}
+		</label>
+	));
+}
+
 // Gate third-party code on consent
 <ConsentGate requires="analytics">
 	<GoogleAnalytics />
 </ConsentGate>;
 ```
+
+Category `label`, `description`, and `respectGPC` values come from `cookies.context`. Missing copy uses the built-in cookie-type dictionary for the policy locale, so preference UIs do not need their own category-copy table.
 
 ## Features
 

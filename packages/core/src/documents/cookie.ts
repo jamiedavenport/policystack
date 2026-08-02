@@ -1,5 +1,6 @@
 import type { T } from "../i18n";
 import { formatDate } from "../i18n";
+import { resolveCookieTypeMeta } from "../i18n/cookie-type";
 import { deriveConsentMechanism } from "../normalize";
 import { ESSENTIAL_ONLY_COOKIES, type PolicyStackConfig } from "../types";
 import { bold, cell, heading, li, link, p, row, section, table, ul } from "./helpers";
@@ -30,22 +31,12 @@ function buildWhatAreCookies(t: T): DocumentSection {
 	]);
 }
 
-function cookieTypeMeta(key: string, t: T): { label: string; description: string } {
-	const known = t.cookie.types.labels as Record<
-		string,
-		{ label: () => string; description: () => string } | undefined
-	>;
-	const entry = known[key];
-	if (entry) return { label: entry.label(), description: entry.description() };
-	return t.cookie.types.fallback({ key });
-}
-
 function buildTypes(config: PolicyStackConfig, t: T): DocumentSection {
 	const cookies = config.cookies ?? ESSENTIAL_ONLY_COOKIES;
 	const types: { label: string; description: string }[] = [];
 	for (const [key, enabled] of Object.entries(cookies.used)) {
 		if (!enabled) continue;
-		types.push(cookieTypeMeta(key, t));
+		types.push(resolveCookieTypeMeta(key, t));
 	}
 
 	if (types.length === 0) {

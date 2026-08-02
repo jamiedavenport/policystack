@@ -92,6 +92,31 @@ describe("PolicyStack — consent store derived from the one config", () => {
 		expect(result.current.policyVersion).toBe("v1");
 	});
 
+	it("exposes cookie context copy and GPC behavior through useConsent", () => {
+		const config: PolicyStackConfig = {
+			...withCookies,
+			cookies: {
+				...withCookies.cookies!,
+				context: {
+					...withCookies.cookies!.context,
+					analytics: {
+						lawfulBasis: "consent",
+						label: "Measurement",
+						description: "Helps us improve the service.",
+						respectGPC: false,
+					},
+				},
+			},
+		};
+		const { result } = renderHook(() => useConsent(), { wrapper: wrapper(config) });
+		const analytics = result.current.categories.find((category) => category.key === "analytics");
+		expect(analytics).toMatchObject({
+			label: "Measurement",
+			description: "Helps us improve the service.",
+			respectGPC: false,
+		});
+	});
+
 	it("ConsentGate stays closed until the gated category is granted", () => {
 		const Harness = () => {
 			const { acceptAll } = useConsent();

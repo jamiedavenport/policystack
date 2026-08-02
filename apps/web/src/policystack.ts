@@ -47,9 +47,23 @@ export default defineConfig({
 			marketing: false,
 		},
 		context: {
-			essential: { lawfulBasis: LegalBases.LegalObligation },
-			analytics: { lawfulBasis: LegalBases.Consent },
-			marketing: { lawfulBasis: LegalBases.Consent },
+			essential: {
+				lawfulBasis: LegalBases.LegalObligation,
+				label: "Essential",
+				description:
+					"Required for the site to work — security, session, and your consent choice itself. Always on.",
+			},
+			analytics: {
+				lawfulBasis: LegalBases.Consent,
+				label: "Analytics",
+				description:
+					"Lets us measure which pages are used so we can improve the site. Off until you allow it.",
+			},
+			marketing: {
+				lawfulBasis: LegalBases.Consent,
+				label: "Marketing",
+				description: "Used to personalise and measure marketing. Off until you allow it.",
+			},
 		},
 	},
 	thirdParties: [],

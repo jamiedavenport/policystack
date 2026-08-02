@@ -1,5 +1,7 @@
 import { isConsentGated } from "../types";
 import type { PolicyStackConfig } from "../types";
+import { createT } from "../i18n";
+import { resolveCookieTypeMeta } from "../i18n/cookie-type";
 import type { Category, PolicyStackConsentConfig } from "./types";
 
 // Everything in PolicyStackConsentConfig bar `categories` — the runtime-only
@@ -22,13 +24,17 @@ export function deriveConsentConfig(
 ): PolicyStackConsentConfig {
 	const used: Record<string, boolean> = policy.cookies?.used ?? {};
 	const context = policy.cookies?.context ?? {};
+	const t = createT(policy.locale ?? "en");
 	const categories: Category[] = Object.keys(used)
 		.filter((key) => used[key])
 		.map((key) => {
-			const lawfulBasis = context[key]?.lawfulBasis;
+			const entry = context[key];
+			const lawfulBasis = entry?.lawfulBasis;
+			const fallback = resolveCookieTypeMeta(key, t);
 			return {
 				key,
-				label: key.charAt(0).toUpperCase() + key.slice(1),
+				label: entry?.label ?? fallback.label,
+				description: entry?.description ?? fallback.description,
 				// Gating is the explicit, exhaustive bridge table (§4.1) — not a
 				// `=== "consent"` string heuristic. `consent` ⇒ gated (not
 				// locked); every other basis ⇒ locked; a missing basis stays
@@ -37,6 +43,7 @@ export function deriveConsentConfig(
 				// resolver and audit keep the full signal.
 				locked: !isConsentGated(lawfulBasis),
 				...(lawfulBasis ? { lawfulBasis } : {}),
+				...(entry?.respectGPC != null ? { respectGPC: entry.respectGPC } : {}),
 			};
 		});
 	const policyVersion = options?.policyVersion ?? policy.cookieVersion;
