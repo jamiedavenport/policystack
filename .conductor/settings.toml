@@ -1,0 +1,9 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = """
+set -e
+corepack enable pnpm
+pnpm install --frozen-lockfile
+pnpm exec vp config
+"""
