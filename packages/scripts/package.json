@@ -1,6 +1,6 @@
 {
 	"name": "@policystack/scripts",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"description": "Consent-gated third-party tag loaders for PolicyStack (GA4, Meta Pixel, PostHog, …)",
 	"license": "Apache-2.0",
 	"repository": {

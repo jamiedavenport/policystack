@@ -1,5 +1,11 @@
 # @policystack/scripts
 
+## 1.4.0
+
+### Minor Changes
+
+- 6958fc7: Add a Microsoft Clarity integration: a consent-gated `clarity()` script factory (`@policystack/scripts/clarity`) that queues the required `consentv2` signal before the tag loads, and a `microsoft-clarity` vendor record in the scanner registry so ungated `clarity(...)` usage is detected and disclosed.
+
 ## 1.3.0
 
 ### Minor Changes
