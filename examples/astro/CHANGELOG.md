@@ -1,5 +1,11 @@
 # astro-example
 
+## 0.0.3
+
+### Patch Changes
+
+- @policystack/react@1.4.0
+
 ## 0.0.2
 
 ### Patch Changes
