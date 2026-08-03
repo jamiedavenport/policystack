@@ -1,3 +1,5 @@
+export { clarity } from "./clarity.ts";
+export type { ClarityOptions } from "./clarity.ts";
 export { ga4 } from "./ga4.ts";
 export type { GA4Options } from "./ga4.ts";
 export { googleTagManager } from "./google-tag-manager.ts";

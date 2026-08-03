@@ -49,6 +49,7 @@
 		"packages/scripts": {
 			"entry": [
 				"src/index.ts",
+				"src/clarity.ts",
 				"src/ga4.ts",
 				"src/google-tag-manager.ts",
 				"src/hotjar.ts",

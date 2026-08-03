@@ -228,7 +228,12 @@ describe("registry — CONSENT_REGISTRY migration", () => {
 	});
 
 	it("preserves vendors.json order (first-match detection is order-sensitive)", () => {
-		expect(CONSENT_REGISTRY.map((v) => v.vendor)).toEqual(Object.keys(LEGACY_CONSENT_VENDORS));
+		// Post-merge tracking vendors append after the legacy block so the
+		// migrated entries' first-match order is unchanged.
+		expect(CONSENT_REGISTRY.map((v) => v.vendor)).toEqual([
+			...Object.keys(LEGACY_CONSENT_VENDORS),
+			"microsoft-clarity",
+		]);
 	});
 
 	it("excludes disclosure-only vendors from the consent scan", () => {
