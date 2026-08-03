@@ -20,6 +20,10 @@
 			"import": "./dist/index.js",
 			"types": "./dist/index.d.ts"
 		},
+		"./clarity": {
+			"import": "./dist/clarity.js",
+			"types": "./dist/clarity.d.ts"
+		},
 		"./ga4": {
 			"import": "./dist/ga4.js",
 			"types": "./dist/ga4.d.ts"

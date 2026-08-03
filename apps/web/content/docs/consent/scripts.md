@@ -1,6 +1,6 @@
 ---
 title: "@policystack/scripts"
-description: "Pre-built script integrations: GA4, Meta Pixel, PostHog, Segment, GTM, Hotjar"
+description: "Pre-built script integrations: GA4, Meta Pixel, PostHog, Segment, GTM, Hotjar, Microsoft Clarity"
 product: consent
 ---
 
@@ -106,6 +106,16 @@ hotjar({ siteId: 1234567 });
 ```
 
 Defaults: `requires: "analytics"`, `version: 6`, queues `hj`. At consent time — before the script loads — it creates the official snippet's `hj` stub and sets `_hjSettings`.
+
+### Microsoft Clarity — `@policystack/scripts/clarity`
+
+```ts
+import { clarity } from "@policystack/scripts/clarity";
+
+clarity({ projectId: "abc123xyz" });
+```
+
+Defaults: `requires: "analytics"`, queues `clarity`. At consent time — before the `clarity.ms` tag loads — it creates the official snippet's `clarity` stub and queues a `consentv2` call ([Clarity requires a consent signal for EEA/UK/CH visitors](https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-consent-api-v2)) with `analytics_Storage: "granted"` and `ad_Storage: "denied"`. If you gate Clarity behind an expression that also covers advertising (e.g. `requires: { and: ["analytics", "marketing"] }`), pass `adStorage: "granted"` to report ad consent too.
 
 ## Adding a new integration
 

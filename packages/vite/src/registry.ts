@@ -249,6 +249,21 @@ export const REGISTRY: readonly VendorRecord[] = [
 		scriptUrls: [],
 		consent: true,
 	},
+	// --- Post-merge tracking vendors (never in the legacy sources). Appended
+	// after the legacy vendors.json block so first-match detection order for the
+	// migrated entries is unchanged.
+	{
+		vendor: "microsoft-clarity",
+		name: "Microsoft Clarity",
+		purpose: "Session recording",
+		policyUrl: "https://privacy.microsoft.com/privacystatement",
+		category: "analytics",
+		packages: ["@microsoft/clarity"],
+		imports: ["@microsoft/clarity"],
+		globals: ["clarity"],
+		scriptUrls: ["clarity.ms/tag"],
+		consent: true,
+	},
 	// --- Disclosure-only vendors (known-packages.ts only; never in vendors.json).
 	// `consent: false` keeps them out of the ungated scan so a server-side or
 	// payment SDK import never raises a false ungated finding.

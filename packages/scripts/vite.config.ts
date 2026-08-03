@@ -5,6 +5,7 @@ export default defineConfig({
 		// One entry per vendor so consumers tree-shake to a single tag loader.
 		entry: [
 			"./src/index.ts",
+			"./src/clarity.ts",
 			"./src/ga4.ts",
 			"./src/google-tag-manager.ts",
 			"./src/hotjar.ts",

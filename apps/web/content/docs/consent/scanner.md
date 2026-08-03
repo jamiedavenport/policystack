@@ -52,8 +52,8 @@ console.log(result.ungated); // Ungated[]
 
 The bundled vendor registry covers Google Analytics / Tag Manager, Meta Pixel,
 PostHog, Segment, Mixpanel, Hotjar, Intercom, LinkedIn Insight, Twitter/X
-Pixel, TikTok Pixel, Reddit Pixel, Sentry, and Datadog. Pass `vendors:` to
-extend or replace it.
+Pixel, TikTok Pixel, Reddit Pixel, Sentry, Datadog, and Microsoft Clarity.
+Pass `vendors:` to extend or replace it.
 
 ## Suppression comments
 
