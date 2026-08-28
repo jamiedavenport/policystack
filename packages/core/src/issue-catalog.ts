@@ -65,7 +65,7 @@ export const ISSUE_CATALOG: Record<IssueCode, IssueExplanation> = {
 	"jurisdiction-unknown": {
 		level: "error",
 		summary: "A jurisdictions entry is not a recognised JurisdictionId.",
-		fix: "Replace it with a valid jurisdiction id; an unlisted `us-<state>` code falls back to `us`.",
+		fix: "Use a valid top-level jurisdiction or lowercase `us-<postal-code>` state id; unknown US subdivisions fall back to `us`.",
 	},
 	"locale-unknown": {
 		level: "error",

@@ -1,50 +1,115 @@
-/**
- * The single canonical jurisdiction identifier, **frozen at 1.0**.
- *
- * Eleven members, decided in the v1 architecture plan (§4.2.1). The union
- * *membership* is the frozen part — a member's support tier (`specific` vs
- * `equivalent`) may be upgraded post-1.0 without a breaking change. Stems are
- * lowercase-kebab and legally precise (`eea`, not `eu`: GDPR applies EEA-wide).
- *
- * This is the **sole** jurisdiction id across the stack — config, validator,
- * and the AST `ComplianceReason` all speak it. There is no second enum and no
- * migration alias (clean cutover; see ADR 0001).
- */
-export type JurisdictionId =
-	| "eea" //   European Economic Area — GDPR
-	| "uk" //    United Kingdom — UK-GDPR + PECR
-	| "ch" //    Switzerland — revFADP
-	| "br" //    Brazil — LGPD
-	| "ca" //    Canada — PIPEDA (+ Quebec Law 25 via sub-jurisdiction)
-	| "us" //    United States — federal baseline; opt-out by state
-	| "us-ca" // California — CCPA / CPRA
-	| "us-co" // Colorado — CPA
-	| "us-ct" // Connecticut — CTDPA
-	| "us-va" // Virginia — VCDPA
-	| "row"; //  Rest of world — conservative opt-in fallback
+/** Every ISO 3166-2 subdivision for the 50 US states. */
+export const US_STATE_JURISDICTION_IDS = [
+	"us-al",
+	"us-ak",
+	"us-az",
+	"us-ar",
+	"us-ca",
+	"us-co",
+	"us-ct",
+	"us-de",
+	"us-fl",
+	"us-ga",
+	"us-hi",
+	"us-id",
+	"us-il",
+	"us-in",
+	"us-ia",
+	"us-ks",
+	"us-ky",
+	"us-la",
+	"us-me",
+	"us-md",
+	"us-ma",
+	"us-mi",
+	"us-mn",
+	"us-ms",
+	"us-mo",
+	"us-mt",
+	"us-ne",
+	"us-nv",
+	"us-nh",
+	"us-nj",
+	"us-nm",
+	"us-ny",
+	"us-nc",
+	"us-nd",
+	"us-oh",
+	"us-ok",
+	"us-or",
+	"us-pa",
+	"us-ri",
+	"us-sc",
+	"us-sd",
+	"us-tn",
+	"us-tx",
+	"us-ut",
+	"us-vt",
+	"us-va",
+	"us-wa",
+	"us-wv",
+	"us-wi",
+	"us-wy",
+] as const;
+
+export type USStateJurisdictionId = (typeof US_STATE_JURISDICTION_IDS)[number];
 
 /**
- * One row per jurisdiction — the single seam every axis reads (§4.2.1). Adding
- * a jurisdiction is one row, not edits in four places.
+ * The single canonical jurisdiction identifier across config, validation,
+ * policy rendering, and consent. US states use ISO 3166-2 postal stems so a
+ * resolver never has to discard state-level privacy capabilities.
  */
+export type JurisdictionId =
+	| "eea" // European Economic Area — GDPR
+	| "uk" // United Kingdom — UK-GDPR + PECR
+	| "ch" // Switzerland — revFADP
+	| "br" // Brazil — LGPD
+	| "ca" // Canada — PIPEDA (+ Quebec Law 25 via sub-jurisdiction)
+	| "us" // United States — federal baseline; opt-out by state
+	| USStateJurisdictionId
+	| "row"; // Rest of world — conservative opt-in fallback
+
 export type JurisdictionCapability = {
-	consentModel: "opt-in" | "opt-out"; //    §4.2 posture axis — table data only in PS-14; PS-24 wires the resolver
-	policyText: "specific" | "equivalent"; // honesty flag — read by the validator, not the renderer
-	parent?: JurisdictionId; //               sub-jurisdiction text/posture inheritance (the US state tail)
-	gpcLegallyBinding: boolean; //            GPC is always a *signal*; this is whether it carries legal force
+	consentModel: "opt-in" | "opt-out";
+	policyText: "specific" | "equivalent";
+	parent?: JurisdictionId;
+	gpcLegallyBinding: boolean;
 };
 
 export type JurisdictionTable = Readonly<Record<JurisdictionId, JurisdictionCapability>>;
 
-/** §4.2 default consent posture for a jurisdiction. */
+/** Default consent posture for a jurisdiction. */
 export type ConsentModel = "opt-in" | "opt-out";
 
-/**
- * 3 `specific` (hand-authored: `eea`, `uk`, `us-ca`) + 8 `equivalent`
- * (posture-correct + parent text + a suppressible diagnostic — a legitimate,
- * shippable v1 tier). `consentModel` per §4.2; `gpcLegallyBinding` per the
- * §4.2 authoritative set `["US-CA","US-CO","US-CT","US-VA"]`.
- */
+/** States with an effective requirement to honour qualifying GPC signals. */
+const GPC_LEGALLY_BINDING_US_STATE_IDS = new Set<USStateJurisdictionId>([
+	"us-ca",
+	"us-co",
+	"us-ct",
+	"us-de",
+	"us-md",
+	"us-mn",
+	"us-mt",
+	"us-ne",
+	"us-nh",
+	"us-nj",
+	"us-or",
+	"us-tx",
+]);
+
+const US_STATE_CAPABILITIES = Object.fromEntries(
+	US_STATE_JURISDICTION_IDS.map((id) => [
+		id,
+		{
+			consentModel: "opt-out",
+			policyText: id === "us-ca" ? "specific" : "equivalent",
+			parent: "us",
+			gpcLegallyBinding: GPC_LEGALLY_BINDING_US_STATE_IDS.has(id),
+		} satisfies JurisdictionCapability,
+	]),
+) as Record<USStateJurisdictionId, JurisdictionCapability>;
+
+/** One capability row per canonical jurisdiction. */
 export const JURISDICTION_TABLE: JurisdictionTable = {
 	eea: { consentModel: "opt-in", policyText: "specific", gpcLegallyBinding: false },
 	uk: { consentModel: "opt-in", policyText: "specific", gpcLegallyBinding: false },
@@ -52,30 +117,7 @@ export const JURISDICTION_TABLE: JurisdictionTable = {
 	br: { consentModel: "opt-in", policyText: "equivalent", gpcLegallyBinding: false },
 	ca: { consentModel: "opt-in", policyText: "equivalent", gpcLegallyBinding: false },
 	us: { consentModel: "opt-out", policyText: "equivalent", gpcLegallyBinding: false },
-	"us-ca": {
-		consentModel: "opt-out",
-		policyText: "specific",
-		parent: "us",
-		gpcLegallyBinding: true,
-	},
-	"us-co": {
-		consentModel: "opt-out",
-		policyText: "equivalent",
-		parent: "us",
-		gpcLegallyBinding: true,
-	},
-	"us-ct": {
-		consentModel: "opt-out",
-		policyText: "equivalent",
-		parent: "us",
-		gpcLegallyBinding: true,
-	},
-	"us-va": {
-		consentModel: "opt-out",
-		policyText: "equivalent",
-		parent: "us",
-		gpcLegallyBinding: true,
-	},
+	...US_STATE_CAPABILITIES,
 	row: { consentModel: "opt-in", policyText: "equivalent", gpcLegallyBinding: false },
 };
 
@@ -87,12 +129,20 @@ export function isJurisdictionId(value: unknown): value is JurisdictionId {
 	return typeof value === "string" && Object.hasOwn(JURISDICTION_TABLE, value);
 }
 
+/** Whether a value is one of the 50 canonical US state jurisdiction ids. */
+export function isUSStateJurisdictionId(value: unknown): value is USStateJurisdictionId {
+	return (
+		typeof value === "string" &&
+		value.startsWith("us-") &&
+		Object.hasOwn(US_STATE_CAPABILITIES, value)
+	);
+}
+
 /**
  * Map an arbitrary declared code onto a canonical id, or `null` if it is not a
- * jurisdiction we recognise. Exact table hit → that id. The 2025 US state-law
- * tail (`us-${string}` not itself in the table, e.g. `us-fl`) falls back to
- * its parent `us` (opt-out) — breadth without enumerating the long tail
- * (§4.2.1). Anything else is unknown.
+ * jurisdiction we recognise. Exact table hit → that id. An unknown
+ * `us-${string}` subdivision falls back to its parent `us`; anything else is
+ * unknown.
  */
 export function resolveJurisdiction(code: string): JurisdictionId | null {
 	if (isJurisdictionId(code)) return code;
@@ -100,12 +150,7 @@ export function resolveJurisdiction(code: string): JurisdictionId | null {
 	return null;
 }
 
-/**
- * The §4.2 posture for a canonical jurisdiction. The single seam the policy
- * renderer and the consent runtime both read, so policy prose and banner
- * behaviour provably agree (they cannot disagree about a jurisdiction's
- * posture if they consult the same table row).
- */
+/** The configured consent posture for a canonical jurisdiction. */
 export function consentModelFor(id: JurisdictionId): ConsentModel {
 	return JURISDICTION_TABLE[id].consentModel;
 }

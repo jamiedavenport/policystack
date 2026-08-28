@@ -100,11 +100,11 @@ export function registerTools(server: McpServer): void {
 		{
 			title: "Explain a jurisdiction id",
 			description:
-				"Explain a frozen JurisdictionId: its consent posture, policy-text tier, parent jurisdiction, and whether GPC is legally binding. Same derivation as llms.txt.",
+				"Explain a canonical JurisdictionId: its consent posture, policy-text tier, parent jurisdiction, and whether GPC is legally binding. Same derivation as llms.txt.",
 			inputSchema: {
 				jurisdiction: z
 					.enum(jurisdictionIds)
-					.describe("A frozen jurisdiction id (e.g. eea, uk, us-ca)"),
+					.describe("A canonical jurisdiction id (e.g. eea, uk, us-ca)"),
 			},
 		},
 		async ({ jurisdiction }) => result(describeJurisdiction(jurisdiction)),

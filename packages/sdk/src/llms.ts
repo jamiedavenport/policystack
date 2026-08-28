@@ -137,10 +137,11 @@ data: {
 \`Statutory(consequences)\`, \`Contractual(consequences)\`,
 \`ContractPrerequisite(consequences)\`, \`Voluntary(consequences)\`.
 
-## Jurisdiction ids (frozen at 1.0)
+## Jurisdiction ids
 
-Pick the codes that apply; the \`us-\${state}\` tail not listed falls back to
-\`us\`. Posture and policy-text tier are read straight from the canonical table:
+Pick the codes that apply. All 50 US states have canonical \`us-\${state}\`
+codes and inherit from \`us\`. Posture and policy-text tier are read straight
+from the canonical table:
 
 ${jurisdictionRows.join("\n")}
 

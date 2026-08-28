@@ -3,8 +3,21 @@ import { GPC_LEGALLY_REQUIRED_JURISDICTIONS, applyGPC, gpcApplies, readGPCSignal
 import type { Category, ConsentState, PolicyStackConsentConfig } from "./types";
 
 describe("GPC_LEGALLY_REQUIRED_JURISDICTIONS", () => {
-	it("contains exactly the four legally-required US states", () => {
-		expect(GPC_LEGALLY_REQUIRED_JURISDICTIONS).toEqual(["us-ca", "us-co", "us-ct", "us-va"]);
+	it("is derived from the currently effective jurisdiction capabilities", () => {
+		expect(GPC_LEGALLY_REQUIRED_JURISDICTIONS).toEqual([
+			"us-ca",
+			"us-co",
+			"us-ct",
+			"us-de",
+			"us-md",
+			"us-mn",
+			"us-mt",
+			"us-ne",
+			"us-nh",
+			"us-nj",
+			"us-or",
+			"us-tx",
+		]);
 	});
 });
 
@@ -63,7 +76,8 @@ describe("gpcApplies", () => {
 	it("matches an explicit jurisdiction list", () => {
 		const config = { applicableJurisdictions: GPC_LEGALLY_REQUIRED_JURISDICTIONS };
 		expect(gpcApplies("us-ca", config)).toBe(true);
-		expect(gpcApplies("us-va", config)).toBe(true);
+		expect(gpcApplies("us-tx", config)).toBe(true);
+		expect(gpcApplies("us-va", config)).toBe(false);
 		expect(gpcApplies("eea", config)).toBe(false);
 		expect(gpcApplies("us", config)).toBe(false);
 	});

@@ -1,9 +1,17 @@
 import { isLocale, LOCALES } from "./i18n";
 import { shouldEmit } from "./emit";
-import { JURISDICTION_IDS, JURISDICTION_TABLE, resolveJurisdiction } from "./jurisdiction-id";
+import {
+	isUSStateJurisdictionId,
+	JURISDICTION_IDS,
+	JURISDICTION_TABLE,
+	resolveJurisdiction,
+} from "./jurisdiction-id";
 import { deriveConsentMechanism } from "./normalize";
 import type { Issue, PolicyStackConfig } from "./types";
 import { isConsentGated } from "./types";
+
+const TOP_LEVEL_JURISDICTION_IDS = JURISDICTION_IDS.filter((id) => !isUSStateJurisdictionId(id));
+const JURISDICTION_HELP = `valid top-level codes: ${TOP_LEVEL_JURISDICTION_IDS.join(", ")}; US states use us-<postal-code> (for example, us-ca or us-tx)`;
 
 /**
  * The single validator over the flat, public {@link PolicyStackConfig} — the
@@ -72,7 +80,7 @@ export function validate(rawConfig: PolicyStackConfig): Issue[] {
 				issues.push({
 					code: "jurisdiction-unknown",
 					level: "error",
-					message: `Unknown jurisdiction "${code}" — valid codes: ${JURISDICTION_IDS.join(", ")}`,
+					message: `Unknown jurisdiction "${code}" — ${JURISDICTION_HELP}`,
 				});
 			} else if (JURISDICTION_TABLE[resolved].policyText === "equivalent") {
 				const via = resolved === code ? "" : ` (resolved to "${resolved}")`;

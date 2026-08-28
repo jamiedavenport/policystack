@@ -131,6 +131,8 @@ const store = createConsentStore({
 });
 ```
 
+The exported list is derived from the jurisdiction capability table and currently covers California, Colorado, Connecticut, Delaware, Maryland, Minnesota, Montana, Nebraska, New Hampshire, New Jersey, Oregon, and Texas. `clientGeoResolver` preserves all 50 US state codes, so visitors in those states match this scope directly.
+
 A category that should ignore GPC sets `respectGPC: false`:
 
 ```ts

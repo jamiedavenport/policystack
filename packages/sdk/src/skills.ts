@@ -99,8 +99,8 @@ reference (jurisdiction ids, lawful bases, presets) for this exact version.
 The canonical, commented reference config is
 [\`examples/tanstack/src/policystack.ts\`](${REPO}/blob/v1/examples/tanstack/src/policystack.ts).
 
-\`jurisdictions\` is required and non-empty. Valid ids (frozen at 1.0):
-${jurisdictions}. Any unlisted \`us-<state>\` falls back to \`us\`. Pick the
+\`jurisdictions\` is required and non-empty. Valid ids:
+${jurisdictions}. All 50 US states use their ISO \`us-<state>\` code. Pick the
 codes that actually apply; \`policystack-jurisdiction\` explains the posture
 each implies.
 
@@ -201,7 +201,7 @@ ${GENERATED_BANNER}
 Explain what a declared \`jurisdictions\` set implies. Posture and policy-text
 tier are read straight from the single canonical table (the same row the
 policy renderer and the consent runtime read, so prose and banner always
-agree). Membership is frozen at 1.0.
+agree).
 
 ## The canonical table
 
@@ -218,12 +218,12 @@ ${jurisdictionRows()}
   \`parent\` jurisdiction — a legitimate, shippable tier that emits the
   \`jurisdiction-generic-policy-text\` **warning** so the gap is explicit, not
   silent. Treat that warning as acknowledged, not failed.
-- **inherits** — US state codes inherit text/posture from \`us\`. Any
-  \`us-<state>\` not in the table resolves to \`us\` (opt-out); \`row\` is the
+- **inherits** — all 50 US state codes inherit text/posture from \`us\`. An
+  unknown \`us-*\` subdivision resolves to \`us\` (opt-out); \`row\` is the
   conservative opt-in catch-all. A code that is neither a table entry nor a
   \`us-*\` tail is rejected as \`jurisdiction-unknown\`.
 - **GPC legally binding** — true only where the Global Privacy Control signal
-  carries legal force (the §4.2 US-state set). It is always honoured as a
+  currently carries legal force. It is always honoured as a
   signal regardless.
 
 ## Procedure

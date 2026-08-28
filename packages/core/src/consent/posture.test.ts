@@ -1,19 +1,24 @@
 import { describe, expect, it } from "vite-plus/test";
-import { consentModelFor, type JurisdictionId, JURISDICTION_IDS } from "../jurisdiction-id";
+import {
+	consentModelFor,
+	isUSStateJurisdictionId,
+	type JurisdictionId,
+	JURISDICTION_IDS,
+} from "../jurisdiction-id";
 import { jurisdictionPosture, postureDecisions } from "./posture";
 import type { Category } from "./types";
 
-describe("consentModelFor — all 11 canonical jurisdictions", () => {
-	const OPT_OUT = ["us", "us-ca", "us-co", "us-ct", "us-va"];
-
+describe("consentModelFor — all canonical jurisdictions", () => {
 	it("us/us-* are opt-out; eea/uk/ch/br/ca/row are opt-in (per JURISDICTION_TABLE)", () => {
 		for (const id of JURISDICTION_IDS) {
-			expect(consentModelFor(id)).toBe(OPT_OUT.includes(id) ? "opt-out" : "opt-in");
+			expect(consentModelFor(id)).toBe(
+				id === "us" || isUSStateJurisdictionId(id) ? "opt-out" : "opt-in",
+			);
 		}
 	});
 
-	it("covers exactly the 11 frozen ids", () => {
-		expect(JURISDICTION_IDS).toHaveLength(11);
+	it("covers the seven top-level ids and all 50 US states", () => {
+		expect(JURISDICTION_IDS).toHaveLength(57);
 	});
 });
 
@@ -25,7 +30,9 @@ describe("jurisdictionPosture — resolved visitor → posture", () => {
 	});
 
 	it("opt-out for us and the canonical US states", () => {
-		for (const j of ["us", "us-ca", "us-co", "us-ct", "us-va"] as JurisdictionId[]) {
+		for (const j of JURISDICTION_IDS.filter(
+			(id): id is JurisdictionId => id === "us" || isUSStateJurisdictionId(id),
+		)) {
 			expect(jurisdictionPosture(j)).toBe("opt-out");
 		}
 	});
