@@ -35,8 +35,8 @@ reference (jurisdiction ids, lawful bases, presets) for this exact version.
 The canonical, commented reference config is
 [`examples/tanstack/src/policystack.ts`](https://github.com/jamiedavenport/policystack/blob/v1/examples/tanstack/src/policystack.ts).
 
-`jurisdictions` is required and non-empty. Valid ids (frozen at 1.0):
-`br`, `ca`, `ch`, `eea`, `row`, `uk`, `us`, `us-ca`, `us-co`, `us-ct`, `us-va`. Any unlisted `us-<state>` falls back to `us`. Pick the
+`jurisdictions` is required and non-empty. Valid ids:
+`br`, `ca`, `ch`, `eea`, `row`, `uk`, `us`, `us-ak`, `us-al`, `us-ar`, `us-az`, `us-ca`, `us-co`, `us-ct`, `us-de`, `us-fl`, `us-ga`, `us-hi`, `us-ia`, `us-id`, `us-il`, `us-in`, `us-ks`, `us-ky`, `us-la`, `us-ma`, `us-md`, `us-me`, `us-mi`, `us-mn`, `us-mo`, `us-ms`, `us-mt`, `us-nc`, `us-nd`, `us-ne`, `us-nh`, `us-nj`, `us-nm`, `us-nv`, `us-ny`, `us-oh`, `us-ok`, `us-or`, `us-pa`, `us-ri`, `us-sc`, `us-sd`, `us-tn`, `us-tx`, `us-ut`, `us-va`, `us-vt`, `us-wa`, `us-wi`, `us-wv`, `us-wy`. All 50 US states use their ISO `us-<state>` code. Pick the
 codes that actually apply; `policystack-jurisdiction` explains the posture
 each implies.
 

@@ -34,8 +34,15 @@ export type {
 	JurisdictionCapability,
 	JurisdictionId,
 	JurisdictionTable,
+	USStateJurisdictionId,
 } from "./jurisdiction-id";
-export { isJurisdictionId, JURISDICTION_IDS, JURISDICTION_TABLE } from "./jurisdiction-id";
+export {
+	isJurisdictionId,
+	isUSStateJurisdictionId,
+	JURISDICTION_IDS,
+	JURISDICTION_TABLE,
+	US_STATE_JURISDICTION_IDS,
+} from "./jurisdiction-id";
 export { ISSUE_CODES } from "./issue-codes";
 export type { IssueEntry } from "./issue-codes";
 export { CONTAINER_SLOTS, SLOT_NAMES } from "./slots";

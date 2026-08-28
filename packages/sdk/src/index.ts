@@ -38,6 +38,7 @@ export type {
 	ProvisionRequirement,
 	ThirdParty,
 	TrackingTechnology,
+	USStateJurisdictionId,
 } from "@policystack/core";
 
 export {
@@ -46,8 +47,10 @@ export {
 	Contractual,
 	ContractPrerequisite,
 	createT,
+	isUSStateJurisdictionId,
 	ISSUE_CATALOG,
 	Statutory,
+	US_STATE_JURISDICTION_IDS,
 	Voluntary,
 } from "@policystack/core";
 export type { IssueExplanation } from "@policystack/core";

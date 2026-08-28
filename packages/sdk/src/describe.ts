@@ -7,7 +7,7 @@ import {
 } from "@policystack/core";
 
 /**
- * One source of truth for the human description of a frozen jurisdiction /
+ * One source of truth for the human description of a canonical jurisdiction /
  * lawful basis. Both `renderLlmsTxt()` and the `policystack mcp` tools
  * (`explain_jurisdiction`, the lawful-basis reference) call these, so the
  * agent-facing prose provably cannot drift between `llms.txt` and the MCP

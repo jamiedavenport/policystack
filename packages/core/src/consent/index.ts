@@ -9,7 +9,8 @@ export {
 	manualResolver,
 	timezoneResolver,
 } from "./jurisdiction";
-export type { JurisdictionId } from "../jurisdiction-id";
+export { isUSStateJurisdictionId, US_STATE_JURISDICTION_IDS } from "../jurisdiction-id";
+export type { JurisdictionId, USStateJurisdictionId } from "../jurisdiction-id";
 export { type ConsentModel, jurisdictionPosture, postureDecisions } from "./posture";
 export { defineScript, gateScript, gateScripts } from "./scripts";
 export { createConsentStore } from "./store";

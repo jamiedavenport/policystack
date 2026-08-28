@@ -77,10 +77,11 @@ data: {
 `Statutory(consequences)`, `Contractual(consequences)`,
 `ContractPrerequisite(consequences)`, `Voluntary(consequences)`.
 
-## Jurisdiction ids (frozen at 1.0)
+## Jurisdiction ids
 
-Pick the codes that apply; the `us-${state}` tail not listed falls back to
-`us`. Posture and policy-text tier are read straight from the canonical table:
+Pick the codes that apply. All 50 US states have canonical `us-${state}`
+codes and inherit from `us`. Posture and policy-text tier are read straight
+from the canonical table:
 
 - `br` — opt-in, equivalent policy text
 - `ca` — opt-in, equivalent policy text
@@ -89,10 +90,56 @@ Pick the codes that apply; the `us-${state}` tail not listed falls back to
 - `row` — opt-in, equivalent policy text
 - `uk` — opt-in, specific policy text
 - `us` — opt-out, equivalent policy text
+- `us-ak` — opt-out, equivalent policy text, inherits `us`
+- `us-al` — opt-out, equivalent policy text, inherits `us`
+- `us-ar` — opt-out, equivalent policy text, inherits `us`
+- `us-az` — opt-out, equivalent policy text, inherits `us`
 - `us-ca` — opt-out, specific policy text, inherits `us`, GPC legally binding
 - `us-co` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
 - `us-ct` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
-- `us-va` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-de` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-fl` — opt-out, equivalent policy text, inherits `us`
+- `us-ga` — opt-out, equivalent policy text, inherits `us`
+- `us-hi` — opt-out, equivalent policy text, inherits `us`
+- `us-ia` — opt-out, equivalent policy text, inherits `us`
+- `us-id` — opt-out, equivalent policy text, inherits `us`
+- `us-il` — opt-out, equivalent policy text, inherits `us`
+- `us-in` — opt-out, equivalent policy text, inherits `us`
+- `us-ks` — opt-out, equivalent policy text, inherits `us`
+- `us-ky` — opt-out, equivalent policy text, inherits `us`
+- `us-la` — opt-out, equivalent policy text, inherits `us`
+- `us-ma` — opt-out, equivalent policy text, inherits `us`
+- `us-md` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-me` — opt-out, equivalent policy text, inherits `us`
+- `us-mi` — opt-out, equivalent policy text, inherits `us`
+- `us-mn` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-mo` — opt-out, equivalent policy text, inherits `us`
+- `us-ms` — opt-out, equivalent policy text, inherits `us`
+- `us-mt` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nc` — opt-out, equivalent policy text, inherits `us`
+- `us-nd` — opt-out, equivalent policy text, inherits `us`
+- `us-ne` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nh` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nj` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nm` — opt-out, equivalent policy text, inherits `us`
+- `us-nv` — opt-out, equivalent policy text, inherits `us`
+- `us-ny` — opt-out, equivalent policy text, inherits `us`
+- `us-oh` — opt-out, equivalent policy text, inherits `us`
+- `us-ok` — opt-out, equivalent policy text, inherits `us`
+- `us-or` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-pa` — opt-out, equivalent policy text, inherits `us`
+- `us-ri` — opt-out, equivalent policy text, inherits `us`
+- `us-sc` — opt-out, equivalent policy text, inherits `us`
+- `us-sd` — opt-out, equivalent policy text, inherits `us`
+- `us-tn` — opt-out, equivalent policy text, inherits `us`
+- `us-tx` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-ut` — opt-out, equivalent policy text, inherits `us`
+- `us-va` — opt-out, equivalent policy text, inherits `us`
+- `us-vt` — opt-out, equivalent policy text, inherits `us`
+- `us-wa` — opt-out, equivalent policy text, inherits `us`
+- `us-wi` — opt-out, equivalent policy text, inherits `us`
+- `us-wv` — opt-out, equivalent policy text, inherits `us`
+- `us-wy` — opt-out, equivalent policy text, inherits `us`
 
 ## Lawful bases
 

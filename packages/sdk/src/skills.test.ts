@@ -27,7 +27,7 @@ test("the pack ships exactly the four skills plus both manifests", () => {
 	]);
 });
 
-test("skills resolve against the frozen surface (drift canaries)", () => {
+test("skills resolve against the canonical surface (drift canaries)", () => {
 	const byPath = new Map(renderSkillPack().map((f) => [f.path, f.content]));
 	const audit = byPath.get("plugin/skills/policystack-audit/SKILL.md") ?? "";
 	const jurisdiction = byPath.get("plugin/skills/policystack-jurisdiction/SKILL.md") ?? "";
@@ -38,10 +38,13 @@ test("skills resolve against the frozen surface (drift canaries)", () => {
 	expect(audit).toContain("`data-collected-empty` — *warning*");
 
 	// JURISDICTION_TABLE wired — same wording as renderLlmsTxt()'s canaries,
-	// so a frozen-union change without a regen fails here too.
+	// so a canonical-union change without a regen fails here too.
 	expect(jurisdiction).toContain("`eea` — opt-in, specific policy text");
 	expect(jurisdiction).toContain(
 		"`us-ca` — opt-out, specific policy text, inherits `us`, GPC legally binding",
+	);
+	expect(jurisdiction).toContain(
+		"`us-tx` — opt-out, equivalent policy text, inherits `us`, GPC legally binding",
 	);
 
 	// SDK presets wired into the instrument skill.

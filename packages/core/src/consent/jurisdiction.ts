@@ -115,7 +115,7 @@ export function clientGeoResolver(opts: {
 				const body = (await res.json()) as GeoResponse;
 				const base = countryToJurisdiction(body.country);
 				if (base === "us" && body.region) {
-					// us-ca/co/ct/va stay; any other US state folds to `us`.
+					// Preserve every canonical state; unknown subdivisions fold to `us`.
 					return resolveJurisdiction(`us-${body.region.trim().toLowerCase()}`) ?? "us";
 				}
 				return base;

@@ -1,12 +1,9 @@
-import type { JurisdictionId } from "../jurisdiction-id";
+import { type JurisdictionId, JURISDICTION_IDS, JURISDICTION_TABLE } from "../jurisdiction-id";
 import type { ConsentState, GPCConfig, PolicyStackConsentConfig } from "./types";
 
-export const GPC_LEGALLY_REQUIRED_JURISDICTIONS: JurisdictionId[] = [
-	"us-ca",
-	"us-co",
-	"us-ct",
-	"us-va",
-];
+export const GPC_LEGALLY_REQUIRED_JURISDICTIONS: JurisdictionId[] = JURISDICTION_IDS.filter(
+	(id) => JURISDICTION_TABLE[id].gpcLegallyBinding,
+);
 
 export function readGPCSignal(config: GPCConfig | undefined): boolean {
 	if (config?.enabled === false) return false;

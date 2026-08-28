@@ -744,10 +744,10 @@ describe("createConsentStore", () => {
 			expect(store.getState().route).toBe("cookie");
 		});
 
-		it("applies in a legally-required US state", () => {
+		it("applies in a legally-required state outside the original four-state union", () => {
 			const store = createConsentStore(
 				makeConfig({
-					jurisdictionResolver: manualResolver("us-ca"),
+					jurisdictionResolver: manualResolver("us-tx"),
 					gpc: {
 						signal: true,
 						applicableJurisdictions: GPC_LEGALLY_REQUIRED_JURISDICTIONS,
@@ -757,7 +757,7 @@ describe("createConsentStore", () => {
 			expect(store.getState().source).toBe("gpc");
 		});
 
-		it("does not apply in EEA when scope is restricted to the four US states", () => {
+		it("does not apply in EEA when scope is restricted to legally-required US states", () => {
 			const store = createConsentStore(
 				makeConfig({
 					jurisdictionResolver: manualResolver("eea"),

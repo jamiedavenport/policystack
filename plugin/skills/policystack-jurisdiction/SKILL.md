@@ -10,7 +10,7 @@ description: Explain the consent and policy-text posture (the §4.2 stance) impl
 Explain what a declared `jurisdictions` set implies. Posture and policy-text
 tier are read straight from the single canonical table (the same row the
 policy renderer and the consent runtime read, so prose and banner always
-agree). Membership is frozen at 1.0.
+agree).
 
 ## The canonical table
 
@@ -21,10 +21,56 @@ agree). Membership is frozen at 1.0.
 - `row` — opt-in, equivalent policy text
 - `uk` — opt-in, specific policy text
 - `us` — opt-out, equivalent policy text
+- `us-ak` — opt-out, equivalent policy text, inherits `us`
+- `us-al` — opt-out, equivalent policy text, inherits `us`
+- `us-ar` — opt-out, equivalent policy text, inherits `us`
+- `us-az` — opt-out, equivalent policy text, inherits `us`
 - `us-ca` — opt-out, specific policy text, inherits `us`, GPC legally binding
 - `us-co` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
 - `us-ct` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
-- `us-va` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-de` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-fl` — opt-out, equivalent policy text, inherits `us`
+- `us-ga` — opt-out, equivalent policy text, inherits `us`
+- `us-hi` — opt-out, equivalent policy text, inherits `us`
+- `us-ia` — opt-out, equivalent policy text, inherits `us`
+- `us-id` — opt-out, equivalent policy text, inherits `us`
+- `us-il` — opt-out, equivalent policy text, inherits `us`
+- `us-in` — opt-out, equivalent policy text, inherits `us`
+- `us-ks` — opt-out, equivalent policy text, inherits `us`
+- `us-ky` — opt-out, equivalent policy text, inherits `us`
+- `us-la` — opt-out, equivalent policy text, inherits `us`
+- `us-ma` — opt-out, equivalent policy text, inherits `us`
+- `us-md` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-me` — opt-out, equivalent policy text, inherits `us`
+- `us-mi` — opt-out, equivalent policy text, inherits `us`
+- `us-mn` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-mo` — opt-out, equivalent policy text, inherits `us`
+- `us-ms` — opt-out, equivalent policy text, inherits `us`
+- `us-mt` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nc` — opt-out, equivalent policy text, inherits `us`
+- `us-nd` — opt-out, equivalent policy text, inherits `us`
+- `us-ne` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nh` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nj` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-nm` — opt-out, equivalent policy text, inherits `us`
+- `us-nv` — opt-out, equivalent policy text, inherits `us`
+- `us-ny` — opt-out, equivalent policy text, inherits `us`
+- `us-oh` — opt-out, equivalent policy text, inherits `us`
+- `us-ok` — opt-out, equivalent policy text, inherits `us`
+- `us-or` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-pa` — opt-out, equivalent policy text, inherits `us`
+- `us-ri` — opt-out, equivalent policy text, inherits `us`
+- `us-sc` — opt-out, equivalent policy text, inherits `us`
+- `us-sd` — opt-out, equivalent policy text, inherits `us`
+- `us-tn` — opt-out, equivalent policy text, inherits `us`
+- `us-tx` — opt-out, equivalent policy text, inherits `us`, GPC legally binding
+- `us-ut` — opt-out, equivalent policy text, inherits `us`
+- `us-va` — opt-out, equivalent policy text, inherits `us`
+- `us-vt` — opt-out, equivalent policy text, inherits `us`
+- `us-wa` — opt-out, equivalent policy text, inherits `us`
+- `us-wi` — opt-out, equivalent policy text, inherits `us`
+- `us-wv` — opt-out, equivalent policy text, inherits `us`
+- `us-wy` — opt-out, equivalent policy text, inherits `us`
 
 ## How to read it
 
@@ -37,12 +83,12 @@ agree). Membership is frozen at 1.0.
   `parent` jurisdiction — a legitimate, shippable tier that emits the
   `jurisdiction-generic-policy-text` **warning** so the gap is explicit, not
   silent. Treat that warning as acknowledged, not failed.
-- **inherits** — US state codes inherit text/posture from `us`. Any
-  `us-<state>` not in the table resolves to `us` (opt-out); `row` is the
+- **inherits** — all 50 US state codes inherit text/posture from `us`. An
+  unknown `us-*` subdivision resolves to `us` (opt-out); `row` is the
   conservative opt-in catch-all. A code that is neither a table entry nor a
   `us-*` tail is rejected as `jurisdiction-unknown`.
 - **GPC legally binding** — true only where the Global Privacy Control signal
-  carries legal force (the §4.2 US-state set). It is always honoured as a
+  currently carries legal force. It is always honoured as a
   signal regardless.
 
 ## Procedure

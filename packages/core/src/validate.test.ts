@@ -71,15 +71,16 @@ test("isJurisdictionId is false for retired codes and regulation names", () => {
 	expect(isJurisdictionId("")).toBe(false);
 });
 
-test("validate rejects a retired code with a helpful message listing valid codes", () => {
+test("validate rejects a retired code with compact jurisdiction guidance", () => {
 	const issues = validate({ ...baseConfig, jurisdictions: ["eu" as never] });
 	const bad = issues.find((i) => i.message.startsWith('Unknown jurisdiction "eu"'));
 	expect(bad).toBeDefined();
 	expect(bad?.code).toBe("jurisdiction-unknown");
 	expect(bad?.level).toBe("error");
-	for (const code of JURISDICTION_IDS) {
-		expect(bad?.message).toContain(code);
-	}
+	expect(bad?.message).toBe(
+		'Unknown jurisdiction "eu" — valid top-level codes: eea, uk, ch, br, ca, us, row; US states use us-<postal-code> (for example, us-ca or us-tx)',
+	);
+	expect(bad?.message.length).toBeLessThan(200);
 });
 
 test("validate rejects a typo'd code", () => {
@@ -109,13 +110,13 @@ test("validate: an equivalent jurisdiction emits jurisdiction-generic-policy-tex
 	expect(specific.some((i) => i.code === "jurisdiction-generic-policy-text")).toBe(false);
 });
 
-test("validate: the us-${string} state tail falls back to parent us — no unknown error", () => {
-	const issues = validate({ ...baseConfig, jurisdictions: ["us-fl" as never] });
+test("validate: a canonical US state is accepted with equivalent policy text", () => {
+	const issues = validate({ ...baseConfig, jurisdictions: ["us-fl"] });
 	expect(issues.some((i) => i.code === "jurisdiction-unknown")).toBe(false);
 	const generic = issues.find((i) => i.code === "jurisdiction-generic-policy-text");
 	expect(generic).toBeDefined();
 	expect(generic?.level).toBe("warning");
-	expect(generic?.message).toContain('resolved to "us"');
+	expect(generic?.message).toContain('Jurisdiction "us-fl" ships generic policy text');
 });
 
 test("validate errors on an empty jurisdictions array", () => {

@@ -1,60 +1,130 @@
 import { expect, test } from "vite-plus/test";
 import {
 	isJurisdictionId,
+	isUSStateJurisdictionId,
 	JURISDICTION_IDS,
 	JURISDICTION_TABLE,
 	resolveJurisdiction,
+	US_STATE_JURISDICTION_IDS,
 } from "./jurisdiction-id";
 
-// The union membership is the frozen part of the 1.0 surface (§4.2.1). This
-// guards the count and the specific/equivalent split so a stray edit to the
-// table is a loud test failure, not a silent compliance regression.
+const US_STATE_CODES = [
+	"al",
+	"ak",
+	"az",
+	"ar",
+	"ca",
+	"co",
+	"ct",
+	"de",
+	"fl",
+	"ga",
+	"hi",
+	"id",
+	"il",
+	"in",
+	"ia",
+	"ks",
+	"ky",
+	"la",
+	"me",
+	"md",
+	"ma",
+	"mi",
+	"mn",
+	"ms",
+	"mo",
+	"mt",
+	"ne",
+	"nv",
+	"nh",
+	"nj",
+	"nm",
+	"ny",
+	"nc",
+	"nd",
+	"oh",
+	"ok",
+	"or",
+	"pa",
+	"ri",
+	"sc",
+	"sd",
+	"tn",
+	"tx",
+	"ut",
+	"vt",
+	"va",
+	"wa",
+	"wv",
+	"wi",
+	"wy",
+] as const;
 
-test("the canonical union is exactly 11 members", () => {
-	expect(JURISDICTION_IDS).toHaveLength(11);
-	expect([...JURISDICTION_IDS].sort()).toEqual(
-		["br", "ca", "ch", "eea", "row", "uk", "us", "us-ca", "us-co", "us-ct", "us-va"].sort(),
-	);
+const US_STATE_IDS = US_STATE_CODES.map((code) => `us-${code}`);
+
+test("the canonical union includes all 50 US states", () => {
+	expect(JURISDICTION_IDS).toHaveLength(57);
+	expect(US_STATE_JURISDICTION_IDS).toEqual(US_STATE_IDS);
+	expect(JURISDICTION_IDS.filter(isUSStateJurisdictionId)).toEqual(US_STATE_IDS);
 });
 
-test("exactly 3 specific (eea, uk, us-ca); the other 8 are equivalent", () => {
+test("exactly eea, uk, and us-ca have specific policy text", () => {
 	const specific = JURISDICTION_IDS.filter(
 		(id) => JURISDICTION_TABLE[id].policyText === "specific",
 	);
 	expect([...specific].sort()).toEqual(["eea", "uk", "us-ca"]);
-	expect(JURISDICTION_IDS).toHaveLength(specific.length + 8);
 });
 
-test("US state codes inherit parent `us`; nothing else has a parent", () => {
+test("all US state codes inherit parent `us`; nothing else has a parent", () => {
 	for (const id of JURISDICTION_IDS) {
-		const expected = ["us-ca", "us-co", "us-ct", "us-va"].includes(id) ? "us" : undefined;
+		const expected = isUSStateJurisdictionId(id) ? "us" : undefined;
 		expect(JURISDICTION_TABLE[id].parent).toBe(expected);
 	}
 });
 
-test("gpcLegallyBinding is true only for the §4.2 set us-ca/us-co/us-ct/us-va", () => {
+test("gpcLegallyBinding matches the currently effective US-state set", () => {
 	const binding = JURISDICTION_IDS.filter((id) => JURISDICTION_TABLE[id].gpcLegallyBinding);
-	expect([...binding].sort()).toEqual(["us-ca", "us-co", "us-ct", "us-va"]);
+	expect(binding).toEqual([
+		"us-ca",
+		"us-co",
+		"us-ct",
+		"us-de",
+		"us-md",
+		"us-mn",
+		"us-mt",
+		"us-ne",
+		"us-nh",
+		"us-nj",
+		"us-or",
+		"us-tx",
+	]);
 });
 
-test("consentModel: only us/us-* are opt-out", () => {
+test("consentModel: us and all US states are opt-out", () => {
 	const optOut = JURISDICTION_IDS.filter((id) => JURISDICTION_TABLE[id].consentModel === "opt-out");
-	expect([...optOut].sort()).toEqual(["us", "us-ca", "us-co", "us-ct", "us-va"]);
+	expect(optOut).toEqual(["us", ...US_STATE_IDS]);
 });
 
 test("isJurisdictionId accepts every canonical code and rejects retired/regulation names", () => {
 	for (const id of JURISDICTION_IDS) expect(isJurisdictionId(id)).toBe(true);
-	for (const bad of ["eu", "au", "jp", "sg", "nz", "other", "gdpr", "ccpa", "us-fl", ""]) {
+	for (const bad of ["eu", "au", "jp", "sg", "nz", "other", "gdpr", "ccpa", "us-zz", ""]) {
 		expect(isJurisdictionId(bad)).toBe(false);
 	}
 });
 
-test("resolveJurisdiction: exact hits, us-${string} → parent us, else null", () => {
+test("isUSStateJurisdictionId accepts only the 50 canonical state ids", () => {
+	for (const id of US_STATE_IDS) expect(isUSStateJurisdictionId(id)).toBe(true);
+	for (const value of ["us", "us-dc", "us-pr", "us-zz", "ca", null]) {
+		expect(isUSStateJurisdictionId(value)).toBe(false);
+	}
+});
+
+test("resolveJurisdiction preserves states and folds unknown US subdivisions to us", () => {
 	for (const id of JURISDICTION_IDS) expect(resolveJurisdiction(id)).toBe(id);
-	// A recognised state stays itself; the unenumerated tail folds to `us`.
-	expect(resolveJurisdiction("us-ca")).toBe("us-ca");
-	expect(resolveJurisdiction("us-fl")).toBe("us");
-	expect(resolveJurisdiction("us-tx")).toBe("us");
+	expect(resolveJurisdiction("us-fl")).toBe("us-fl");
+	expect(resolveJurisdiction("us-tx")).toBe("us-tx");
+	expect(resolveJurisdiction("us-zz")).toBe("us");
 	expect(resolveJurisdiction("eu")).toBeNull();
 	expect(resolveJurisdiction("uss-ca")).toBeNull();
 	expect(resolveJurisdiction("")).toBeNull();

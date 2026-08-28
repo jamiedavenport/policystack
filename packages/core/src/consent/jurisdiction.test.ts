@@ -219,8 +219,14 @@ describe("clientGeoResolver", () => {
 		expect(await r.resolve()).toBe("us-ca");
 	});
 
-	it("folds a US region with no canonical state id down to `us`", async () => {
+	it("preserves every canonical US state region", async () => {
 		const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ country: "US", region: "TX" }));
+		const r = clientGeoResolver({ endpoint: "/geo", fetch: fetchImpl });
+		expect(await r.resolve()).toBe("us-tx");
+	});
+
+	it("folds an unknown US subdivision down to `us`", async () => {
+		const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ country: "US", region: "ZZ" }));
 		const r = clientGeoResolver({ endpoint: "/geo", fetch: fetchImpl });
 		expect(await r.resolve()).toBe("us");
 	});
