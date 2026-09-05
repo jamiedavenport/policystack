@@ -1,0 +1,12 @@
+[tools]
+node = "24"
+
+[settings]
+idiomatic_version_file_enable_tools = ["pnpm"]
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tasks.setup]
+description = "Install dependencies and configure repository git hooks"
+run = ["pnpm install", "vp config"]

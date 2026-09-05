@@ -5,10 +5,13 @@
 ```bash
 git clone https://github.com/jamiedavenport/policystack
 cd policystack
-corepack enable      # picks up the pnpm version pinned in package.json
-pnpm install
-vp config
+mise install
+mise run setup
 ```
+
+[mise](https://mise.jdx.dev/) installs the Node.js version declared in
+`mise.toml` and the pnpm version pinned in `package.json`. The `setup` task
+installs workspace dependencies and configures the repository's git hooks.
 
 `vp config` installs git hooks into `.vite-hooks/` and points `core.hooksPath` at them:
 

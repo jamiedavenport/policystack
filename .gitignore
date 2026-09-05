@@ -28,6 +28,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .env.production.local
 .env.local
 
+# Local mise overrides
+mise.local.toml
+mise.local.lock
+
 # caches
 .eslintcache
 .cache
