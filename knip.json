@@ -64,15 +64,8 @@
 			"entry": ["**/*.test.ts"]
 		},
 		"apps/web": {
-			"entry": [
-				"content-collections.ts",
-				"scripts/*.mjs",
-				"src/router.tsx",
-				"src/routes/**/*.{ts,tsx}",
-				"src/policystack.ts",
-				"src/og/**/*.{ts,tsx}"
-			],
-			"ignoreDependencies": ["@resvg/resvg-js", "pagefind"]
+			"entry": ["blume.config.ts", "scripts/*.mjs", "pages/**/*.astro", "components/**/*.astro"],
+			"ignoreDependencies": ["vite-plus"]
 		},
 		"examples/tanstack": {
 			"entry": [

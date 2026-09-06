@@ -1,8 +1,11 @@
 ---
-title: "@policystack/vite"
+title: Detect ungated analytics with the Vite plugin
 description: "Vite plugin — surfaces ungated cookie and vendor calls in dev and CI"
-product: consent
+sidebar:
+  label: Vite plugin
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Vite plugin for Consent. Runs `@policystack/vite` against your source on dev start and on every HMR update, and surfaces ungated cookie writes / vendor calls as Vite warnings — or build failures.
 
@@ -90,7 +93,7 @@ Compatible with Vite 5 and 6. Framework-agnostic — works with React, Vue, Svel
 
 - [`@policystack/vite/consent`](/docs/consent/scanner) — underlying detection engine, suppression syntax, custom rules
 - [`@policystack/core/consent`](/docs/consent/core) — runtime store and `<ConsentGate>` / `has()` shapes the scanner looks for
-- [Framework adapters](../../#packages) — React, Vue, Solid, Svelte
+- [Framework adapters](/docs/reference/support#which-frameworks-does-policystack-support) — React, Vue, Solid, Svelte
 
 ## License
 

@@ -1,9 +1,19 @@
 ---
 title: "Ship a Remix 3 app with consent before your first user"
-excerpt: "Remix 3 is in beta and most consent tooling was built for the React era. PolicyStack is headless primitives, so it works with Remix's server-first, non-React runtime out of the box. One TypeScript config drives the cookie banner, the privacy policy, and the cookie policy."
+description: "Remix 3 is in beta and most consent tooling was built for the React era. PolicyStack is headless primitives, so it works with Remix's server-first, non-React runtime out of the box. One TypeScript config drives the cookie banner, the privacy policy, and the cookie policy."
 date: "2026-05-12"
-tag: engineering
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [engineering]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 Remix 3 is the first version of Remix that isn't React. The runtime is its own component model — server-first, web-APIs-everywhere, with a single small hydration primitive (`clientEntry`) for the bits that need to run in the browser. The framework is in beta. Most of the privacy and consent tooling out there was built for the React era and is going to need adapters before it works here.
 

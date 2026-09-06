@@ -1,8 +1,13 @@
 ---
-title: "@policystack/vue/consent"
+title: Add cookie consent to Vue
 description: "Vue 3 adapter — provider, composables, ConsentGate, GatedScript"
-product: consent
+sidebar:
+  label: Vue
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
+
+> **Vue 1.5.0 packaging limitation:** the published package omits `@policystack/vue/provider`. Provider examples below describe the repository implementation and require a release exporting `./provider`. Direct policy rendering with `config` remains available. [Support details](/docs/reference/support).
 
 Vue 3 adapter for Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Vue's reactivity via `shallowRef` and `computed`.
 
@@ -188,7 +193,7 @@ Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script ga
 
 - [`@policystack/core/consent`](/docs/consent/core) — shared concepts and config reference
 - [`@policystack/vite`](/docs/consent/vite) — build-time check for ungated cookie / vendor calls
-- [Other adapters](../../#packages) — React, Solid, Svelte
+- [Other adapters](/docs/reference/support#which-frameworks-does-policystack-support) — React, Solid, Svelte
 
 ## License
 

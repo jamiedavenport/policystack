@@ -1,8 +1,11 @@
 ---
-title: "@policystack/react/consent"
+title: Add cookie consent to React
 description: "React adapter — useConsent, useCategory, ConsentGate, GatedScript"
-product: consent
+sidebar:
+  label: React
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 React adapter for Consent. Wraps [`@policystack/core/consent`](/docs/consent/core) with `useSyncExternalStore` for concurrent-safe reactivity.
 
@@ -47,8 +50,8 @@ function Banner() {
 
 	return (
 		<div className="banner">
-			<button onClick={acceptNecessary}>Necessary only</button>
-			<button onClick={acceptAll}>Accept all</button>
+			<button onClick={() => acceptNecessary()}>Necessary only</button>
+			<button onClick={() => acceptAll()}>Accept all</button>
 			<button onClick={() => setRoute("preferences")}>Customize</button>
 		</div>
 	);
@@ -195,7 +198,7 @@ Categories, GPC handling, jurisdiction resolvers, re-consent triggers, and stora
 
 - [`@policystack/core/consent`](/docs/consent/core) — shared concepts and config reference
 - [`@policystack/vite`](/docs/consent/vite) — build-time check for ungated cookie / vendor calls
-- [Other adapters](../../#packages) — Vue, Solid, Svelte
+- [Other adapters](/docs/reference/support#which-frameworks-does-policystack-support) — Vue, Solid, Svelte
 
 ## License
 

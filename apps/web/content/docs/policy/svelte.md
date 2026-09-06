@@ -1,8 +1,11 @@
 ---
-title: "@policystack/svelte/policy"
+title: Render privacy policies in Svelte
 description: "Svelte adapter — PrivacyPolicy, CookiePolicy, snippet overrides"
-product: policy
+sidebar:
+  label: Svelte
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Svelte 5 adapter for Policy. Renders your `policystack.ts` config as Svelte components, with every element overridable via snippets.
 

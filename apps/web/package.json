@@ -2,52 +2,25 @@
 	"name": "web",
 	"private": true,
 	"type": "module",
-	"imports": {
-		"#/*": "./src/*"
-	},
 	"scripts": {
-		"dev": "vp dev --port 3000",
-		"build": "vp build && node scripts/build-search-index.mjs",
-		"preview": "vp preview",
-		"search:inspect": "node scripts/inspect-search-index.mjs"
+		"dev": "node scripts/prepare.mjs && blume dev --port 3000",
+		"build": "node scripts/prepare.mjs && blume build && node scripts/finalize.mjs",
+		"preview": "blume preview",
+		"check-types": "blume check",
+		"test": "node --test scripts/*.test.mjs",
+		"version:snapshot": "node scripts/snapshot-version.mjs"
 	},
 	"dependencies": {
-		"@content-collections/core": "^0.15.0",
-		"@content-collections/mdx": "^0.2.2",
-		"@content-collections/vite": "^0.3.0",
-		"@databuddy/sdk": "^2.4.11",
-		"@jxdltd/tanstack": "^0.0.1",
-		"@offstage/react": "^0.0.2",
-		"@phosphor-icons/react": "^2.1.10",
 		"@policystack/core": "workspace:*",
-		"@policystack/react": "workspace:*",
+		"@policystack/renderers": "workspace:*",
 		"@policystack/sdk": "workspace:*",
-		"@resvg/resvg-js": "^2.6.2",
-		"@shikijs/rehype": "^4.0.2",
-		"@tailwindcss/vite": "^4.2.1",
-		"@tanstack/react-devtools": "^0.10.2",
-		"@tanstack/react-router": "^1.169.1",
-		"@tanstack/react-router-devtools": "^1.166.13",
-		"@tanstack/react-start": "^1.167.59",
-		"nitro": "^3.0.260311-beta",
-		"react": "^19.2.0",
-		"react-dom": "^19.2.0",
-		"shiki": "^4.0.2",
-		"tailwindcss": "^4.2.1",
-		"zod": "^4.4.2"
+		"blume": "1.5.3"
 	},
 	"devDependencies": {
-		"@shikijs/types": "^4.0.2",
-		"@tanstack/devtools-vite": "^0.6.0",
 		"@types/node": "^25.3.5",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
-		"@vitejs/plugin-react": "^5.1.4",
-		"pagefind": "^1.5.2",
-		"rehype-autolink-headings": "^7.1.0",
-		"rehype-slug": "^6.0.0",
-		"remark-gfm": "^4.0.1",
-		"vite": "catalog:",
+		"astro": "7.2.9",
+		"gray-matter": "4.0.3",
+		"node-html-parser": "7.0.1",
 		"vite-plus": "catalog:"
 	}
 }

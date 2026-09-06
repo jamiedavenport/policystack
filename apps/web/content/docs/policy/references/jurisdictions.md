@@ -1,8 +1,9 @@
 ---
 title: Supported jurisdictions
 description: The canonical list of jurisdiction codes Policy accepts and what each one ships
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Policy uses lowercase-kebab region codes for the `jurisdictions` field in your `policystack.ts`. `JurisdictionId` includes seven top-level regions and all 50 US states. TypeScript accepts only these codes and the runtime validator rejects anything else; there is no second enum and no migration alias.
 

@@ -1,10 +1,19 @@
 ---
 title: "OpenPolicy and OpenCookies are now PolicyStack 1.0"
-excerpt: "Two projects became one. `@openpolicy/*` and `@opencookies/*` are now `@policystack/*` — one install, one typed config, one provider. 1.0 freezes the public surface: the Document AST, the validator, the jurisdiction table, and the slot contract are stable, and semver finally means something."
+description: "Two projects became one. `@openpolicy/*` and `@opencookies/*` are now `@policystack/*` — one install, one typed config, one provider. 1.0 freezes the public surface: the Document AST, the validator, the jurisdiction table, and the slot contract are stable, and semver finally means something."
 date: "2026-05-19"
-tag: release
-upNext: "Cloud — the optional hosted control plane that sits on top of the OSS pieces."
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [release]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 For most of the last year there were two projects. OpenPolicy compiled a typed config into a privacy policy and a cookie policy. OpenCookies was a headless consent state machine that gated the cookies those policies described. They were designed to fit together, shared a worldview, and shipped on separate version lines anyway — two scopes, two install lines, two configs you had to keep from drifting apart by hand.
 
@@ -12,13 +21,12 @@ For most of the last year there were two projects. OpenPolicy compiled a typed c
 
 ## One name
 
-The rename is the visible part. `@openpolicy/*` and `@opencookies/*` are gone; everything ships under `@policystack/*`. The site moved from openpolicy.sh to [policystack.dev](https://policystack.dev). What used to be two projects is now three building blocks under one roof:
+The rename is the visible part. `@openpolicy/*` and `@opencookies/*` are gone; everything ships under `@policystack/*`. The site moved from openpolicy.sh to [policystack.dev](https://policystack.dev). What used to be two projects is now two building blocks under one roof:
 
 - **[Policy](/docs/policy)** — your privacy and cookie policy as a typed config, rendered as components or Markdown.
 - **[Consent](/docs/consent)** — the headless consent state machine. Sub-4kb core, adapters for React, Vue, Solid, Svelte, and Angular, a Vite plugin that fails the build on an ungated cookie.
-- **Cloud** — an optional hosted control plane for versioning, audit trails, and consent analytics across every app in your stack. It sits on top of the OSS pieces; you never need it to use them.
 
-Everything except Cloud stays Apache-2.0.
+Policy and Consent stay Apache-2.0.
 
 For an existing app, the migration is the one breaking change you do by hand: a find-and-replace of the npm scope (`@openpolicy/` → `@policystack/`, `@opencookies/` → `@policystack/`) and the provider/import names below. There is no codemod, on purpose — the rename is a search-and-replace you can read in the PR diff, which is exactly the property PolicyStack is trying to preserve everywhere else. Every _other_ thing that broke on the road to 1.0 broke deliberately, and — see below — stops breaking now.
 

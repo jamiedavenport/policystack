@@ -1,8 +1,11 @@
 ---
-title: "@policystack/solid"
+title: Add cookie consent to Solid
 description: "Solid adapter — provider, signals-based hooks, GatedScript"
-product: consent
+sidebar:
+  label: Solid
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Solid adapter for Consent. Built on Solid's signals — fine-grained reactivity with no virtual DOM cost. Wraps [`@policystack/core/consent`](/docs/consent/core).
 
@@ -50,8 +53,8 @@ function Banner() {
 	return (
 		<Show when={route() === "cookie"}>
 			<div class="banner">
-				<button onClick={acceptNecessary}>Necessary only</button>
-				<button onClick={acceptAll}>Accept all</button>
+				<button onClick={() => acceptNecessary()}>Necessary only</button>
+				<button onClick={() => acceptAll()}>Accept all</button>
 				<button onClick={() => setRoute("preferences")}>Customize</button>
 			</div>
 		</Show>
@@ -160,7 +163,7 @@ Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script ga
 
 - [`@policystack/core/consent`](/docs/consent/core) — shared concepts and config reference
 - [`@policystack/vite`](/docs/consent/vite) — build-time check for ungated cookie / vendor calls
-- [Other adapters](../../#packages) — React, Vue, Svelte
+- [Other adapters](/docs/reference/support#which-frameworks-does-policystack-support) — React, Vue, Svelte
 
 ## License
 

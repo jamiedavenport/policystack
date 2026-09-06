@@ -1,0 +1,22 @@
+---
+import { getCollection } from "astro:content";
+import data from "blume:data";
+import SitePage from "../../components/SitePage.astro";
+const routeById = new Map(data.routes.map((route) => [route.entryId, route.path]));
+const posts = (await getCollection("docs"))
+	.filter((entry) => entry.data.type === "blog" && !entry.data.draft)
+	.map((entry) => ({ ...entry.data, href: routeById.get(entry.id) }))
+	.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+---
+<SitePage title="Blog — PolicyStack" description="Releases, implementation guides, and notes from building PolicyStack." route="/blog">
+	<h1>Blog</h1>
+	<p>Releases, implementation guides, and notes from building PolicyStack. For supported APIs, start with the <a href="/docs">current V1 documentation</a>.</p>
+	<ul>
+		{posts.map((post) => <li>
+			<h2><a href={post.href}>{post.title}</a></h2>
+			<p><time datetime={String(post.date)}>{String(post.date).slice(0, 10)}</time> · Jamie Davenport</p>
+			<p>{post.description}</p>
+		</li>)}
+	</ul>
+	<p><a href="/blog/rss.xml">Subscribe via RSS</a></p>
+</SitePage>

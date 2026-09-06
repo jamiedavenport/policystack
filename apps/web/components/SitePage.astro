@@ -1,0 +1,26 @@
+---
+import PageLayout from "blume/components/layout/PageLayout.astro";
+import data from "blume:data";
+interface Props { title: string; description: string; route: string }
+const { config } = data;
+---
+<PageLayout
+	site={{ title: config.title, description: config.description }}
+	logo={config.logo}
+	navigation={data.navigation}
+	favicon={config.favicon}
+	fontCssVars={data.fontCssVars}
+	themeMode={config.theme.mode}
+	searchEnabled={config.search.enabled}
+	siteUrl={config.site}
+	ogEnabled={config.og.enabled}
+	structuredDataEnabled={config.structuredData}
+	page={Astro.props}
+>
+	<article class="prose dark:prose-invert mx-auto max-w-3xl px-6 py-16">
+		<slot />
+	</article>
+	<footer slot="footer" class="mx-auto max-w-3xl px-6 py-8 text-sm">
+		<a href="/privacy">Privacy</a> · <a href="/docs/roadmap">V2 Roadmap</a>
+	</footer>
+</PageLayout>

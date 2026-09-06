@@ -1,8 +1,9 @@
 ---
 title: "@policystack/core/consent"
 description: "Framework-agnostic consent store and the shared concepts every adapter wraps"
-product: consent
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Framework-agnostic consent store for Consent. Owns consent state and broadcasts changes to subscribers via a small pub/sub interface that each framework adapter wraps in its own reactivity primitive.
 
@@ -33,7 +34,7 @@ store.subscribe((state) => render(state));
 store.acceptAll();
 ```
 
-The store's surface: `getState()`, `subscribe()`, `acceptAll()`, `acceptNecessary()`, `reject()`, `toggle(key)`, `save()`, `setRoute()`, `has(expr)`, `getConsentRecord()`, `getPreviousRecord()`, `refreshJurisdiction()`, `server`. See [`types.ts`](./src/types.ts) for the full shape.
+The store's surface: `getState()`, `subscribe()`, `acceptAll()`, `acceptNecessary()`, `reject()`, `toggle(key)`, `save()`, `setRoute()`, `has(expr)`, `getConsentRecord()`, `getPreviousRecord()`, `refreshJurisdiction()`, `server`. See [`types.ts`](https://github.com/jamiedavenport/policystack/blob/main/packages/core/src/consent/types.ts) for the full shape.
 
 ### Server rendering (`store.server`)
 

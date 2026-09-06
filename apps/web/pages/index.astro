@@ -1,0 +1,11 @@
+---
+import BlumePage from "blume/components/BlumePage.astro";
+import data from "blume:data";
+import SitePage from "../components/SitePage.astro";
+const home = data.routes.find((route) => route.path === "/");
+if (!home) throw new Error("Landing-page content is missing");
+---
+<SitePage title="PolicyStack — privacy and consent as code" description={data.config.description ?? "Privacy and consent as code"} route="/">
+	<h1>Privacy and consent as code.</h1>
+	<BlumePage id={home.entryId} />
+</SitePage>

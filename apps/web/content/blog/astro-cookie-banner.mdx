@@ -1,9 +1,19 @@
 ---
 title: "Ship a cookie banner in your Astro site without a framework"
-excerpt: "Astro renders the markup at build time; ~40 lines of vanilla JavaScript wire it to PolicyStack Consent's headless state machine. No React, no hydration island, no third-party iframe — just progressive enhancement and a banner that's part of your design system."
+description: "Astro renders the markup at build time; ~40 lines of vanilla JavaScript wire it to PolicyStack Consent's headless state machine. No React, no hydration island, no third-party iframe — just progressive enhancement and a banner that's part of your design system."
 date: "2026-05-10"
-tag: engineering
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [engineering]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 Astro is the awkward case for cookie banners. Most consent libraries assume you brought a framework — they ship a React component, a Vue plugin, a Svelte action — and the banner is the one part of your site that drags an entire runtime onto a page that was otherwise pure HTML. The alternative is a third-party SaaS embed that paints over your design system and flashes in on every page load.
 
@@ -349,6 +359,5 @@ You've got a banner that lives in your `.astro` components, a state machine that
 - **[TanStack example](https://github.com/jamiedavenport/policystack/tree/v1/examples/tanstack)** — the canonical end-to-end example. It wires Policy and Consent together in a real app; clone it, run `bun install && bun run dev`, and you've got a working reference to iterate on.
 - **[Consent docs](/docs/consent)** — the full reference for the headless store, storage adapters, jurisdiction resolvers, and the script-gating API used in this post.
 - **[Open source](https://github.com/jamiedavenport/policystack)** — Apache-2.0, frozen 1.0 surface. Issues and PRs welcome.
-- **[Cloud](/cloud)** — the hosted control plane. Versioning and audit trails for consent records, a PR bot that flags when a category is added without policy updates.
 
 If you'd rather hand the wiring to your coding agent: point Claude Code or Cursor at the [PolicyStack repo](https://github.com/jamiedavenport/policystack) and the [Consent docs](/docs/consent), and ask for "an Astro cookie banner using `@policystack/core/consent` directly, categories essential/analytics/marketing, localStorage persistence, timezone resolver, matching the styles in `src/components`." Because PolicyStack ships primitives instead of UI, the agent reads your existing components, picks up your tokens, and produces a banner that looks like it was always there.

@@ -1,8 +1,9 @@
 ---
 title: "@policystack/scripts"
 description: "Pre-built script integrations: GA4, Meta Pixel, PostHog, Segment, GTM, Hotjar, Microsoft Clarity"
-product: consent
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Pre-built `defineScript` integrations for the most common third-party vendors. Each integration is a thin factory that returns a `ScriptDefinition` matching the vendor's documented snippet, with sensible defaults for the consent category and pre-consent call queueing — so you can drop them straight into [`gateScript`](/docs/consent/core) without writing the snippet by hand.
 

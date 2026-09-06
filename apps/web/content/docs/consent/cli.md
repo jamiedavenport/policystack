@@ -1,38 +1,24 @@
 ---
-title: "@policystack/cli"
-description: "Terminal UI for scans and config sync"
-product: consent
+title: Consent scanning with CLI and MCP tools
+description: PolicyStack V1 ships init, validate, and mcp commands. Use Vite or the MCP scan_ungated tool for consent scanning; scan and sync shell commands are not implemented.
+lastModified: 2026-09-06
 ---
 
-Terminal entry point for Consent. Wraps [`@policystack/vite`](/docs/consent/scanner) for one-off scans, config init, and writing back vendor-category suggestions that the [Vite plugin](/docs/consent/vite) only prints.
+PolicyStack V1's CLI implements `init`, `validate`, and `mcp`. Consent-specific `policystack scan` and `policystack sync` shell commands are not implemented.
 
-> Status: the `@policystack/cli` package ships with a `policystack` bin (`init`, `validate`, `mcp`); the consent-specific scan/sync commands below are still in flight. For build-time scanning today, use [`@policystack/vite`](/docs/consent/vite) — same scanner, integrated with HMR and `vite build`.
-
-## Install
+## Validate your consent declarations
 
 ```sh
-bun add -D @policystack/cli
+pnpm add -D @policystack/cli@1
+pnpm exec policystack validate --json
 ```
 
-## Usage
+This validates configuration; it does not scan every runtime data flow. Review the returned diagnostic codes and update the configuration or application as required.
 
-```sh
-policystack --help
-```
+## Scan source for ungated analytics
 
-## Planned commands
+Use the [Vite integration](/docs/consent/vite) with consent scanning enabled, or configure a coding agent to run `pnpm exec policystack mcp` and call its `scan_ungated` tool. Both use the [static consent scanner](/docs/consent/scanner).
 
-- `policystack scan` — run the scanner against a project, print findings.
-- `policystack sync` — apply the vendor-category suggestions the scanner detects, writing them to your `policystack.ts`.
+Static findings are heuristic. Configure Vite's error mode to fail CI on findings. Runtime gating still requires the application's consent APIs.
 
-Track progress in the repo issues.
-
-## See also
-
-- [`@policystack/vite`](/docs/consent/scanner) — the detection engine the CLI wraps
-- [`@policystack/vite`](/docs/consent/vite) — recommended for in-editor / CI feedback today
-- [`@policystack/core/consent`](/docs/consent/core) — runtime config the CLI generates and edits
-
-## License
-
-Apache-2.0
+See the [CLI reference](/docs/policy/cli) for setup flags, validation, and MCP configuration.

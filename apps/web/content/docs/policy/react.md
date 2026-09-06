@@ -1,8 +1,11 @@
 ---
-title: "@policystack/react/policy"
+title: Render privacy policies in React
 description: "React adapter — PrivacyPolicy, CookiePolicy, custom renderers"
-product: policy
+sidebar:
+  label: React
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 React adapter for Policy. Renders your `policystack.ts` config as React components — a privacy policy, a cookie policy, or individual sections — with every element overridable.
 

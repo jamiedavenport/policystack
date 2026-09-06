@@ -1,9 +1,19 @@
 ---
 title: "PolicyStack speaks French, German, Dutch, and Spanish"
-excerpt: "PolicyStack lifts privacy and cookie policies out of English-only. One config, five locales, no string-key lookup — TypeScript is the lookup, and tsc fails the build if a translation is missing a key."
+description: "PolicyStack lifts privacy and cookie policies out of English-only. One config, five locales, no string-key lookup — TypeScript is the lookup, and tsc fails the build if a translation is missing a key."
 date: "2026-05-14"
-tag: release
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [release]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 PolicyStack compiles privacy policies and cookie policies in **English, French, German, Dutch, and Spanish**. The same typed config emits in any of the five locales — and only the PolicyStack-emitted strings (around 125 of them: headings, table headers, GDPR/CCPA boilerplate, formatted dates) switch language. Your company name, processing purposes, retention text, and third-party descriptions pass through exactly as you wrote them.
 

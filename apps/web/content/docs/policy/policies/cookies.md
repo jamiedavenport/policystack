@@ -1,12 +1,13 @@
 ---
 title: Cookie Policy
 description: Generate and render a cookie policy from your policystack.ts config
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 See the [Quick Start](/docs/policy/policies/quick-start) to add a cookie policy page to your app.
 
-Add cookie fields to your config — the cookie policy is auto-detected from the presence of the `cookies` (or `trackingTechnologies`) field:
+Add cookie fields to your config — the cookie policy is auto-detected from the presence of the `cookies` field:
 
 ```ts
 // policystack.ts

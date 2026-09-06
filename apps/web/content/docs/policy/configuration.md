@@ -1,8 +1,9 @@
 ---
 title: Configuration
 description: Setting up your policystack.ts config file
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 All policies are defined in a single config file using `defineConfig()` from `@policystack/sdk`. You can place it anywhere in your project.
 
@@ -68,7 +69,7 @@ export default defineConfig({
 });
 ```
 
-The `company` block is shared across all policy types. `company.legalName` and `company.address` are required; `company.name`, `company.url`, and `company.contact.email` are seeded from the host `package.json` (`name` / `homepage` / `author.email`) when omitted, and any explicit value wins. All other fields live at the top level: `effectiveDate` and `jurisdictions` are shared, and Policy auto-detects which policies to generate from the fields you provide — include the `data` block for a privacy policy, and the `cookies` block (or `trackingTechnologies`) for a cookie policy.
+The `company` block is shared across policy types. Supply company identity and contact values explicitly. V1 does not read host `package.json` metadata: omitted names and emails normalize to empty strings and validation reports them. `effectiveDate` and `jurisdictions` also apply to all policies. A `data` or `children` block triggers privacy emission, and `cookies` triggers cookie emission; `trackingTechnologies` alone does not. An explicit `policies` selection overrides automatic detection.
 
 ### Contact methods
 

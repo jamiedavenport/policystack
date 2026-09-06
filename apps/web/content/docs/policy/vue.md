@@ -1,8 +1,13 @@
 ---
-title: "@policystack/vue/policy"
+title: Render privacy policies in Vue
 description: "Vue adapter — PrivacyPolicy, CookiePolicy, custom renderers"
-product: policy
+sidebar:
+  label: Vue
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
+
+> **Vue 1.5.0 packaging limitation:** the published package omits `@policystack/vue/provider`. Provider examples below describe the repository implementation and require a release exporting `./provider`. Direct policy rendering with `config` remains available. [Support details](/docs/reference/support).
 
 Vue 3 adapter for Policy. Renders your `policystack.ts` config as Vue components, with every element overridable. The API mirrors the [React adapter](/docs/policy/react), translated to Vue idioms.
 

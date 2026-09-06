@@ -1,32 +1,68 @@
 # policystack.dev
 
-Marketing and documentation site for **PolicyStack** — modern privacy and consent primitives for developers and AI.
+The public PolicyStack website uses **Blume 1.5.3**, static output, and Blume's default styling. It contains one landing page, V1 documentation, a historical blog, a public V2 roadmap, and a generated privacy policy. There are no analytics integrations or hosted AI services.
 
-## What PolicyStack is
+## Development and validation
 
-PolicyStack ships small, composable building blocks that let teams handle privacy/consent the same way they handle auth, payments, or feature flags: as code, in their stack, version-controlled, testable. The thesis is that the current consent + policy ecosystem is dominated by heavy SaaS banners and hand-written legal pages that don't compose with modern app architectures (and don't speak to AI agents at all).
+Run from the repository root with Node 24 and pnpm:
 
-The project is split across several open-source repos. This repo is just the website.
-
-## Sibling repos
-
-### [policystack](https://github.com/jamiedavenport/policystack) — `policystack.dev`
-
-Define a privacy/cookie policy once as a TypeScript config, render it as React components. Ships a shadcn-style consent banner. Disclaimer: it generates documents, it doesn't give legal advice. Mostly TypeScript with Astro docs and a Svelte adapter. Active — currently around `@policystack/react@0.0.30`.
-
-### [policystack](https://github.com/jamiedavenport/policystack)
-
-Headless consent state machine + framework hooks. UI is whatever you build around it. Sub-4kb core, adapters for React / Vue / Solid / Svelte / Angular. Includes a Vite plugin that flags ungated cookie usage at dev time, a static scanner, pre-built script integrations (GA, Meta Pixel, …), and a planned CLI. Apache-2.0, pre-1.0.
-
-Both repos use changesets, pnpm workspaces, and a `packages/*` layout.
-
-## This repo
-
-TanStack Start (Vite + Nitro + React 19 + Tailwind v4), file-based routing, TypeScript. Currently a clean shell — the v1 Astro version is in git history.
-
-```bash
-pnpm install
-pnpm dev      # http://localhost:3000
-pnpm build
-pnpm preview
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @policystack/core --filter @policystack/sdk --filter @policystack/renderers build
+pnpm --filter web dev
 ```
+
+The website runs on port 3000. Its local package dependencies must be built first because the content preparation step imports their published entry points.
+
+```sh
+pnpm --filter web build
+pnpm --filter web preview
+pnpm --filter web check-types
+pnpm --filter web test
+vp check
+vp run knip
+```
+
+CI also runs `vp run -r build`, `vp run -r check-types`, and `vp run -r test`. The website's tests require a production build and cover legacy URLs, HTML/Markdown links, metadata, AI outputs, discovery questions, redirects, and a disposable V1 archive build. Run build/check sequentially: both regenerate `.blume`.
+
+Blume owns `.blume/`, `.astro/`, and `dist/`; never edit or commit them. The direct Astro development dependency supplies types for authored Astro pages. `gray-matter` reads blog metadata; `node-html-parser` supports the output/link checks. No application React runtime is required.
+
+## Content and AI discoverability
+
+- `content/index.md` is the landing-page source, reused by the custom Astro page and Markdown mirror.
+- `content/docs/` contains current V1 docs. Keep existing URLs; group them through the configured sidebar.
+- `content/blog/` contains dated posts with `type: blog`, `date`, `authors`, and `description`. The Astro index and Markdown index are generated from those posts.
+- `content/docs/roadmap.md` is planned direction, not API documentation. It and historical posts use `ai.exclude: true` to keep them out of the consolidated current reference. This does not block their public HTML/Markdown or search visibility.
+- `policystack.ts` declares this website's privacy practices. `scripts/prepare.mjs` generates the privacy Markdown and `public/sdk.txt` using the actual PolicyStack compiler and SDK reference generator.
+
+Start documentation pages with a direct answer and explicit V1 context. Include accurate imports, prerequisites, complete minimal examples, expected behaviour, and limits. Use descriptive headings and stable anchors. Link implementation evidence where it resolves ambiguity. Review dates describe actual content review, not the latest build date.
+
+The source of current behaviour is the implemented packages, cross-checked against `../../docs/v1.md`. The V2 design document supplies roadmap direction only. Correct historical claims with visible notes and current-doc links.
+
+Public agent entry points are `/llms.txt`, `/llms-full.txt`, `/sdk.txt`, `/agent-readability.json`, and `.md` page mirrors. The build finalizer adds the SDK reference and version guidance to Blume's generated LLM index; 1.5.3 does not support the newer `ai.llmsTxt.details` option. It also emits the blog-index Markdown and makes Markdown links absolute. Keep HTML and machine-readable content based on the same authored sources.
+
+Public documentation renders without JavaScript. Static deployment uses explicit `.md` URLs; no content-negotiation support is advertised. Search uses local Orama. Ask AI and hosted MCP remain disabled. The generated agent workflow skills stay maintained by the SDK; the agent guide links their canonical source.
+
+## Releasing V2 documentation
+
+Do not publish placeholder V2 API pages. When V2 is ready:
+
+```sh
+pnpm --filter web version:snapshot v1
+```
+
+This copies only current documentation to `content/v1/docs/`, excluding the roadmap, preserves examples, rewrites internal docs links, creates `/v1`, and registers the archive in `versions.json`. It refuses to overwrite an archive. Blume's own 1.5.3 `version` command copies the entire content root, so use this wrapper for this mixed website.
+
+Then update `versions.json`'s current label to `V2`, replace current docs with reviewed V2 material, and add migration guidance and support policy. Current URLs remain `/docs/**`; the archive lives at `/v1/docs/**`. Blog, landing page, privacy, roadmap, and SDK reference remain current. Archived readers must use the SDK reference shipped with their installed V1 package; `/sdk.txt` always follows the current workspace SDK.
+
+Run the production build and tests. Check the native version selector, archive notice, links, scoped search, canonical URLs, and agent indexes before release. Do not edit frozen archives as if they describe the current product.
+
+## Deployment and compatibility
+
+Keep the existing Vercel project and `policystack.dev` domain, with project root **apps/web** and output directory **dist**. The checked-in `vercel.json` specifies the workspace install, dependency builds, HTTP redirects, and Markdown/text headers. Enable Vercel's setting that includes files outside the project root. No runtime credentials are required to build.
+
+`redirects.json` drives Blume's redirects. Keep the root Vercel redirect list in sync; tests enforce parity. Blume's generated `dist/vercel.json` is not read by Vercel's Git integration, so the checked-in config is necessary. `apps/www` remains the `openpolicy.sh` redirect project and points directly to final URLs.
+
+Deploy a Vercel preview before promotion. `VERCEL_ENV=preview` emits a disallow-all robots file and noindex HTML. Verify real 301 responses, UTF-8 Markdown/text responses, the feed, unknown-route 404s, and production canonical URLs. Promote the validated deployment; retain the previous deployment for rollback. Preview and production promotion require access to the existing Vercel project and are not performed by local scripts.
+
+Blume was researched through Context7 library ID `/haydenbleasel/blume`. Current docs reference newer releases; the implementation uses the installed 1.5.3 package schemas and source. That release was selected to retain the repository's seven-day dependency release-age policy.

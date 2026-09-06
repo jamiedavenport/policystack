@@ -1,8 +1,9 @@
 ---
 title: Privacy Policy
 description: Generate and render a privacy policy from your policystack.ts config
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 See the [Quick Start](/docs/policy/policies/quick-start) to add a privacy policy page to your app.
 

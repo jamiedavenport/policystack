@@ -1,9 +1,19 @@
 ---
 title: "Ship a cookie banner and privacy policy in your Wasp app"
-excerpt: "Wasp gives you auth, a database, and deployment out of one config file — but the privacy story is still yours to ship. Wire PolicyStack into the root component and get a consent banner, a privacy policy, and a cookie policy from one TypeScript config."
+description: "Wasp gives you auth, a database, and deployment out of one config file — but the privacy story is still yours to ship. Wire PolicyStack into the root component and get a consent banner, a privacy policy, and a cookie policy from one TypeScript config."
 date: "2026-07-08"
-tag: engineering
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [engineering]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 [Wasp](https://wasp.sh) is the batteries-included option for full-stack React: one spec file declares your routes, auth, database, and jobs, and the compiler wires up the React + Node.js + Prisma app around it. It handles a remarkable amount of the boring stuff — but the privacy story is still yours. The moment your Wasp app sets an analytics cookie for real users, you owe them a banner, a cookie policy, and a privacy policy that don't drift from what the code actually does.
 
@@ -372,4 +382,3 @@ You've got a banner that matches your app, two policy pages that can't drift fro
 
 - **[The Wasp example](https://github.com/jamiedavenport/policystack/tree/main/examples/wasp)** — the complete project from this post, runnable with `wasp install && wasp start`.
 - **[Policy](/policy)** and **[Consent](/consent)** — the two halves of PolicyStack in more depth, including the storage adapters, jurisdiction resolvers, and GPC handling this post only waved at.
-- **[Cloud](/cloud)** — the hosted control plane: versioned consent records, audit trails, and a PR bot that flags when a new SDK ships without a policy update.

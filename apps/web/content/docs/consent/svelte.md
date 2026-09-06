@@ -1,10 +1,13 @@
 ---
-title: "@policystack/svelte/consent"
-description: "Svelte 5 runes adapter with GatedScript and a Svelte 4 Readable fallback"
-product: consent
+title: Add cookie consent to Svelte
+description: "Svelte 5 runes adapter with GatedScript and a Svelte 5 Readable API"
+sidebar:
+  label: Svelte
 ---
 
-Svelte adapter for Consent. Runes-first for Svelte 5; ships a `Readable<ConsentState>` fallback at `@policystack/svelte/consent/stores` for Svelte 4. Wraps [`@policystack/core/consent`](/docs/consent/core).
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
+
+Svelte adapter for Consent. Runes-first for Svelte 5; ships a `Readable<ConsentState>` API at `@policystack/svelte/consent/stores` for Svelte 5. Wraps [`@policystack/core/consent`](/docs/consent/core).
 
 ## Install
 
@@ -147,9 +150,9 @@ Call `setPolicyStackConsentContext` from your root layout. It uses Svelte's `set
 {@render children()}
 ```
 
-## Svelte 4 stores fallback
+## Svelte stores API
 
-For Svelte 4 codebases (or when you prefer `$store` syntax), import from the `/stores` subpath:
+When you prefer `$store` syntax in a Svelte 5 codebase, import from the `/stores` subpath:
 
 ```svelte
 <script>
@@ -171,13 +174,13 @@ For Svelte 4 codebases (or when you prefer `$store` syntax), import from the `/s
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating, and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Svelte adapter is a thin reactivity wrapper. A working example is in [`examples/svelte`](../../examples/svelte/).
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating, and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Svelte adapter is a thin reactivity wrapper.
 
 ## See also
 
 - [`@policystack/core/consent`](/docs/consent/core) — shared concepts and config reference
 - [`@policystack/vite`](/docs/consent/vite) — build-time check for ungated cookie / vendor calls
-- [Other adapters](../../#packages) — React, Vue, Solid
+- [Other adapters](/docs/reference/support#which-frameworks-does-policystack-support) — React, Vue, Solid
 
 ## License
 

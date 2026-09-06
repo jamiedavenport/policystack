@@ -1,8 +1,9 @@
 ---
 title: "@policystack/vite/consent"
 description: "Static AST detection of cookie writes and vendor scripts"
-product: consent
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Static cookie and vendor detection for Consent. Scans your source for
 known third-party scripts and the cookies they (or your code) set.
@@ -87,7 +88,7 @@ This is _not_ a control-flow analysis. Treat the `ungated` array as a
 "please double-check" list, not a definitive enforcement signal — the runtime
 is what enforces consent. See [Consent core] for the runtime story.
 
-[Consent core]: ../core/README.md
+[Consent core]: /docs/consent/core
 
 ## Custom rules
 
@@ -118,7 +119,7 @@ await scan({ cwd: process.cwd(), rules: [...defaultRules, banPlausible] });
 
 ## Vendor registry contributions
 
-The bundled list lives in [`src/vendors.json`](./src/vendors.json). Each
+The bundled list lives in [`src/registry.ts`](https://github.com/jamiedavenport/policystack/blob/main/packages/vite/src/registry.ts). Each
 entry has the shape:
 
 ```json

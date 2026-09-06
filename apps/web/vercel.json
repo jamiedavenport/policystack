@@ -1,0 +1,123 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"framework": null,
+	"installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+	"buildCommand": "pnpm --filter @policystack/core --filter @policystack/sdk --filter @policystack/renderers build && pnpm run build",
+	"outputDirectory": "dist",
+	"redirects": [
+		{
+			"source": "/policy",
+			"destination": "/docs/policy",
+			"statusCode": 301
+		},
+		{
+			"source": "/consent",
+			"destination": "/docs/consent",
+			"statusCode": 301
+		},
+		{
+			"source": "/cloud",
+			"destination": "/docs/roadmap",
+			"statusCode": 301
+		},
+		{
+			"source": "/policy.md",
+			"destination": "/docs/policy.md",
+			"statusCode": 301
+		},
+		{
+			"source": "/consent.md",
+			"destination": "/docs/consent.md",
+			"statusCode": 301
+		},
+		{
+			"source": "/cloud.md",
+			"destination": "/docs/roadmap.md",
+			"statusCode": 301
+		},
+		{
+			"source": "/legal-notice",
+			"destination": "/privacy",
+			"statusCode": 301
+		},
+		{
+			"source": "/rss.xml",
+			"destination": "/blog/rss.xml",
+			"statusCode": 301
+		},
+		{
+			"source": "/og/policy.png",
+			"destination": "/og/docs/policy.png",
+			"statusCode": 301
+		},
+		{
+			"source": "/og/consent.png",
+			"destination": "/og/docs/consent.png",
+			"statusCode": 301
+		},
+		{
+			"source": "/og/cloud.png",
+			"destination": "/og/docs/roadmap.png",
+			"statusCode": 301
+		},
+		{
+			"source": "/docs/index",
+			"destination": "/docs",
+			"statusCode": 301
+		},
+		{
+			"source": "/docs/index.md",
+			"destination": "/docs.md",
+			"statusCode": 301
+		},
+		{
+			"source": "/docs/policy/index",
+			"destination": "/docs/policy",
+			"statusCode": 301
+		},
+		{
+			"source": "/docs/policy/index.md",
+			"destination": "/docs/policy.md",
+			"statusCode": 301
+		},
+		{
+			"source": "/docs/consent/index",
+			"destination": "/docs/consent",
+			"statusCode": 301
+		},
+		{
+			"source": "/docs/consent/index.md",
+			"destination": "/docs/consent.md",
+			"statusCode": 301
+		}
+	],
+	"headers": [
+		{
+			"source": "/(.*)\\.md",
+			"headers": [
+				{
+					"key": "Content-Type",
+					"value": "text/markdown; charset=utf-8"
+				}
+			]
+		},
+		{
+			"source": "/(.*)\\.txt",
+			"headers": [
+				{
+					"key": "Content-Type",
+					"value": "text/plain; charset=utf-8"
+				}
+			]
+		},
+		{
+			"source": "/",
+			"headers": [
+				{
+					"key": "Link",
+					"value": "</llms.txt>; rel=\"describedby\"; type=\"text/plain\", </agent-readability.json>; rel=\"describedby\"; type=\"application/json\""
+				}
+			]
+		}
+	]
+}

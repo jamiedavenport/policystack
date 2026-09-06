@@ -1,0 +1,70 @@
+[
+	{
+		"from": "/policy",
+		"to": "/docs/policy"
+	},
+	{
+		"from": "/consent",
+		"to": "/docs/consent"
+	},
+	{
+		"from": "/cloud",
+		"to": "/docs/roadmap"
+	},
+	{
+		"from": "/policy.md",
+		"to": "/docs/policy.md"
+	},
+	{
+		"from": "/consent.md",
+		"to": "/docs/consent.md"
+	},
+	{
+		"from": "/cloud.md",
+		"to": "/docs/roadmap.md"
+	},
+	{
+		"from": "/legal-notice",
+		"to": "/privacy"
+	},
+	{
+		"from": "/rss.xml",
+		"to": "/blog/rss.xml"
+	},
+	{
+		"from": "/og/policy.png",
+		"to": "/og/docs/policy.png"
+	},
+	{
+		"from": "/og/consent.png",
+		"to": "/og/docs/consent.png"
+	},
+	{
+		"from": "/og/cloud.png",
+		"to": "/og/docs/roadmap.png"
+	},
+	{
+		"from": "/docs/index",
+		"to": "/docs"
+	},
+	{
+		"from": "/docs/index.md",
+		"to": "/docs.md"
+	},
+	{
+		"from": "/docs/policy/index",
+		"to": "/docs/policy"
+	},
+	{
+		"from": "/docs/policy/index.md",
+		"to": "/docs/policy.md"
+	},
+	{
+		"from": "/docs/consent/index",
+		"to": "/docs/consent"
+	},
+	{
+		"from": "/docs/consent/index.md",
+		"to": "/docs/consent.md"
+	}
+]

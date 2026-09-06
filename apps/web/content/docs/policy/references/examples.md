@@ -1,8 +1,9 @@
 ---
 title: Examples
 description: Example projects using Policy
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Example projects live in the [GitHub repository](https://github.com/jamiedavenport/policystack/tree/main/examples).
 

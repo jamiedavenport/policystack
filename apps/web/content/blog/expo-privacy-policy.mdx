@@ -1,9 +1,19 @@
 ---
 title: "Ship a native privacy policy in your Expo app"
-excerpt: "Define your policy in TypeScript, render it with React Native primitives — no WebView, no markdown parser at runtime — and let Claude keep the third parties list honest as you add SDKs."
+description: "Define your policy in TypeScript, render it with React Native primitives — no WebView, no markdown parser at runtime — and let Claude keep the third parties list honest as you add SDKs."
 date: "2026-05-07"
-tag: engineering
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [engineering]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 The privacy policy in a mobile app usually shows up as one of three things: a `WebView` pointing at the marketing site, a hardcoded markdown file rendered through `react-native-markdown-display`, or a single deeply-nested `<Text>` component a junior dev was asked to fix on a Friday. All three drift the moment you add an SDK, and none of them feel native — there's a flash of white, the scroll gestures are wrong, the typography doesn't match.
 

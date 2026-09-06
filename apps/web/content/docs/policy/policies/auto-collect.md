@@ -1,8 +1,9 @@
 ---
 title: Auto-collect
 description: Automatically populate data.collected and thirdParties from your source code
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Auto-collect scans your source files at build time and populates the `data.collected` and `thirdParties` fields of your privacy policy automatically — no need to keep those arrays up to date by hand. You still write `data.context` by hand (one entry per category, with `purpose`, `lawfulBasis`, `retention`, and `provision`); for scanned categories, `defineConfig` requires matching entries via a generated `policystack.gen.ts` (written next to your `policystack.ts` and meant to be committed). The same machinery covers cookie categories — scanned `cookies.used` keys must each appear in `cookies.context`.
 

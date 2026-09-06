@@ -1,10 +1,13 @@
 ---
-title: "@policystack/angular"
-description: "Angular 18+ adapter — providePolicyStackConsent, ConsentService, *ocConsent"
-product: consent
+title: Add cookie consent to Angular
+description: "Angular 20+ adapter — providePolicyStackConsent, ConsentService, *ocConsent"
+sidebar:
+  label: Angular
 ---
 
-Angular 18+ adapter for Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Angular's signal reactivity.
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
+
+Angular 20+ adapter for Consent. Bridges [`@policystack/core/consent`](/docs/consent/core) with Angular's signal reactivity.
 
 ## Install
 
@@ -140,13 +143,13 @@ The directive emits no DOM wrapper — only the templated content (or its fallba
 
 ## Shared concepts
 
-Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Angular adapter is a thin reactivity wrapper. A working example is in [`examples/angular`](../../examples/angular/).
+Categories, GPC handling, jurisdiction resolvers, re-consent triggers, script gating (`gateScript`), and storage adapters all live in [`@policystack/core/consent`](/docs/consent/core) — the Angular adapter is a thin reactivity wrapper.
 
 ## See also
 
 - [`@policystack/core/consent`](/docs/consent/core) — shared concepts and config reference
 - [`@policystack/vite`](/docs/consent/vite) — build-time check for ungated cookie / vendor calls
-- [Other adapters](../../#packages) — React, Vue, Solid, Svelte
+- [Other adapters](/docs/reference/support#which-frameworks-does-policystack-support) — React, Vue, Solid, Svelte
 
 ## License
 

@@ -1,9 +1,19 @@
 ---
 title: "Ship a cookie banner with your TanStack app"
-excerpt: "Wire a sub-4kb headless consent state machine into your app and render the banner in your own components — with an optional Vite plugin that fails the build on any cookie that isn't gated."
+description: "Wire a sub-4kb headless consent state machine into your app and render the banner in your own components — with an optional Vite plugin that fails the build on any cookie that isn't gated."
 date: "2026-05-05"
-tag: engineering
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [engineering]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 Cookie banners have a deserved reputation as the worst part of the web. The default options are a pre-styled iframe that flashes in on every page load, a third-party script that ignores your design system, or a hand-rolled `useState` that forgets every refresh and silently fails the audit.
 
@@ -354,6 +364,5 @@ You've got a banner that lives in your components, a state machine that handles 
 
 - **[Policy](/policy)** — the policy half. The same pattern, applied to your privacy policy and cookie policy: TypeScript config, React renderer, Vite plugin that scans for undeclared third parties. The categories you defined here are the categories that show up in the rendered cookie policy. Walkthrough in [Ship a privacy policy with your TanStack app](/blog/tanstack-privacy-policy).
 - **[Open source](https://github.com/jamiedavenport/policystack)** — Apache-2.0, 1.0 with a frozen, stable public surface. Issues and PRs welcome; the framework adapters are deliberately small so adding a new one is a weekend.
-- **[Cloud](/cloud)** — the hosted control plane. Versioning and audit trails for consent records, a PR bot that flags when a category is added without policy updates, and the dashboards your privacy team actually wants to look at.
 
 Or browse the [TanStack example](https://github.com/jamiedavenport/policystack/tree/v1/examples/tanstack) for a working end-to-end project you can fork.

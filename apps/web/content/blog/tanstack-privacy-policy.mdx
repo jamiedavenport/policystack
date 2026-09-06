@@ -1,9 +1,19 @@
 ---
 title: "Ship a privacy policy with your TanStack app"
-excerpt: "Define your policy in TypeScript, let the Vite plugin compile it at build time, and render it on a route alongside the rest of your app."
+description: "Define your policy in TypeScript, let the Vite plugin compile it at build time, and render it on a route alongside the rest of your app."
 date: "2026-05-04"
-tag: engineering
+type: blog
+authors: Jamie Davenport
+search:
+  tags: [engineering]
+  boost: -1
+ai:
+  exclude: true
 ---
+
+_By Jamie Davenport. Historical article; examples reflect the publication date._
+
+> For current setup and support, use the [V1 documentation](/docs) and [support matrix](/docs/reference/support). PolicyStack supplies headless consent primitives; you build the banner. Broader platform capabilities remain [planned V2 direction](/docs/roadmap).
 
 The privacy policy is usually the last thing anyone wants to think about. You ship a TanStack app, paste a template into `/privacy`, and forget about it. Six months later you've added Stripe, swapped analytics, started collecting onboarding answers — and the page still says what it said on day one.
 
@@ -108,7 +118,7 @@ export default defineConfig(
 
 `LegalBases`, `ContractPrerequisite`, and the other helpers exist mostly so the config typechecks against the GDPR vocabulary — you don't have to remember whether "legitimate interests" is one word or two. Anything you want to declare by hand goes in the first argument; anything the plugin collects from your code arrives via the `scanned` module in the second. (`company.name`, `company.url`, and `company.contact.email` are seeded from your `package.json` when you leave them out, so the hand-authored block above is only what you want to override.)
 
-The `jurisdictions` field is what unlocks region-specific clauses. `"eea"` adds the GDPR-mandated sections — Article 13/14 information requirements, the data subject rights block (access, rectification, erasure, portability, objection), the lawful basis disclosures, the supervisory authority notice. `"us-ca"` does the same for CCPA/CPRA — categories of personal information, the right to know, the right to delete, the "Do Not Sell or Share" notice. You list the jurisdictions you actually serve, and the renderer composes the right document. The full list of supported regions lives in the [docs](https://policystack.dev/docs/policy/references).
+The `jurisdictions` field is what unlocks region-specific clauses. `"eea"` adds the GDPR-mandated sections — Article 13/14 information requirements, the data subject rights block (access, rectification, erasure, portability, objection), the lawful basis disclosures, the supervisory authority notice. `"us-ca"` does the same for CCPA/CPRA — categories of personal information, the right to know, the right to delete, the "Do Not Sell or Share" notice. You list the jurisdictions you actually serve, and the renderer composes the right document. The full list of supported regions lives in the [docs](https://policystack.dev/docs/policy/references/examples).
 
 ## Render it on a route
 
@@ -224,9 +234,8 @@ The static-page version of all of this is a Notion doc and a calendar reminder.
 
 ## Where to go next
 
-What you've got now is a privacy policy that lives in your repo, updates with your code, and renders in your design system. Two adjacent blocks of PolicyStack turn that into proper PR-level enforcement instead of trust-the-author:
+What you've got now is a privacy policy that lives in your repo, updates with your code, and renders in your design system. Add consent handling and development checks with PolicyStack Consent:
 
 - **[Consent](/consent)** — a sub-4kb headless consent state machine with adapters for React, Vue, Solid, Svelte, and Angular. Its Vite plugin flags any cookie that gets set without consent at dev time, so a missing gate fails the build and the PR — not your next audit.
-- **[Cloud](/cloud)** — the hosted control plane on top of Policy and Consent. Every policy change runs through versioning, audit trails, and a PR bot that surfaces missing fields, jurisdiction mismatches, and clauses that need legal sign-off before merge.
 
 Or browse the [TanStack example](https://github.com/jamiedavenport/policystack/tree/v1/examples/tanstack) for a working end-to-end project.

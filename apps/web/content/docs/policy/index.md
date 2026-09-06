@@ -1,16 +1,17 @@
 ---
 title: Introduction
 description: What Policy is and why it exists
-product: policy
 ---
+
+> **PolicyStack V1** — current documentation. [Supported capabilities and limitations](/docs/reference/support).
 
 Policy generates privacy policies and cookie policies from TypeScript config files. Instead of maintaining documents manually or copying templates, you describe your actual data practices in code and Policy renders them as components inside your app.
 
 ## What you can do with it
 
-- **Render as components** — drop `<PrivacyPolicy />` or `<CookiePolicy />` directly into your React or Vue app
+- **Render as components** — drop `<PrivacyPolicy />` or `<CookiePolicy />` directly into your React, Vue, or Svelte app
 - **Auto-collect** — scan your source for `collecting()` and `thirdParty()` annotations at build time so the policy stays in sync with the code
-- **Pair with a consent banner** — the same config drives a [Consent](/docs/consent) banner and preferences panel, with no second config
+- **Pair with a consent banner** — the same config drives your [Consent](/docs/consent) banner and preferences panel, with no second config
 
 ## Get set up in one command
 
