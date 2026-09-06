@@ -4,18 +4,25 @@ These examples accompany the [v2 design decisions](./v2.md#technical-design). Al
 
 ## Shared data model
 
-The same processing activity connects inventory, consent, decisions, and downstream work. This diagram shows logical relationships, not database tables or a requirement to use a graph database. A requirement can apply through a basis other than consent.
+Processing activities connect inventory, consent, decisions, and downstream work. Datasets, fields, identities, and flows also have their own records; they are not merely labels on an activity. This diagram shows logical relationships, not database tables or a requirement to use a graph database. A requirement can apply through a basis other than consent.
 
 ```mermaid
 flowchart LR
     Finding["Discovery finding"] -->|provides evidence about| Activity["Processing activity"]
     Activity -->|processes| Data["Data categories"]
     Activity -->|for| Purpose["Purpose"]
-    Activity -->|flows between| Systems["Systems and recipients"]
+    Dataset["Dataset"] -->|belongs to| Systems["Systems and recipients"]
+    Dataset -->|contains| Field["Field"]
+    Field -->|classified as| Data
+    Flow["Data flow"] -->|connects source and destination| Dataset
+    Flow -->|maps fields and transformations| Field
+    Flow -->|serves| Activity
+    Identity["Identifier mapping"] -->|locates records in| Dataset
+    Identity -->|resolves| Subject["Subject reference"]
     Requirement["Reviewed requirement version"] -->|may apply to| Activity
     Control["Approved control version"] -->|implements| Requirement
     Consent["Consent event"] -->|scopes choice to| Purpose
-    Consent -->|belongs to| Subject["Subject reference"]
+    Consent -->|belongs to| Subject
     Decision["Authorisation decision"] -->|evaluates| Activity
     Decision -->|uses| Control
     Decision -->|may use| Consent
@@ -29,6 +36,67 @@ flowchart LR
 ## Schema examples
 
 Examples use a fictional `example-analytics` recipient and a `product-analytics` purpose. IDs are scoped to an organisation; the authenticated installation supplies that scope. References must resolve within it. Opaque subject IDs can still be personal data and need access and retention controls.
+
+### Application-model mapping
+
+This YAML sketch maps an existing application table into the privacy inventory. It describes metadata and references to implementations, not a table migration or instructions to upload customer records. The table belongs to `app-db`; the existing `app-api` system accesses it.
+
+```yaml
+schemaVersion: v2-draft
+dataset: app-db.users
+system: app-db
+kind: relational-table
+
+subject:
+  type: customer
+  key: id
+  identityNamespace: app-user
+
+fields:
+  id:
+    categories: [account-reference]
+  email:
+    categories: [contact-email]
+  date_of_birth:
+    categories: [birth-date]
+  organisation_id:
+    relationship: app-db.organisations.id
+
+processingActivities:
+  - activity:account-management
+  - activity:product-analytics
+
+rights:
+  locator: customer-records
+  exporter: customer-export
+  eraser: customer-erasure
+```
+
+The subject key resolves through the `app-user` namespace to a scoped subject reference such as `subject:7`. This is not an assumption that application IDs and subject references are interchangeable. A connector can perform that lookup locally. The `organisation_id` field is an application relationship, not the organisation boundary authorising access to PolicyStack records. Following a relationship must not automatically erase a shared organisation record.
+
+The rights handlers need their own capability definitions and validation. Listing an activity here does not assign every field to it. In the analytics example, only the resolved account reference and a generated usage event are sent; email and date of birth are excluded.
+
+### Dataset flow and field mapping
+
+The backend constructs the event dataset from verified identity context and application behaviour. This flow records its transfer to the vendor's event store. Each named dataset has its own inventory record; `app-api.analytics-events` has `accountRef` and `event` fields classified as `account-reference` and `usage-event` respectively.
+
+```yaml
+schemaVersion: v2-draft
+id: flow:analytics-delivery
+activityId: activity:product-analytics
+sourceDataset: app-api.analytics-events
+destinationDataset: example-analytics.events
+fieldMappings:
+  - source: accountRef
+    destination: accountRef
+    transformation: copy
+  - source: event
+    destination: event
+    transformation: copy
+reviewStatus: pending
+```
+
+An additional derivation mapping would describe resolving `app-db.users.id` into the event's `accountRef` and generating its `event` field. Neither a copy nor a hash should be treated as proof of anonymisation. These mappings need version and provenance records so a field rename or changed transformation can trigger review while preserving the meaning of older evidence.
 
 ### Processing activity
 
@@ -99,6 +167,7 @@ Consent is an ordered history of choices. The service assigns the revision and r
 	"state": "granted",
 	"revision": 42,
 	"noticeVersion": "notice:analytics:3",
+	"consentScopeVersion": "scope:analytics:2",
 	"receivedAt": "2026-09-06T10:00:00Z",
 	"source": "preferences",
 	"evidenceRef": "evidence:consent-interaction:42"
@@ -106,6 +175,8 @@ Consent is an ordered history of choices. The service assigns the revision and r
 ```
 
 This is an illustrative record shape, not a complete validation schema. It records a choice and its context; determining whether that choice satisfies the applicable requirements remains a separate responsibility.
+
+`noticeVersion` identifies the document shown; `consentScopeVersion` identifies the processing terms covered by the choice. The service resolves their approved association when saving preferences. A reviewed wording-only publication may keep the same consent scope. If changed processing requires a new scope and renewed consent, the previous grant cannot authorise it merely because the purpose identifier is unchanged. Notification delivery is recorded separately from a user's choice.
 
 ### Decision request and result
 
@@ -274,6 +345,22 @@ async def advance_deletion(task, provider):
 ```
 
 A confirmed connector task does not automatically complete the rights request. The workflow aggregates evidence, exceptions, and unresolved scopes across all relevant systems. Retryable transport errors are handled by the worker; retry limits and escalation remain to be designed.
+
+## Customer-data journey
+
+This design exercise joins the examples above. Assume the application mappings, flow, and processing activity have been reviewed and published before runtime use. The table describes linked records and transitions to validate, not a single aggregate status for a customer.
+
+| Step                       | Records and relationships                                                                   | State and evidence                                                                                                                                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Create an account          | `app-db.users`, account-management activity, local identity mapping to `subject:7`          | Record the collection outcome against the reviewed activity and relevant controls; the customer record remains in the application database.                                                                        |
+| Grant analytics consent    | Consent event `42`, `subject:7`, product-analytics purpose, recipient and notice version    | Append the grant and update the current consent projection. This choice alone does not approve the processing activity.                                                                                            |
+| Share a usage event        | Analytics activity, dataset flow, decision `123`, bundle `18`, consent revision `42`        | Evaluate the specific event before sending it. Preserve the observed provider response separately from the allow decision.                                                                                         |
+| Withdraw analytics consent | A new consent event at revision `43` for the same subject, purpose and recipient            | Update current state and propagate invalidation. Under the example's consent-dependent control, subsequent analytics sends are blocked once the withdrawal is known; freshness guarantees govern propagation gaps. |
+| Request deletion           | Rights request linked to `subject:7`, requester verification, scope and reviewed exceptions | Resolve relevant application and vendor records through their mappings; create separate system tasks. Withdrawal itself is not evidence of deletion.                                                               |
+| Perform deletion           | Application eraser and vendor connector tasks with stable operation keys                    | Persist pending provider jobs and completion evidence. The vendor example confirms only its live event store and leaves backups unresolved.                                                                        |
+| Review the outcome         | Request linked to all task evidence, exceptions and remaining gaps                          | Communicate the confirmed scope and incomplete work. Request closure does not turn an unresolved scope into successful deletion.                                                                                   |
+
+Validate that only fields mapped to analytics leave the application, identity lookup cannot cross organisation boundaries, and historical decisions still reference the correct rule and consent versions after withdrawal. Retention obligations and other processing purposes require their own assessment; withdrawing analytics consent does not implicitly remove every account record.
 
 ## Deployment and data boundaries
 
