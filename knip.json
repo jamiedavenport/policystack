@@ -64,7 +64,13 @@
 			"entry": ["**/*.test.ts"]
 		},
 		"apps/web": {
-			"entry": ["blume.config.ts", "scripts/*.mjs", "pages/**/*.astro", "components/**/*.astro"],
+			"entry": [
+				"blume.config.ts",
+				"components.ts",
+				"scripts/*.mjs",
+				"pages/**/*.astro",
+				"components/**/*.astro"
+			],
 			"ignoreDependencies": ["vite-plus"]
 		},
 		"examples/tanstack": {

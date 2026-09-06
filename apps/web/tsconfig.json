@@ -3,6 +3,7 @@
 	"include": [
 		".blume/.astro/types.d.ts",
 		"blume.config.ts",
+		"components.ts",
 		"pages/**/*.astro",
 		"components/**/*.astro",
 		".blume/src/env.d.ts"

@@ -1,6 +1,6 @@
 import { defineConfig, LegalBases, Voluntary } from "@policystack/sdk";
 
-// Website disclosures only. No account service or analytics runs on this site.
+// Website disclosures only. No account service runs on this site.
 export default defineConfig({
 	company: {
 		name: "PolicyStack",
@@ -25,6 +25,12 @@ export default defineConfig({
 		},
 	},
 	thirdParties: [
+		{
+			name: "OpenPanel",
+			purpose:
+				"Measure website visits and outgoing link clicks to improve the website and documentation",
+			policyUrl: "https://openpanel.dev/privacy",
+		},
 		{
 			name: "Vercel",
 			purpose: "Host and deliver this public website",

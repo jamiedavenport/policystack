@@ -11,6 +11,7 @@
 		"version:snapshot": "node scripts/snapshot-version.mjs"
 	},
 	"dependencies": {
+		"@openpanel/web": "1.4.1",
 		"@policystack/core": "workspace:*",
 		"@policystack/renderers": "workspace:*",
 		"@policystack/sdk": "workspace:*",

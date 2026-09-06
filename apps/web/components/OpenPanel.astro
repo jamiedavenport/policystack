@@ -1,0 +1,19 @@
+---
+const clientId = import.meta.env.PUBLIC_OPENPANEL_CLIENT_ID?.trim();
+const enabled = import.meta.env.PROD && process.env.VERCEL_ENV === "production" && clientId;
+---
+{enabled && <span hidden data-openpanel-client-id={clientId} />}
+
+<script>
+	const clientId = document.querySelector<HTMLElement>("[data-openpanel-client-id]")?.dataset.openpanelClientId;
+	if (clientId) {
+		// Astro executes this module once, including across client-side navigation.
+		const { OpenPanel } = await import("@openpanel/web");
+		new OpenPanel({
+			clientId,
+			trackScreenViews: true,
+			trackOutgoingLinks: true,
+			trackAttributes: true,
+		});
+	}
+</script>

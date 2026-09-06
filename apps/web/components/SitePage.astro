@@ -1,6 +1,7 @@
 ---
 import PageLayout from "blume/components/layout/PageLayout.astro";
 import data from "blume:data";
+import OpenPanel from "./OpenPanel.astro";
 interface Props { title: string; description: string; route: string }
 const { config } = data;
 ---
@@ -21,6 +22,7 @@ const { config } = data;
 		<slot />
 	</article>
 	<footer slot="footer" class="mx-auto max-w-3xl px-6 py-8 text-sm">
+		<OpenPanel />
 		<a href="/privacy">Privacy</a> · <a href="/docs/roadmap">V2 Roadmap</a>
 	</footer>
 </PageLayout>

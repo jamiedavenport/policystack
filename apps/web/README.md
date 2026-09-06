@@ -1,6 +1,6 @@
 # policystack.dev
 
-The public PolicyStack website uses **Blume 1.5.3**, static output, and Blume's default styling. It contains one landing page, V1 documentation, a historical blog, a public V2 roadmap, and a generated privacy policy. There are no analytics integrations or hosted AI services.
+The public PolicyStack website uses **Blume 1.5.3**, static output, and Blume's default styling. It contains one landing page, V1 documentation, a historical blog, a public V2 roadmap, and a generated privacy policy. OpenPanel provides website analytics. There are no hosted AI services.
 
 ## Development and validation
 
@@ -58,6 +58,18 @@ Then update `versions.json`'s current label to `V2`, replace current docs with r
 Run the production build and tests. Check the native version selector, archive notice, links, scoped search, canonical URLs, and agent indexes before release. Do not edit frozen archives as if they describe the current product.
 
 ## Deployment and compatibility
+
+### OpenPanel analytics
+
+Set `PUBLIC_OPENPANEL_CLIENT_ID` to the project's public web client ID in the existing Vercel project's **Production** environment, then rebuild/deploy. In OpenPanel, allow `https://policystack.dev` as an origin for that client. No client secret is used or exposed. The SDK is loaded and initialized only when the ID is set and `VERCEL_ENV=production`; local development, ordinary local builds, and Vercel previews omit tracking.
+
+`components/OpenPanel.astro` loads `@openpanel/web`, the shared npm SDK recommended by OpenPanel's React documentation, to track page views, outgoing links, and explicitly marked `data-track` events. `components.ts` adds it to Blume's footer slot; `SitePage.astro` includes it for the landing page and blog index. Astro executes the bundled module once, and the SDK handles browser history navigation. Account identification and session replay are not enabled. Website disclosures live in `policystack.ts` and `scripts/prepare.mjs`.
+
+For a local production-output check, run `VERCEL_ENV=production PUBLIC_OPENPANEL_CLIENT_ID=<public-client-id> pnpm --filter web build`, then run the website tests with the same environment. After deployment, check a page load and an internal navigation in OpenPanel's realtime view.
+
+Implementation reference: [OpenPanel React integration](https://openpanel.dev/docs/sdks/react), consulted through Context7 library ID `/websites/openpanel_dev` (unversioned documentation; installed `@openpanel/web` version 1.4.1).
+
+### Vercel
 
 Keep the existing Vercel project and `policystack.dev` domain, with project root **apps/web** and output directory **dist**. The checked-in `vercel.json` specifies the workspace install, dependency builds, HTTP redirects, and Markdown/text headers. Enable Vercel's setting that includes files outside the project root. No runtime credentials are required to build.
 

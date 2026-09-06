@@ -21,7 +21,7 @@ search:
   exclude: true
 ---
 
-This notice covers the public PolicyStack website. The site has no account registration, Databuddy analytics, or Offstage integration. Documentation search runs locally in your browser. The interface may remember display preferences in browser storage. Hosting providers process requests to deliver the site.
+This notice covers the public PolicyStack website. We use OpenPanel to measure page views and outgoing link clicks, including page URLs, referrers, browser and device information, and approximate location. We do not send account identities or enable session replay. OpenPanel does not use tracking cookies; it processes IP addresses to derive location and anonymous visitor identifiers without storing the raw IP addresses. Documentation search runs locally in your browser. The interface may remember display preferences in browser storage. Hosting providers process requests to deliver the site.
 
 ${renderMarkdown(document).replace(/^# .+\n/, "")}
 `,

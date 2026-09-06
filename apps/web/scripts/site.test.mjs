@@ -145,7 +145,7 @@ test("deployment redirects, feeds, metadata, and crawler policy are present", ()
 	assert.doesNotMatch(read("robots.txt"), /Disallow:\s*\/\s*$/m);
 });
 
-test("tracking integrations are absent from rendered pages", () => {
+test("retired tracking integrations are absent from rendered pages", () => {
 	for (const route of routes) {
 		const scripts = html(route)
 			.querySelectorAll("script")
@@ -153,6 +153,22 @@ test("tracking integrations are absent from rendered pages", () => {
 			.join("\n");
 		assert.doesNotMatch(scripts, /databuddy|offstage|pk_live_|831fa430/i);
 	}
+});
+
+test("OpenPanel is configured once on every page only in configured production builds", () => {
+	const clientId = process.env.PUBLIC_OPENPANEL_CLIENT_ID?.trim();
+	const enabled = Boolean(clientId && process.env.VERCEL_ENV === "production");
+	for (const route of new Set([...routes, ...content.map((page) => page.route)])) {
+		const document = html(route);
+		const trackers = document.querySelectorAll("[data-openpanel-client-id]");
+		assert.equal(trackers.length, enabled ? 1 : 0, `${route}: tracker`);
+		assert.doesNotMatch(document.toString(), /openpanel\.dev\/op1\.js|window\.op\b/);
+		if (enabled) {
+			assert.equal(trackers[0].getAttribute("data-openpanel-client-id"), clientId);
+			assert.ok(trackers[0].hasAttribute("hidden"));
+		}
+	}
+	assert.match(read("privacy.md"), /OpenPanel/);
 });
 
 test("search contains answers for the fixed V1 discovery questions", () => {
