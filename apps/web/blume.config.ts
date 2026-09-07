@@ -4,6 +4,10 @@ import versions from "./versions.json";
 
 export default defineConfig({
 	title: "PolicyStack",
+	logo: {
+		image: { light: "/wordmark.svg", dark: "/wordmark-dark.svg", alt: "PolicyStack" },
+		text: "",
+	},
 	description:
 		"Privacy policies and headless cookie consent from one TypeScript config. V1 documentation for developers and coding agents.",
 	content: { root: "content", include: ["**/*.{md,mdx}"], pages: "pages" },
