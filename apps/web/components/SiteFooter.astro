@@ -1,0 +1,25 @@
+---
+import JxdMark from "./JxdMark.astro";
+import OpenPanel from "./OpenPanel.astro";
+---
+<footer class="border-t border-zinc-200 dark:border-zinc-800">
+	<OpenPanel />
+	<div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-zinc-500 dark:text-zinc-400">
+		<nav class="flex gap-4">
+			<a href="/privacy" class="hover:text-zinc-900 dark:hover:text-zinc-100">Privacy</a>
+			<a href="/docs/roadmap" class="hover:text-zinc-900 dark:hover:text-zinc-100">V2 Roadmap</a>
+		</nav>
+		<p class="flex flex-wrap items-center gap-x-2 gap-y-1">
+			Built by
+			<a href="https://jamiedavenport.me/" class="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100">
+				<img src="/brand/jamie.png" alt="" width="20" height="20" class="size-5 rounded-full" />
+				Jamie Davenport
+			</a>
+			at
+			<a href="https://jxd.dev/" class="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100">
+				<JxdMark class="size-4" />
+				JXD
+			</a>
+		</p>
+	</div>
+</footer>

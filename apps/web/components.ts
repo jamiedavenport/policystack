@@ -1,6 +1,6 @@
 import { defineComponents } from "blume";
-import OpenPanel from "./components/OpenPanel.astro";
+import SiteFooter from "./components/SiteFooter.astro";
 
 export default defineComponents({
-	layout: { Footer: OpenPanel },
+	layout: { Footer: SiteFooter },
 });
